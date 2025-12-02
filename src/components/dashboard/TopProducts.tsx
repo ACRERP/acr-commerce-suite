@@ -1,46 +1,68 @@
 import { Progress } from "@/components/ui/progress";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const products = [
-  { name: "Smartphone Galaxy A54", sales: 156, revenue: 62400, progress: 100 },
-  { name: "Notebook Dell Inspiron", sales: 89, revenue: 445000, progress: 72 },
-  { name: "Fone Bluetooth JBL", sales: 234, revenue: 35100, progress: 85 },
-  { name: "Tablet iPad Air", sales: 67, revenue: 268000, progress: 54 },
-  { name: "Smart TV 55\" LG", sales: 45, revenue: 157500, progress: 38 },
-];
+interface TopProduct {
+  product_name: string;
+  total_sold: number;
+}
 
-export function TopProducts() {
-  return (
-    <div className="stat-card">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="section-title">Produtos Mais Vendidos</h3>
-        <span className="text-xs text-muted-foreground">Últimos 30 dias</span>
-      </div>
+interface TopProductsProps {
+  data: TopProduct[] | null | undefined;
+  isLoading: boolean;
+}
 
-      <div className="space-y-4">
-        {products.map((product, index) => (
-          <div
-            key={product.name}
-            className="space-y-2 animate-fade-in"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground truncate max-w-[180px]">
-                {product.name}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {product.sales} vendas
-              </span>
+export function TopProducts({ data, isLoading }: TopProductsProps) {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-1/2" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <div className="space-y-2 flex-grow">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
             </div>
-            <Progress value={product.progress} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(product.revenue)}
-            </p>
           </div>
-        ))}
-      </div>
-    </div>
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <div className="space-y-2 flex-grow">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Produtos Mais Vendidos</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {(!data || data.length === 0) ? (
+          <p className="text-sm text-muted-foreground text-center py-8">Nenhum produto vendido ainda.</p>
+        ) : (
+          data.map((product, index) => (
+            <div key={index} className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center font-bold text-muted-foreground">
+                {index + 1}
+              </div>
+              <div className="flex-grow">
+                <p className="font-medium truncate">{product.product_name}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold">{product.total_sold} <span className="text-xs text-muted-foreground">unid.</span></p>
+              </div>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
   );
 }

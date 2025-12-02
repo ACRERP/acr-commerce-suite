@@ -29,6 +29,20 @@ const cashFlowData = [
   { name: "Dom", entrada: 5200, saida: 1200 },
 ];
 
+const financeiroStatBgColorClasses: Record<string, string> = {
+  primary: "bg-primary/10",
+  success: "bg-success/10",
+  destructive: "bg-destructive/10",
+  warning: "bg-warning/10",
+};
+
+const financeiroStatTextColorClasses: Record<string, string> = {
+  primary: "text-primary",
+  success: "text-success",
+  destructive: "text-destructive",
+  warning: "text-warning",
+};
+
 const transactions = [
   { id: 1, desc: "Venda #1234", type: "entrada", value: 1250, date: "Hoje, 14:32" },
   { id: 2, desc: "Fornecedor ABC", type: "saida", value: 3500, date: "Hoje, 11:20" },
@@ -79,8 +93,8 @@ const Financeiro = () => {
                     {stat.value}
                   </p>
                 </div>
-                <div className={`w-10 h-10 rounded-lg bg-${stat.color}/10 flex items-center justify-center`}>
-                  <stat.icon className={`w-5 h-5 text-${stat.color}`} />
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${financeiroStatBgColorClasses[stat.color]}`}>
+                  <stat.icon className={`w-5 h-5 ${financeiroStatTextColorClasses[stat.color]}`} />
                 </div>
               </div>
               {stat.change !== null && (

@@ -15,6 +15,24 @@ const statusConfig = {
   concluido: { label: "Concluído", icon: CheckCircle, color: "success" },
 };
 
+const statTextColorClasses: Record<string, string> = {
+  warning: "text-warning",
+  primary: "text-primary",
+  success: "text-success",
+};
+
+const statusBgColorClasses: Record<string, string> = {
+  warning: "bg-warning/10",
+  primary: "bg-primary/10",
+  success: "bg-success/10",
+};
+
+const statusTextColorClasses: Record<string, string> = {
+  warning: "text-warning",
+  primary: "text-primary",
+  success: "text-success",
+};
+
 const OrdensServico = () => {
   return (
     <MainLayout>
@@ -44,7 +62,7 @@ const OrdensServico = () => {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <p className="metric-label">{stat.label}</p>
-              <p className={`metric-value text-${stat.color}`}>{stat.value}</p>
+              <p className={`metric-value ${statTextColorClasses[stat.color]}`}>{stat.value}</p>
             </div>
           ))}
         </div>
@@ -71,7 +89,7 @@ const OrdensServico = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-sm text-muted-foreground">{order.date}</span>
-                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-${status.color}/10 text-${status.color} text-xs font-medium`}>
+                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusBgColorClasses[status.color]} ${statusTextColorClasses[status.color]}`}>
                       <status.icon className="w-3 h-3" />
                       {status.label}
                     </span>

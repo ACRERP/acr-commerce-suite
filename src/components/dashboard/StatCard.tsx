@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
 import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface StatCardProps {
   title: string;
-  value: string;
+  value: string | number;
   change?: number;
   changeLabel?: string;
   icon: LucideIcon;
@@ -17,6 +18,19 @@ const iconColorClasses = {
   warning: "bg-warning/10 text-warning",
   destructive: "bg-destructive/10 text-destructive",
 };
+
+export function StatCardSkeleton() {
+  return (
+    <div className="stat-card p-4">
+      <div className="flex items-center justify-between mb-2">
+        <Skeleton className="h-4 w-2/4" />
+        <Skeleton className="h-8 w-8 rounded-full" />
+      </div>
+      <Skeleton className="h-7 w-1/3 mb-2" />
+      <Skeleton className="h-3 w-1/2" />
+    </div>
+  );
+}
 
 export function StatCard({
   title,

@@ -10,6 +10,20 @@ import {
   DollarSign,
 } from "lucide-react";
 
+const reportBgColorClasses: Record<string, string> = {
+  primary: "bg-primary/10",
+  accent: "bg-accent/10",
+  warning: "bg-warning/10",
+  success: "bg-success/10",
+};
+
+const reportTextColorClasses: Record<string, string> = {
+  primary: "text-primary",
+  accent: "text-accent",
+  warning: "text-warning",
+  success: "text-success",
+};
+
 const reports = [
   {
     title: "Relatório de Vendas",
@@ -62,8 +76,8 @@ const Relatorios = () => {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-lg bg-${report.color}/10 flex items-center justify-center`}>
-                  <report.icon className={`w-6 h-6 text-${report.color}`} />
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${reportBgColorClasses[report.color]}`}>
+                  <report.icon className={`w-6 h-6 ${reportTextColorClasses[report.color]}`} />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold">{report.title}</h3>

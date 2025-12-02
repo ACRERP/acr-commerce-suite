@@ -1,14 +1,25 @@
 import { Sidebar } from "./Sidebar";
 import { ReactNode } from "react";
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, User, LogOut, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
+  const { profile, signOut } = useAuth();
+
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
@@ -34,13 +45,36 @@ export function MainLayout({ children }: MainLayoutProps) {
             </Button>
             
             <div className="flex items-center gap-3 pl-3 border-l border-border">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium">Admin</p>
-                <p className="text-xs text-muted-foreground">Administrador</p>
-              </div>
-              <Button variant="ghost" size="icon" className="rounded-full bg-primary/10">
-                <User className="w-5 h-5 text-primary" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-3 h-auto p-1">
+                    <div className="text-right hidden sm:block">
+                      <p className="text-sm font-medium">{profile?.full_name || 'Usuário'}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{profile?.role || 'Carregando...'}</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="rounded-full bg-primary/10">
+                      <User className="w-5 h-5 text-primary" />
+                    </Button>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Perfil</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Configurações</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sair</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>

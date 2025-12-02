@@ -15,6 +15,32 @@ const statusConfig = {
   pendente: { label: "Pendente", color: "warning" },
 };
 
+const fiscalItemBgColorClasses: Record<string, string> = {
+  primary: "bg-primary/10",
+  accent: "bg-accent/10",
+  warning: "bg-warning/10",
+  destructive: "bg-destructive/10",
+};
+
+const fiscalItemTextColorClasses: Record<string, string> = {
+  primary: "text-primary",
+  accent: "text-accent",
+  warning: "text-warning",
+  destructive: "text-destructive",
+};
+
+const fiscalStatusBgColorClasses: Record<string, string> = {
+  success: "bg-success/10",
+  destructive: "bg-destructive/10",
+  warning: "bg-warning/10",
+};
+
+const fiscalStatusTextColorClasses: Record<string, string> = {
+  success: "text-success",
+  destructive: "text-destructive",
+  warning: "text-warning",
+};
+
 const Fiscal = () => {
   return (
     <MainLayout>
@@ -50,8 +76,8 @@ const Fiscal = () => {
                   <p className="text-xs text-muted-foreground">{item.desc}</p>
                   <p className="metric-value mt-2">{item.value}</p>
                 </div>
-                <div className={`w-10 h-10 rounded-lg bg-${item.color}/10 flex items-center justify-center`}>
-                  <item.icon className={`w-5 h-5 text-${item.color}`} />
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${fiscalItemBgColorClasses[item.color]}`}>
+                  <item.icon className={`w-5 h-5 ${fiscalItemTextColorClasses[item.color]}`} />
                 </div>
               </div>
             </div>
@@ -86,7 +112,7 @@ const Fiscal = () => {
                         </p>
                         <p className="text-xs text-muted-foreground">{note.date}</p>
                       </div>
-                      <span className={`px-2.5 py-1 rounded-full bg-${status.color}/10 text-${status.color} text-xs font-medium`}>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${fiscalStatusBgColorClasses[status.color]} ${fiscalStatusTextColorClasses[status.color]}`}>
                         {status.label}
                       </span>
                     </div>

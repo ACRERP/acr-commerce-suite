@@ -1,100 +1,85 @@
-import { ShoppingCart, UserPlus, Package, FileText, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const activities = [
-  {
-    id: 1,
-    type: "sale",
-    message: "Venda #1234 realizada",
-    detail: "R$ 1.250,00 - João Silva",
-    time: "Há 5 min",
-    icon: ShoppingCart,
-    color: "success",
-  },
-  {
-    id: 2,
-    type: "customer",
-    message: "Novo cliente cadastrado",
-    detail: "Maria Santos - CPF: ***.***.789-00",
-    time: "Há 15 min",
-    icon: UserPlus,
-    color: "primary",
-  },
-  {
-    id: 3,
-    type: "stock",
-    message: "Estoque baixo",
-    detail: "Produto SKU-789 - Apenas 3 unidades",
-    time: "Há 30 min",
-    icon: Package,
-    color: "warning",
-  },
-  {
-    id: 4,
-    type: "fiscal",
-    message: "NF-e emitida",
-    detail: "Nota #5678 - Cliente: Tech Corp",
-    time: "Há 1h",
-    icon: FileText,
-    color: "accent",
-  },
-  {
-    id: 5,
-    type: "alert",
-    message: "Conta a pagar vencendo",
-    detail: "Fornecedor ABC - R$ 3.500,00",
-    time: "Há 2h",
-    icon: AlertCircle,
-    color: "destructive",
-  },
-];
+interface Activity {
+  activity_type: string;
+  description: string | null;
+  amount: number;
+  created_at: string;
+}
 
-const colorClasses = {
-  primary: "bg-primary/10 text-primary",
-  accent: "bg-accent/10 text-accent",
-  success: "bg-success/10 text-success",
-  warning: "bg-warning/10 text-warning",
-  destructive: "bg-destructive/10 text-destructive",
-};
+interface RecentActivitiesProps {
+  data: Activity[] | null | undefined;
+  isLoading: boolean;
+}
 
-export function RecentActivities() {
-  return (
-    <div className="stat-card">
-      <h3 className="section-title mb-4">Atividades Recentes</h3>
-      
-      <div className="space-y-4">
-        {activities.map((activity, index) => (
-          <div
-            key={activity.id}
-            className="flex items-start gap-3 animate-fade-in"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <div
-              className={cn(
-                "flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0",
-                colorClasses[activity.color as keyof typeof colorClasses]
-              )}
-            >
-              <activity.icon className="w-4 h-4" />
+function timeAgo(dateString: string) {
+  const date = new Date(dateString);
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " anos atrás";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " meses atrás";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " dias atrás";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " horas atrás";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutos atrás";
+  return Math.floor(seconds) + " segundos atrás";
+}
+
+export function RecentActivities({ data, isLoading }: RecentActivitiesProps) {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-1/2" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[150px]" />
+              <Skeleton className="h-4 w-[100px]" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
-                {activity.message}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {activity.detail}
-              </p>
-            </div>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {activity.time}
-            </span>
           </div>
-        ))}
-      </div>
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[150px]" />
+              <Skeleton className="h-4 w-[100px]" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-      <button className="w-full mt-4 pt-4 border-t border-border text-sm text-primary hover:text-primary/80 transition-colors font-medium">
-        Ver todas as atividades
-      </button>
-    </div>
+  return (
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle>Atividades Recentes</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {(!data || data.length === 0) ? (
+          <p className="text-sm text-muted-foreground text-center py-8">Nenhuma atividade recente.</p>
+        ) : (
+          data.map((activity, index) => (
+            <div key={index} className="flex items-center">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback>{activity.description ? activity.description.charAt(0) : 'S'}</AvatarFallback>
+              </Avatar>
+              <div className="ml-4 space-y-1">
+                <p className="text-sm font-medium leading-none">Venda para {activity.description || 'Cliente não identificado'}</p>
+                <p className="text-sm text-muted-foreground">{timeAgo(activity.created_at)}</p>
+              </div>
+              <div className="ml-auto font-medium text-success">+ R$ {activity.amount.toFixed(2)}</div>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -22,6 +22,25 @@ const drivers = [
   { name: "Pedro", deliveries: 0, status: "inativo" },
 ];
 
+const deliveryStatTextColorClasses: Record<string, string> = {
+  primary: "text-primary",
+  warning: "text-warning",
+  success: "text-success",
+  accent: "text-accent",
+};
+
+const deliveryStatusBgColorClasses: Record<string, string> = {
+  primary: "bg-primary/10",
+  warning: "bg-warning/10",
+  success: "bg-success/10",
+};
+
+const deliveryStatusTextColorClasses: Record<string, string> = {
+  primary: "text-primary",
+  warning: "text-warning",
+  success: "text-success",
+};
+
 const Delivery = () => {
   return (
     <MainLayout>
@@ -52,7 +71,7 @@ const Delivery = () => {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <p className="metric-label">{stat.label}</p>
-              <p className={`metric-value text-${stat.color}`}>{stat.value}</p>
+              <p className={`metric-value ${deliveryStatTextColorClasses[stat.color]}`}>{stat.value}</p>
             </div>
           ))}
         </div>
@@ -70,8 +89,8 @@ const Delivery = () => {
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-lg bg-${status.color}/10 flex items-center justify-center`}>
-                        <status.icon className={`w-5 h-5 text-${status.color}`} />
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${deliveryStatusBgColorClasses[status.color]}`}>
+                        <status.icon className={`w-5 h-5 ${deliveryStatusTextColorClasses[status.color]}`} />
                       </div>
                       <div>
                         <p className="font-medium">{delivery.id} - {delivery.client}</p>
@@ -86,7 +105,7 @@ const Delivery = () => {
                         <p className="text-sm font-medium">{delivery.driver}</p>
                         <p className="text-xs text-muted-foreground">{delivery.time}</p>
                       </div>
-                      <span className={`px-2.5 py-1 rounded-full bg-${status.color}/10 text-${status.color} text-xs font-medium`}>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${deliveryStatusBgColorClasses[status.color]} ${deliveryStatusTextColorClasses[status.color]}`}>
                         {status.label}
                       </span>
                     </div>

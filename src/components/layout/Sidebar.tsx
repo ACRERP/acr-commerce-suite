@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -14,11 +14,21 @@ import {
   ChevronLeft,
   Store,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, Fragment } from "react";
+import { ChevronDown } from "lucide-react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: ShoppingCart, label: "Vendas", path: "/vendas" },
+  {
+    icon: ShoppingCart,
+    label: "Vendas",
+    module: "vendas",
+    requiredAction: "read",
+    subItems: [
+      { path: "/vendas", label: "Ponto de Venda" },
+      { path: "/vendas/historico", label: "Histórico" },
+    ],
+  },
   { icon: Package, label: "Produtos", path: "/produtos" },
   { icon: Wrench, label: "Ordens de Serviço", path: "/ordens-servico" },
   { icon: Users, label: "Clientes", path: "/clientes" },
@@ -58,26 +68,53 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+                    const isParentActive = item.subItems && item.subItems.some(sub => location.pathname.startsWith(sub.path));
+          const isActive = location.pathname === item.path || isParentActive;
           return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "sidebar-item group",
-                isActive && "sidebar-item-active"
-              )}
-            >
-              <item.icon
+            <Fragment key={item.label}>
+              <Link
+                to={item.subItems ? '#' : item.path}
+                onClick={(e) => {
+                  if (item.subItems) {
+                    e.preventDefault();
+                    // Lógica para expandir/recolher pode ser adicionada aqui
+                  }
+                }}
                 className={cn(
-                  "w-5 h-5 flex-shrink-0 transition-colors",
-                  isActive ? "text-sidebar-primary" : "text-sidebar-muted group-hover:text-sidebar-foreground"
+                  "sidebar-item group",
+                  isActive && "sidebar-item-active"
                 )}
-              />
-              {!collapsed && (
-                <span className="truncate animate-fade-in">{item.label}</span>
+              >
+                <item.icon
+                  className={cn(
+                    "w-5 h-5 flex-shrink-0 transition-colors",
+                    isActive ? "text-sidebar-primary" : "text-sidebar-muted group-hover:text-sidebar-foreground"
+                  )}
+                />
+                {!collapsed && (
+                  <span className="truncate animate-fade-in flex-1">{item.label}</span>
+                )}
+                {item.subItems && !collapsed && (
+                  <ChevronDown className="w-4 h-4 transition-transform" />
+                )}
+              </Link>
+              {isParentActive && !collapsed && (
+                <div className="pl-8 py-1 space-y-1 animate-fade-in">
+                  {item.subItems.map(subItem => (
+                    <NavLink
+                      key={subItem.path}
+                      to={subItem.path}
+                      className={({ isActive: isSubActive }) => cn(
+                        "sidebar-sub-item group",
+                        isSubActive && "sidebar-item-active"
+                      )}
+                    >
+                      <span className="truncate">{subItem.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
               )}
-            </NavLink>
+            </Fragment>
           );
         })}
       </nav>

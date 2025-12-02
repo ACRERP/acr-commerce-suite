@@ -1,102 +1,72 @@
-import {
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const data = [
-  { name: "Jan", vendas: 12400, meta: 10000 },
-  { name: "Fev", vendas: 15200, meta: 12000 },
-  { name: "Mar", vendas: 18100, meta: 14000 },
-  { name: "Abr", vendas: 16800, meta: 15000 },
-  { name: "Mai", vendas: 21500, meta: 16000 },
-  { name: "Jun", vendas: 24200, meta: 18000 },
-  { name: "Jul", vendas: 22800, meta: 20000 },
-];
+interface SalesChartProps {
+  data: { sale_date: string; total: number }[] | null | undefined;
+  isLoading: boolean;
+}
 
-export function SalesChart() {
+const chartConfig = { total: { label: "Vendas", color: "hsl(var(--chart-1))" } };
+
+export function SalesChart({ data, isLoading }: SalesChartProps) {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[250px] w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Vendas nos Últimos 30 Dias</CardTitle>
+          <CardDescription>Nenhum dado de venda disponível para o período.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center h-[250px]">
+          <p className="text-muted-foreground">Sem dados</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const formattedData = data.map(item => ({
+    date: new Date(item.sale_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+    total: item.total,
+  }));
+
+  const totalSales = data.reduce((acc, item) => acc + item.total, 0);
+
   return (
-    <div className="stat-card">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="section-title">Desempenho de Vendas</h3>
-          <p className="text-sm text-muted-foreground">
-            Comparativo vendas vs meta
-          </p>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-primary" />
-            <span className="text-muted-foreground">Vendas</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-accent" />
-            <span className="text-muted-foreground">Meta</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="h-[280px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
-            <defs>
-              <linearGradient id="colorVendas" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(217, 91%, 50%)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(217, 91%, 50%)" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="colorMeta" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(174, 72%, 40%)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(174, 72%, 40%)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "hsl(215, 16%, 47%)", fontSize: 12 }}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "hsl(215, 16%, 47%)", fontSize: 12 }}
-              tickFormatter={(value) => `R$${value / 1000}k`}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(222, 47%, 11%)",
-                border: "none",
-                borderRadius: "8px",
-                color: "hsl(210, 40%, 96%)",
-              }}
-              formatter={(value: number) =>
-                new Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }).format(value)
-              }
-            />
-            <Area
-              type="monotone"
-              dataKey="meta"
-              stroke="hsl(174, 72%, 40%)"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorMeta)"
-            />
-            <Area
-              type="monotone"
-              dataKey="vendas"
-              stroke="hsl(217, 91%, 50%)"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorVendas)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Vendas nos Últimos 30 Dias</CardTitle>
+        <CardDescription>
+          Faturamento total de <span className="font-bold">R$ {totalSales.toFixed(2)}</span> no período.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={formattedData}>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+              <YAxis tickFormatter={(value) => `R$${value}`} />
+              <Tooltip content={<ChartTooltipContent indicator="line" />} />
+              <Line dataKey="total" type="monotone" stroke="var(--color-total)" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </CardContent>
+    </Card>
   );
 }
