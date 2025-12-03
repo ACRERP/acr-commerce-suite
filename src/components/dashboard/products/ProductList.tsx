@@ -1,5 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,40 +16,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Product } from '@/lib/products';
 
-async function fetchProducts() {
-  const { data, error } = await supabase.from('products').select('*');
-  if (error) throw new Error(error.message);
-  return data;
-}
-
-export interface Product {
-  id: number;
-  name: string;
-  description: string | null;
-  category: string | null;
-  brand: string | null;
-  code: string | null;
-  stock_quantity: number;
-  minimum_stock_level: number;
-  price: number;
-  cost_price: number;
-  image_url: string | null;
-  created_at: string;
-  updated_at: string;
-}
 
 interface ProductListProps {
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (product: Product) => void;
+  products: Product[];
+  isLoading?: boolean;
+  error?: Error | null;
 }
 
-export function ProductList({ onEditProduct, onDeleteProduct }: ProductListProps) {
-  const { data: products, isLoading, isError, error } = useQuery({
-    queryKey: ['products'],
-    queryFn: fetchProducts,
-  });
-
+export function ProductList({ onEditProduct, onDeleteProduct, products, isLoading, error }: ProductListProps) {
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -62,7 +38,7 @@ export function ProductList({ onEditProduct, onDeleteProduct }: ProductListProps
     );
   }
 
-  if (isError) {
+  if (error) {
     return <div className="text-red-500">Erro ao carregar produtos: {error.message}</div>;
   }
 

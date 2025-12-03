@@ -4,9 +4,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Login from "./pages/Login";
+import DevLogin from "./pages/DevLogin";
+import CreateTestUsers from "./pages/CreateTestUsers";
+import ImportAccess from "./pages/ImportAccess";
+import ImportSMB from "./pages/ImportSMB";
+import AccessImport from "./pages/AccessImport";
+import AccessFileReader from "./pages/AccessFileReader";
+import SMBSystem from "./pages/SMBSystem";
+import PDVPage from "./pages/PDV";
+import CashRegisterPage from "./pages/CashRegister";
 import Index from "./pages/Index";
+import { TestIntegrations } from "./pages/TestIntegrations";
 import { SalesPage } from "./pages/Dashboard/SalesPage";
 import { ProductsPage } from "./pages/Dashboard/ProductsPage";
 import { ServiceOrdersPage } from "./pages/Dashboard/ServiceOrdersPage";
@@ -30,7 +39,18 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/dev-login" element={<DevLogin />} />
+            <Route path="/create-users" element={<CreateTestUsers />} />
+            <Route path="/import-access" element={<ImportAccess />} />
+            <Route path="/import-smb" element={<ImportSMB />} />
+            <Route path="/import-access-full" element={<AccessImport />} />
+            <Route path="/access-reader" element={<AccessFileReader />} />
+            <Route path="/smb" element={<SMBSystem />} />
+            <Route path="/pdv" element={<PDVPage />} />
+            <Route path="/caixa" element={<CashRegisterPage />} />
             <Route path="/" element={<Index />} />
+            <Route path="/test" element={<TestIntegrations />} />
+            <Route path="/dev" element={<TestIntegrations />} />
             <Route path="/vendas" element={<SalesPage />} />
             <Route path="/produtos" element={<ProductsPage />} />
             <Route path="/ordens-servico" element={<ServiceOrdersPage />} />

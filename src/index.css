@@ -170,3 +170,51 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.5);
 }
+
+/* Animation delays for staggered animations */
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+/* ACR Theme Colors */
+.bg-acr-blue {
+  background-color: #0066cc;
+}
+.text-acr-blue {
+  color: #0066cc;
+}
+.hover\:bg-acr-blue\/90:hover {
+  background-color: rgba(0, 102, 204, 0.9);
+}
+.bg-acr-blue\/10 {
+  background-color: rgba(0, 102, 204, 0.1);
+}
+
+.bg-acr-green {
+  background-color: #28a745;
+}
+.text-acr-green {
+  color: #28a745;
+}
+.hover\:bg-acr-green\/90:hover {
+  background-color: rgba(40, 167, 69, 0.9);
+}
+
+.bg-acr-orange {
+  background-color: #ff6600;
+}
+.text-acr-orange {
+  color: #ff6600;
+}
+.hover\:bg-acr-orange\/90:hover {
+  background-color: rgba(255, 102, 0, 0.9);
+}

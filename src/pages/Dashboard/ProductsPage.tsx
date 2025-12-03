@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
+import { useProducts, useDeleteProduct } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { ProductList, Product } from '@/components/dashboard/products/ProductList';
 import { ProductForm } from '@/components/dashboard/products/ProductForm';
@@ -21,77 +20,17 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import * as z from 'zod';
 
-const formSchema = z.object({
-  name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
-  category: z.string().optional(),
-  brand: z.string().optional(),
-  code: z.string().optional(),
-  stock_quantity: z.coerce.number().int().min(0, { message: 'O estoque não pode ser negativo.' }),
-  minimum_stock_level: z.coerce.number().int().min(0, { message: 'O estoque mínimo não pode ser negativo.' }),
-});
-
-// API Functions
-async function addProduct(product: z.infer<typeof formSchema>) {
-  const { data, error } = await supabase.from('products').insert([product]).select();
-  if (error) throw new Error(error.message);
-  return data;
-}
-
-async function updateProduct({ id, ...product }: { id: number } & z.infer<typeof formSchema>) {
-  const { data, error } = await supabase.from('products').update(product).eq('id', id).select();
-  if (error) throw new Error(error.message);
-  return data;
-}
-
-async function deleteProduct(id: number) {
-  const { error } = await supabase.from('products').delete().eq('id', id);
-  if (error) throw new Error(error.message);
-}
 
 export function ProductsPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const queryClient = useQueryClient();
   const { toast } = useToast();
-
-  const addMutation = useMutation({
-    mutationFn: addProduct,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({ title: 'Sucesso!', description: 'Produto adicionado com sucesso.' });
-      setIsSheetOpen(false);
-    },
-    onError: (error) => {
-      toast({ title: 'Erro!', description: `Não foi possível adicionar o produto. ${error.message}`, variant: 'destructive' });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: updateProduct,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({ title: 'Sucesso!', description: 'Produto atualizado com sucesso.' });
-      setIsSheetOpen(false);
-    },
-        onError: (error) => {
-      toast({ title: 'Erro!', description: `Não foi possível atualizar o produto. ${error.message}`, variant: 'destructive' });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: deleteProduct,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({ title: 'Sucesso!', description: 'Produto excluído com sucesso.' });
-      setIsAlertOpen(false);
-    },
-    onError: (error) => {
-      toast({ title: 'Erro!', description: `Não foi possível excluir o produto. ${error.message}`, variant: 'destructive' });
-    },
-  });
+  
+  // Usando hooks personalizados
+  const { data: products, isLoading, error } = useProducts();
+  const deleteMutation = useDeleteProduct();
 
   const handleNewProduct = () => {
     setSelectedProduct(null);
@@ -108,12 +47,21 @@ export function ProductsPage() {
     setIsAlertOpen(true);
   };
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleConfirmDelete = () => {
     if (selectedProduct) {
-      updateMutation.mutate({ id: selectedProduct.id, ...values });
-    } else {
-      addMutation.mutate(values);
+      deleteMutation.mutate(selectedProduct.id);
+      setIsAlertOpen(false);
     }
+  };
+
+  const handleFormSuccess = () => {
+    setIsSheetOpen(false);
+    setSelectedProduct(null);
+  };
+
+  const handleFormCancel = () => {
+    setIsSheetOpen(false);
+    setSelectedProduct(null);
   };
 
   return (
@@ -128,7 +76,13 @@ export function ProductsPage() {
         <Button onClick={handleNewProduct}>Novo Produto</Button>
       </div>
 
-      <ProductList onEditProduct={handleEditProduct} onDeleteProduct={handleDeleteProduct} />
+      <ProductList 
+        onEditProduct={handleEditProduct} 
+        onDeleteProduct={handleDeleteProduct} 
+        products={products || []}
+        isLoading={isLoading}
+        error={error}
+      />
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent>
@@ -137,9 +91,9 @@ export function ProductsPage() {
           </SheetHeader>
           <div className="py-4">
             <ProductForm
-              onSubmit={handleSubmit}
-              isLoading={addMutation.isPending || updateMutation.isPending}
               product={selectedProduct}
+              onSuccess={handleFormSuccess}
+              onCancel={handleFormCancel}
             />
           </div>
         </SheetContent>
@@ -156,7 +110,7 @@ export function ProductsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => selectedProduct && deleteMutation.mutate(selectedProduct.id)}>
+            <AlertDialogAction onClick={handleConfirmDelete}>
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

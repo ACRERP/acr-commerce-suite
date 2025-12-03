@@ -207,7 +207,7 @@ const Vendas = () => {
         description: "A venda foi salva com sucesso.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Erro ao registrar venda",
         description: error?.message ?? "Verifique os dados e tente novamente.",
@@ -241,8 +241,7 @@ const Vendas = () => {
           ].map((item, index) => (
             <button
               key={item.title}
-              className="stat-card text-left hover:border-primary/30 transition-all duration-200 animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className={`stat-card text-left hover:border-primary/30 transition-all duration-200 animate-fade-in ${index === 0 ? 'animation-delay-100' : index === 1 ? 'animation-delay-200' : index === 2 ? 'animation-delay-300' : 'animation-delay-400'}`}
             >
               <div className={`flex items-center justify-center w-12 h-12 rounded-lg mb-4 ${cardBgColorClasses[item.color]}`}>
                 <item.icon className={`w-6 h-6 ${cardTextColorClasses[item.color]}`} />

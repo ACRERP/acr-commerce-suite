@@ -1,8 +1,16 @@
 -- Enum para formas de pagamento
-create type public.payment_method as enum ('pix', 'cartao_credito', 'cartao_debito', 'dinheiro', 'fiado');
+DO $$ BEGIN
+    CREATE TYPE public.payment_method AS ENUM ('pix', 'cartao_credito', 'cartao_debito', 'dinheiro', 'fiado');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Enum para status da venda
-create type public.sale_status as enum ('concluida', 'pendente', 'cancelada');
+DO $$ BEGIN
+    CREATE TYPE public.sale_status AS ENUM ('concluida', 'pendente', 'cancelada');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Tabela de Vendas (Sales)
 create table public.sales (
