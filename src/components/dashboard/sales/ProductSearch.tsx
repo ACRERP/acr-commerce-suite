@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Product } from '../products/ProductList';
+import { Product } from '@/lib/products';
 
 async function searchProducts(searchTerm: string) {
   if (!searchTerm) return [];

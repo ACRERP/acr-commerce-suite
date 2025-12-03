@@ -140,23 +140,23 @@ export function mapSMBData(smbData: any[], table: string) {
   switch (table) {
     case 'products':
       return smbData.map((item: SMBProduct) => ({
-        id: parseInt(item.CODIGO),
+        id: parseInt(String(item.CODIGO)),
         name: item.DESCRICAO,
         description: item.DESCRICAO,
         category: item.CATEGORIA,
         brand: '',
         code: item.CODIGO,
-        stock_quantity: parseInt(item.ESTOQUE) || 0,
-        minimum_stock_level: parseInt(item.ESTOQUE_MINIMO) || 0,
-        price: parseFloat(item.PRECO_VENDA) || 0,
-        cost_price: parseFloat(item.PRECO_CUSTO) || 0,
+        stock_quantity: parseInt(String(item.ESTOQUE)) || 0,
+        minimum_stock_level: parseInt(String(item.ESTOQUE_MINIMO)) || 0,
+        price: parseFloat(String(item.PRECO_VENDA)) || 0,
+        cost_price: parseFloat(String(item.PRECO_CUSTO)) || 0,
         created_at: item.DATA_CADASTRO,
         updated_at: item.ULTIMA_ALTERACAO
       }))
     
     case 'customers':
       return smbData.map((item: SMBCustomer) => ({
-        id: parseInt(item.CODIGO),
+        id: parseInt(String(item.CODIGO)),
         name: item.NOME,
         email: '',
         phone: item.TELEFONE,
@@ -168,10 +168,10 @@ export function mapSMBData(smbData: any[], table: string) {
     
     case 'sales':
       return smbData.map((item: SMBSale) => ({
-        id: parseInt(item.CODIGO),
-        client_id: parseInt(item.COD_CLIENTE) || null,
+        id: parseInt(String(item.CODIGO)),
+        client_id: parseInt(String(item.COD_CLIENTE)) || null,
         user_id: item.COD_VENDEDOR,
-        total_amount: parseFloat(item.TOTAL) || 0,
+        total_amount: parseFloat(String(item.TOTAL)) || 0,
         payment_method: mapPaymentMethod(item.FORMA_PAGTO),
         status: mapSaleStatus(item.SITUACAO),
         created_at: `${item.DATA} ${item.HORA}`,
@@ -180,11 +180,11 @@ export function mapSMBData(smbData: any[], table: string) {
     
     case 'saleItems':
       return smbData.map((item: SMBSaleItem) => ({
-        id: parseInt(item.CODIGO),
-        sale_id: parseInt(item.COD_VENDA),
-        product_id: parseInt(item.COD_PRODUTO),
-        quantity: parseFloat(item.QUANTIDADE) || 0,
-        price: parseFloat(item.PRECO_UNITARIO) || 0
+        id: parseInt(String(item.CODIGO)),
+        sale_id: parseInt(String(item.COD_VENDA)),
+        product_id: parseInt(String(item.COD_PRODUTO)),
+        quantity: parseFloat(String(item.QUANTIDADE)) || 0,
+        price: parseFloat(String(item.PRECO_UNITARIO)) || 0
       }))
     
     default:

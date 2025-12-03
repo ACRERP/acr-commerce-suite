@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Product } from '../products/ProductList';
+import { Product } from '@/lib/products';
 import { X, Plus, Minus } from 'lucide-react';
 
 export interface CartItem extends Product {

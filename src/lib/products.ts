@@ -9,6 +9,7 @@ export interface Product {
   code: string;
   stock_quantity: number;
   minimum_stock_level: number;
+  price?: number;
   image_url?: string;
   created_at: string;
   updated_at: string;

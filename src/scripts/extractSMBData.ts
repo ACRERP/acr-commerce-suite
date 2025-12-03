@@ -1,7 +1,7 @@
 // Script de Extração Completa do SMB v4.0a
 // Extrai todos os dados do banco Access para análise
 
-import { AccessSMBExtractor } from '../lib/accessExtractor.js'
+import { AccessSMBExtractor, AccessSMBStructure } from '../lib/accessExtractor.js'
 import { readAccessFile, copyAllAccessData } from '../lib/accessFileReader.js'
 import { supabase } from '../lib/supabaseClient.js'
 

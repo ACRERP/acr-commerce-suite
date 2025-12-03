@@ -195,7 +195,7 @@ export default function ImportAccess() {
                   {preview.map((row, index) => (
                     <tr key={index} className="border-b">
                       {Object.values(row).map((value, i) => (
-                        <td key={i} className="p-2">{value}</td>
+                        <td key={i} className="p-2">{String(value)}</td>
                       ))}
                     </tr>
                   ))}

@@ -430,10 +430,10 @@ const Vendas = () => {
                 <Button
                   className="w-full gap-2"
                   onClick={() => createSaleMutation.mutate()}
-                  disabled={createSaleMutation.isLoading || cart.length === 0}
+                  disabled={createSaleMutation.isPending || cart.length === 0}
                 >
                   <ShoppingCart className="w-4 h-4" />
-                  {createSaleMutation.isLoading ? "Registrando venda..." : "Registrar Venda"}
+                  {createSaleMutation.isPending ? "Registrando venda..." : "Registrar Venda"}
                 </Button>
               </>
             )}
