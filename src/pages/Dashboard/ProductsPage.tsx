@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useProducts, useDeleteProduct } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
-import { ProductList, Product } from '@/components/dashboard/products/ProductList';
+import { ProductList } from '@/components/dashboard/products/ProductList';
+import { Product } from '@/lib/products';
 import { ProductForm } from '@/components/dashboard/products/ProductForm';
 import {
   Sheet,

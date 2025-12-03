@@ -19,7 +19,7 @@ const paymentOptions: { value: PaymentMethod; label: string }[] = [
 ];
 
 export function Payment({ cart, onFinalizeSale, isLoading }: PaymentProps) {
-  const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const totalAmount = cart.reduce((acc, item) => acc + (item.price || 0) * item.quantity, 0);
 
   const handleFinalize = () => {
     const selectedMethod = (document.querySelector('[data-radix-select-trigger]') as HTMLElement)?.innerText.toLowerCase().replace(' ', '_') as PaymentMethod;

@@ -7,7 +7,7 @@ import { ProductSearch } from '@/components/dashboard/sales/ProductSearch';
 import { CartView, CartItem } from '@/components/dashboard/sales/CartView';
 import { ClientSearch } from '@/components/dashboard/sales/ClientSearch';
 import { Payment, PaymentMethod } from '@/components/dashboard/sales/Payment';
-import { Product } from '@/components/dashboard/products/ProductList';
+import { Product } from '@/lib/products';
 import { Client } from '@/components/dashboard/clients/ClientList';
 import { useAuth } from '@/contexts/AuthContext';
 

@@ -145,8 +145,8 @@ export function PDVInterface() {
 
   // Produtos filtrados
   const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(String(searchTerm).toLowerCase()) ||
-    product.code.includes(String(searchTerm))
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.code.includes(searchTerm)
   )
 
   return (
@@ -232,10 +232,8 @@ export function PDVInterface() {
                       onClick={() => {
                         if (key === 'C') {
                           setSearchTerm('')
-                        } else if (['+', '-', '*', '/'].includes(key)) {
-                          setSearchTerm(String(searchTerm) + String(key))
                         } else {
-                          setSearchTerm(String(searchTerm) + String(key))
+                          setSearchTerm(searchTerm + String(key))
                         }
                       }}
                     >
