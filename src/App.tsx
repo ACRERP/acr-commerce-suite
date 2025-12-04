@@ -22,6 +22,7 @@ import { ServiceOrdersPage } from "./pages/Dashboard/ServiceOrdersPage";
 import { UserManagementPage } from "./pages/Dashboard/UserManagementPage";
 import { ClientsPage } from "./pages/Dashboard/ClientsPage";
 import { SalesHistoryPage } from "./pages/Dashboard/SalesHistoryPage";
+import { ActivityLogsPage } from "./pages/Dashboard/ActivityLogsPage";
 import Financeiro from "./pages/Financeiro";
 import Relatorios from "./pages/Relatorios";
 import Fiscal from "./pages/Fiscal";
