@@ -19,6 +19,7 @@ import { TestIntegrations } from "./pages/TestIntegrations";
 import { SalesPage } from "./pages/Dashboard/SalesPage";
 import { ProductsPage } from "./pages/Dashboard/ProductsPage";
 import { ServiceOrdersPage } from "./pages/Dashboard/ServiceOrdersPage";
+import { UserManagementPage } from "./pages/Dashboard/UserManagementPage";
 import { ClientsPage } from "./pages/Dashboard/ClientsPage";
 import { SalesHistoryPage } from "./pages/Dashboard/SalesHistoryPage";
 import Financeiro from "./pages/Financeiro";
@@ -61,6 +62,8 @@ const App = () => (
             <Route path="/fiscal" element={<Fiscal />} />
             <Route path="/delivery" element={<Delivery />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="/users" element={<UserManagementPage />} />
+            <Route path="/logs" element={<ActivityLogsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
