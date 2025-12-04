@@ -33,14 +33,12 @@ import {
   Users, 
   Plus, 
   Trash2, 
-  Edit, 
   Key, 
   Shield,
   UserPlus,
   AlertTriangle
 } from 'lucide-react';
-import { useAuth } from '@/contexts/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface User {
   id: string;
@@ -60,7 +58,6 @@ interface NewUser {
 
 export function UserManagementPage() {
   const { user: currentUser } = useAuth();
-  const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -139,10 +136,7 @@ export function UserManagementPage() {
       setNewUser({ email: '', password: '', full_name: '', role: 'vendas' });
       setIsCreateDialogOpen(false);
 
-      toast({
-        title: 'Usuário Criado',
-        description: `Usuário ${newUser.email} criado com sucesso!`,
-      });
+      alert(`Usuário ${newUser.email} criado com sucesso!`);
     } catch (err) {
       setError('Erro ao criar usuário');
     } finally {
@@ -161,11 +155,7 @@ export function UserManagementPage() {
       setDeleteUserId(null);
       setIsDeleteDialogOpen(false);
 
-      toast({
-        title: 'Usuário Deletado',
-        description: 'Usuário removido com sucesso!',
-        variant: 'default',
-      });
+      alert('Usuário removido com sucesso!');
     } catch (err) {
       setError('Erro ao deletar usuário');
     } finally {
@@ -177,10 +167,7 @@ export function UserManagementPage() {
   const handleResetPassword = async (email: string) => {
     try {
       // Em produção, resetar senha no Supabase
-      toast({
-        title: 'Senha Resetada',
-        description: `Nova senha enviada para ${email}`,
-      });
+      alert(`Nova senha enviada para ${email}`);
     } catch (err) {
       setError('Erro ao resetar senha');
     }
