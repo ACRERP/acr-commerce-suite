@@ -1,15 +1,24 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
-import { User, Session } from '@supabase/supabase-js'
+import { User, Session, AuthError } from '@supabase/supabase-js'
+import { 
+  getCurrentUser, 
+  getCurrentSession, 
+  signIn as signInClient, 
+  signUp as signUpClient, 
+  signOut as signOutClient,
+  onAuthStateChange,
+  isAdmin,
+  isVendas,
+  isFinanceiro,
+  isEstoque
+} from '@/lib/supabaseClient'
 
 interface Profile {
   id: string
   email: string
-  full_name: string | null
-  avatar_url: string | null
-  role: 'admin' | 'vendas' | 'financeiro'
+  name?: string
+  role: 'admin' | 'vendas' | 'financeiro' | 'estoque'
   created_at: string
-  updated_at: string
 }
 
 interface AuthContextType {
@@ -17,10 +26,14 @@ interface AuthContextType {
   profile: Profile | null
   session: Session | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, fullName: string, role?: string) => Promise<{ error: any }>
-  signOut: () => Promise<{ error: any }>
-  hasPermission: (module: string, action: 'read' | 'write' | 'delete') => boolean
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
+  signUp: (email: string, password: string, name: string, role?: string) => Promise<{ error: AuthError | null }>
+  signOut: () => Promise<{ error: AuthError | null }>
+  hasRole: (role: 'admin' | 'vendas' | 'financeiro' | 'estoque') => boolean
+  isAdmin: () => boolean
+  isVendas: () => boolean
+  isFinanceiro: () => boolean
+  isEstoque: () => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -30,128 +43,95 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [permissions, setPermissions] = useState<any[]>([])
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchProfile(session.user.id)
-        fetchPermissions(session.user.id)
-      } else {
+    const initializeAuth = async () => {
+      try {
+        setLoading(true)
+        
+        // Get current session and user
+        const sessionResponse = await getCurrentSession()
+        const userResponse = await getCurrentUser()
+
+        setSession(sessionResponse.session)
+        setUser(userResponse.user)
+
+        if (userResponse.user && sessionResponse.session) {
+          // Create profile from user metadata
+          const userProfile: Profile = {
+            id: userResponse.user.id,
+            email: userResponse.user.email || '',
+            name: userResponse.user.user_metadata?.name || userResponse.user.user_metadata?.full_name,
+            role: userResponse.user.user_metadata?.role || userResponse.user.app_metadata?.role || 'vendas',
+            created_at: userResponse.user.created_at
+          }
+          setProfile(userProfile)
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error)
+      } finally {
         setLoading(false)
       }
-    })
+    }
+
+    initializeAuth()
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = onAuthStateChange(async (event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+
       if (session?.user) {
-        fetchProfile(session.user.id)
-        fetchPermissions(session.user.id)
+        const userProfile: Profile = {
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
+          role: session.user.user_metadata?.role || session.user.app_metadata?.role || 'vendas',
+          created_at: session.user.created_at
+        }
+        setProfile(userProfile)
       } else {
         setProfile(null)
-        setPermissions([])
-        setLoading(false)
       }
+      setLoading(false)
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  async function fetchProfile(userId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error) throw error
-      setProfile(data)
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function fetchPermissions(userId: string) {
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single()
-
-      if (profile) {
-        const { data, error } = await supabase
-          .from('module_permissions')
-          .select('*')
-          .eq('role', profile.role)
-
-        if (error) throw error
-        setPermissions(data || [])
-      }
-    } catch (error) {
-      console.error('Error fetching permissions:', error)
-    }
-  }
-
   async function signIn(email: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const { error } = await signInClient(email, password)
     return { error }
   }
 
-  async function signUp(email: string, password: string, fullName: string, role = 'vendas') {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          role,
-        },
-      },
-    })
+  async function signUp(email: string, password: string, name: string, role: 'admin' | 'vendas' | 'financeiro' | 'estoque' = 'vendas') {
+    const { error } = await signUpClient(email, password, { name, role })
     return { error }
   }
 
   async function signOut() {
-    const { error } = await supabase.auth.signOut()
+    const { error } = await signOutClient()
     return { error }
   }
 
-  function hasPermission(module: string, action: 'read' | 'write' | 'delete'): boolean {
-    if (!profile) return false
+  function hasRole(role: 'admin' | 'vendas' | 'financeiro' | 'estoque'): boolean {
+    if (!user) return false
     
-    // Admins have all permissions
-    if (profile.role === 'admin') return true
-    
-    const permission = permissions.find(p => p.module === module)
-    if (!permission) return false
-    
-    switch (action) {
-      case 'read':
-        return permission.can_read
-      case 'write':
-        return permission.can_write
-      case 'delete':
-        return permission.can_delete
+    switch (role) {
+      case 'admin':
+        return isAdmin(user)
+      case 'vendas':
+        return isVendas(user)
+      case 'financeiro':
+        return isFinanceiro(user)
+      case 'estoque':
+        return isEstoque(user)
       default:
         return false
     }
   }
 
-  const value = {
+  const value: AuthContextType = {
     user,
     profile,
     session,
@@ -159,7 +139,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signUp,
     signOut,
-    hasPermission,
+    hasRole,
+    isAdmin: () => hasRole('admin'),
+    isVendas: () => hasRole('vendas'),
+    isFinanceiro: () => hasRole('financeiro'),
+    isEstoque: () => hasRole('estoque'),
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

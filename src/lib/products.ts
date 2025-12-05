@@ -7,9 +7,15 @@ export interface Product {
   category?: string;
   brand?: string;
   code: string;
+  sku?: string;
+  barcode?: string;
+  unit: string;
   stock_quantity: number;
   minimum_stock_level: number;
-  price?: number;
+  sale_price: number;
+  cost_price?: number;
+  profit_margin?: number;
+  profit_amount?: number;
   image_url?: string;
   created_at: string;
   updated_at: string;
@@ -21,8 +27,13 @@ export interface CreateProductData {
   category?: string;
   brand?: string;
   code: string;
+  sku?: string;
+  barcode?: string;
+  unit: string;
   stock_quantity: number;
   minimum_stock_level: number;
+  sale_price: number;
+  cost_price?: number;
   image_url?: string;
 }
 
@@ -116,12 +127,16 @@ export async function getProductsByCategory(category: string) {
 
 // Get low stock products
 export async function getLowStockProducts() {
+  // First get all products, then filter client-side
   const { data, error } = await supabase
     .from('products')
     .select('*')
-    .lte('stock_quantity', 'minimum_stock_level')
     .order('stock_quantity', { ascending: true });
 
   if (error) throw error;
-  return data as Product[];
+  
+  // Filter products where stock_quantity <= minimum_stock_level
+  return (data as Product[]).filter(product => 
+    product.stock_quantity <= product.minimum_stock_level
+  );
 }

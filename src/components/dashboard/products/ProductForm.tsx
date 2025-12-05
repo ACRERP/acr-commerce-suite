@@ -1,6 +1,8 @@
-import { useForm, useWatch } from 'react-hook-form';
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -8,435 +10,362 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { ImagePlus, Trash2 } from 'lucide-react';
-import { useRef, useState, useEffect } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { Product } from '@/lib/products';
-import { MAX_FILE_SIZE, ALLOWED_FILE_TYPES } from '@/constants/productForm';
-import { formSchema, ProductFormData } from '@/schemas/productSchema';
+import { z } from 'zod';
+import { formatCurrency } from '@/lib/format';
+import { Calculator, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 
+const productSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório'),
+  description: z.string().optional(),
+  category: z.string().min(1, 'Categoria é obrigatória'),
+  sale_price: z.string().min(1, 'Preço de venda é obrigatório'),
+  cost_price: z.string().min(0, 'Preço de custo deve ser positivo'),
+  stock_quantity: z.string().min(0, 'Estoque deve ser positivo'),
+  minimum_stock_level: z.string().min(0, 'Estoque mínimo deve ser positivo'),
+  sku: z.string().optional(),
+  barcode: z.string().optional(),
+  unit: z.string().min(1, 'Unidade é obrigatória'),
+});
+
+type ProductFormData = z.infer<typeof productSchema>;
 
 interface ProductFormProps {
-  product?: Product | null;
-  categories?: { id: string; name: string }[];
-  brands?: { id: string; name: string }[];
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  product?: Product;
+  onSubmit: (data: ProductFormData) => void;
+  onCancel: () => void;
+  isLoading?: boolean;
 }
 
-export function ProductForm({ product, categories = [], brands = [], onSuccess, onCancel }: ProductFormProps) {
-  const [previewImages, setPreviewImages] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export function ProductForm({ product, onSubmit, onCancel, isLoading = false }: ProductFormProps) {
   const { toast } = useToast();
-  
-  const createProductMutation = useCreateProduct();
-  const updateProductMutation = useUpdateProduct();
-  
-  const isLoading = createProductMutation.isPending || updateProductMutation.isPending;
+  const [calculatedProfit, setCalculatedProfit] = useState<{
+    margin: number;
+    amount: number;
+  }>({ margin: 0, amount: 0 });
 
   const form = useForm<ProductFormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(productSchema),
     defaultValues: {
-      name: '',
-      description: '',
-      category: '',
-      brand: '',
-      code: '',
-      stock_quantity: 0,
-      minimum_stock_level: 0,
-      images: [],
+      name: product?.name || '',
+      description: product?.description || '',
+      category: product?.category || '',
+      sale_price: product?.sale_price?.toString() || '',
+      cost_price: product?.cost_price?.toString() || '0',
+      stock_quantity: product?.stock_quantity?.toString() || '0',
+      minimum_stock_level: product?.minimum_stock_level?.toString() || '5',
+      sku: product?.sku || '',
+      barcode: product?.barcode || '',
+      unit: product?.unit || 'UN',
     },
   });
 
+  const salePrice = parseFloat(form.watch('sale_price') || '0');
+  const costPrice = parseFloat(form.watch('cost_price') || '0');
 
   useEffect(() => {
-    if (product) {
-      form.reset({
-        ...product,
-        images: [],
-      });
+    if (salePrice > 0 && costPrice >= 0) {
+      const profitAmount = salePrice - costPrice;
+      const profitMargin = costPrice > 0 ? (profitAmount / costPrice) * 100 : 0;
       
-      // Carregar previews de imagens existentes se houver
-      if (product.image_url) {
-        setPreviewImages([product.image_url]);
-      }
+      setCalculatedProfit({
+        margin: profitMargin,
+        amount: profitAmount,
+      });
     } else {
-      form.reset({
-        name: '',
-        description: '',
-        category: '',
-        brand: '',
-        code: '',
-        stock_quantity: 0,
-        minimum_stock_level: 0,
-        images: [],
+      setCalculatedProfit({ margin: 0, amount: 0 });
+    }
+  }, [salePrice, costPrice]);
+
+  const handleSubmit = (data: ProductFormData) => {
+    // Validate that sale price is not lower than cost price
+    if (parseFloat(data.sale_price) < parseFloat(data.cost_price)) {
+      toast({
+        title: 'Erro de validação',
+        description: 'Preço de venda não pode ser menor que o preço de custo.',
+        variant: 'destructive',
       });
-      setPreviewImages([]);
+      return;
     }
-  }, [product, form]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const newImages: string[] = [];
-    const newFiles: File[] = [];
-    let hasError = false;
-
-    Array.from(files).forEach((file) => {
-      if (file.size > MAX_FILE_SIZE) {
-        toast({
-          title: 'Erro',
-          description: `O arquivo ${file.name} excede o tamanho máximo de 5MB`,
-          variant: 'destructive',
-        });
-        hasError = true;
-        return;
-      }
-
-      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-        toast({
-          title: 'Erro',
-          description: `O arquivo ${file.name} tem um formato não suportado. Use JPG, PNG ou WebP.`,
-          variant: 'destructive',
-        });
-        hasError = true;
-        return;
-      }
-
-      newImages.push(URL.createObjectURL(file));
-      newFiles.push(file);
-    });
-
-    if (hasError) return;
-
-    setPreviewImages((prev) => [...prev, ...newImages].slice(0, 5));
-    form.setValue('images', [...(form.getValues('images') || []), ...newFiles].slice(0, 5));
+    onSubmit(data);
   };
 
-  const removeImage = (index: number) => {
-    const newPreviewImages = [...previewImages];
-    newPreviewImages.splice(index, 1);
-    setPreviewImages(newPreviewImages);
-
-    const currentImages = form.getValues('images') || [];
-    const newImages = [...currentImages];
-    newImages.splice(index, 1);
-    form.setValue('images', newImages);
+  const getProfitColor = (margin: number) => {
+    if (margin >= 50) return 'text-green-600';
+    if (margin >= 20) return 'text-yellow-600';
+    if (margin > 0) return 'text-orange-600';
+    return 'text-red-600';
   };
 
-  const calculateProfitMargin = () => {
-    // TODO: Implementar quando tiver campos de preço
-    return '0.00';
+  const getProfitIcon = (margin: number) => {
+    if (margin >= 20) return TrendingUp;
+    if (margin > 0) return TrendingDown;
+    return DollarSign;
   };
 
-  const calculateProfitValue = () => {
-    // TODO: Implementar quando tiver campos de preço
-    return '0.00';
-  };
-
-  const handleSubmit = async (values: ProductFormData) => {
-    try {
-      // TODO: Handle image upload to storage
-      const productData = {
-        name: values.name,
-        description: values.description || null,
-        category: values.category || null,
-        brand: values.brand || null,
-        code: values.code,
-        stock_quantity: values.stock_quantity,
-        minimum_stock_level: values.minimum_stock_level,
-        image_url: previewImages[0] || null, // Use first image for now
-      };
-
-      if (product) {
-        await updateProductMutation.mutateAsync({
-          id: product.id,
-          ...productData,
-        });
-      } else {
-        await createProductMutation.mutateAsync(productData);
-      }
-      
-      onSuccess?.();
-    } catch (error) {
-      console.error('Error saving product:', error);
-    }
-  };
+  const ProfitIcon = getProfitIcon(calculatedProfit.margin);
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-6">
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-medium mb-4">Informações Básicas</h3>
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome do Produto *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ex: iPhone 15 Pro 128GB Azul" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          {product ? 'Editar Produto' : 'Novo Produto'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            {/* Basic Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome do Produto *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nome do produto" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descrição</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Descrição detalhada do produto..."
-                            className="min-h-[100px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categoria *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma categoria" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="eletronicos">Eletrônicos</SelectItem>
+                        <SelectItem value="vestuario">Vestuário</SelectItem>
+                        <SelectItem value="alimentos">Alimentos</SelectItem>
+                        <SelectItem value="bebidas">Bebidas</SelectItem>
+                        <SelectItem value="limpeza">Limpeza</SelectItem>
+                        <SelectItem value="outros">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="code"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Código *</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="Código interno" 
-                              {...field} 
-                              value={field.value || ''}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Descrição do produto" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Categoria</FormLabel>
-                          <FormControl>
-                            <select
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                              {...field}
-                              value={field.value || ''}
-                            >
-                              <option value="">Selecione uma categoria</option>
-                              {categories.map((category) => (
-                                <option key={category.id} value={category.id}>
-                                  {category.name}
-                                </option>
-                              ))}
-                            </select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="brand"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Marca</FormLabel>
-                          <FormControl>
-                            <select
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                              {...field}
-                              value={field.value || ''}
-                            >
-                              <option value="">Selecione uma marca</option>
-                              {brands.map((brand) => (
-                                <option key={brand.id} value={brand.id}>
-                                  {brand.name}
-                                </option>
-                              ))}
-                            </select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-medium mb-4">Estoque</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="stock_quantity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Estoque Atual *</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            placeholder="0"
-                            {...field}
-                            value={field.value || 0}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value, 10);
-                              field.onChange(isNaN(value) ? 0 : value);
-                            }}
-                            title="Quantidade em estoque"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="minimum_stock_level"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Estoque Mínimo *</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            placeholder="0"
-                            {...field}
-                            value={field.value || 0}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value, 10);
-                              field.onChange(isNaN(value) ? 0 : value);
-                            }}
-                            title="Estoque mínimo para alerta"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-medium mb-4">Imagens do Produto</h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    {previewImages.map((preview, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={preview}
-                          alt={`Preview ${index + 1}`}
-                          className="h-24 w-full object-cover rounded-md border"
+            {/* Pricing Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium flex items-center">
+                <Calculator className="h-5 w-5 mr-2" />
+                Informações de Preço
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="sale_price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Preço de Venda *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          {...field}
                         />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title={`Remover imagem ${index + 1}`}
-                          aria-label={`Remover imagem ${index + 1}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                    {previewImages.length < 5 && (
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="h-24 w-full border-2 border-dashed rounded-md flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/50 transition-colors"
-                      >
-                        <ImagePlus className="h-6 w-6 mb-1" />
-                        <span className="text-xs">Adicionar Imagem</span>
-                      </button>
-                    )}
+                <FormField
+                  control={form.control}
+                  name="cost_price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Preço de Custo</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Profit Calculation Display */}
+              {(salePrice > 0 || costPrice > 0) && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium mb-3">Cálculo de Lucro</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center">
+                      <ProfitIcon className="h-4 w-4 mr-2" />
+                      <span className="text-sm text-gray-600">Margem de Lucro:</span>
+                      <Badge className={`ml-2 ${getProfitColor(calculatedProfit.margin)}`}>
+                        {calculatedProfit.margin.toFixed(1)}%
+                      </Badge>
+                    </div>
+                    <div className="flex items-center">
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      <span className="text-sm text-gray-600">Valor do Lucro:</span>
+                      <span className={`ml-2 font-medium ${getProfitColor(calculatedProfit.margin)}`}>
+                        {formatCurrency(calculatedProfit.amount)}
+                      </span>
+                    </div>
                   </div>
-
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    accept={ALLOWED_FILE_TYPES.join(',')}
-                    multiple
-                    onChange={handleImageChange}
-                    title="Selecionar imagens do produto"
-                  />
-
-                  <p className="text-xs text-muted-foreground">
-                    Formatos suportados: JPG, PNG, WebP. Tamanho máximo: 5MB por imagem.
-                    Máximo de 5 imagens.
-                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              )}
+            </div>
 
-        <div className="flex justify-end space-x-4 pt-4 border-t">
-          {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
-              Cancelar
-            </Button>
-          )}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-            disabled={isLoading}
-            title="Limpar formulário"
-          >
-            Limpar
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Salvando...
-              </>
-            ) : product ? (
-              'Atualizar Produto'
-            ) : (
-              'Adicionar Produto'
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
+            {/* Stock Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Informações de Estoque</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="stock_quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Quantidade em Estoque</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="minimum_stock_level"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Estoque Mínimo</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="5"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="unit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Unidade *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Unidade" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="UN">Unidade</SelectItem>
+                          <SelectItem value="KG">Quilograma</SelectItem>
+                          <SelectItem value="L">Litro</SelectItem>
+                          <SelectItem value="CX">Caixa</SelectItem>
+                          <SelectItem value="DZ">Dúzia</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Additional Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="sku"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>SKU</FormLabel>
+                    <FormControl>
+                      <Input placeholder="SKU do produto" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="barcode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Código de Barras</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Código de barras" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Form Actions */}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isLoading}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Salvando...' : product ? 'Atualizar' : 'Cadastrar'}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

@@ -49,14 +49,7 @@ export interface UpdateSaleData extends Partial<Omit<CreateSaleData, 'items'>> {
 export async function getSales() {
   const { data, error } = await supabase
     .from('sales')
-    .select(`
-      *,
-      client:clients(id, name, phone),
-      items:sale_items(
-        *,
-        product:products(id, name, code)
-      )
-    `)
+    .select('*')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -67,14 +60,7 @@ export async function getSales() {
 export async function getSaleById(id: number) {
   const { data, error } = await supabase
     .from('sales')
-    .select(`
-      *,
-      client:clients(id, name, phone),
-      items:sale_items(
-        *,
-        product:products(id, name, code)
-      )
-    `)
+    .select('*')
     .eq('id', id)
     .single();
 
@@ -128,11 +114,7 @@ export async function deleteSale(id: number) {
 export async function getSalesByDateRange(startDate: string, endDate: string) {
   const { data, error } = await supabase
     .from('sales')
-    .select(`
-      *,
-      client:clients(id, name),
-      items:sale_items(*, product:products(id, name))
-    `)
+    .select('*')
     .gte('created_at', startDate)
     .lte('created_at', endDate)
     .order('created_at', { ascending: false });
@@ -145,11 +127,7 @@ export async function getSalesByDateRange(startDate: string, endDate: string) {
 export async function getSalesByStatus(status: SaleStatus) {
   const { data, error } = await supabase
     .from('sales')
-    .select(`
-      *,
-      client:clients(id, name),
-      items:sale_items(*, product:products(id, name))
-    `)
+    .select('*')
     .eq('status', status)
     .order('created_at', { ascending: false });
 

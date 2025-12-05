@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
@@ -7,6 +8,7 @@ import { ProductSearch } from '@/components/dashboard/sales/ProductSearch';
 import { CartView, CartItem } from '@/components/dashboard/sales/CartView';
 import { ClientSearch } from '@/components/dashboard/sales/ClientSearch';
 import { Payment, PaymentMethod } from '@/components/dashboard/sales/Payment';
+import { SalesReports } from '@/components/dashboard/sales/SalesReports';
 import { Product } from '@/lib/products';
 import { Client } from '@/components/dashboard/clients/ClientList';
 import { useAuth } from '@/contexts/AuthContext';
@@ -105,56 +107,78 @@ export function SalesPage() {
   });
 
   return (
-    <div className="grid md:grid-cols-3 gap-4 h-full">
-      {/* Coluna Esquerda e Central (ocupando 2/3) */}
-      <div className="md:col-span-2 space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Buscar Produto</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProductSearch onProductSelect={handleProductSelect} />
-          </CardContent>
-        </Card>
-
-        <Card className="flex-grow">
-          <CardHeader>
-            <CardTitle>Itens da Venda ({cart.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-                        <CartView
-              cart={cart}
-              onUpdateQuantity={handleUpdateQuantity}
-              onRemoveItem={handleRemoveItem}
-            />
-          </CardContent>
-        </Card>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Vendas</h1>
+        <p className="text-gray-600">
+          Gerencie vendas e analise o desempenho da equipe
+        </p>
       </div>
 
-      {/* Coluna Direita (ocupando 1/3) */}
-      <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Cliente</CardTitle>
-          </CardHeader>
-          <CardContent>
-                        <ClientSearch onClientSelect={setSelectedClient} />
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="pos" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="pos">Ponto de Venda</TabsTrigger>
+          <TabsTrigger value="reports">Relatórios</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Pagamento</CardTitle>
-          </CardHeader>
-          <CardContent>
-                        <Payment 
-              cart={cart} 
-              onFinalizeSale={(pm) => saleMutation.mutate(pm)} 
-              isLoading={saleMutation.isPending} 
-            />
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="pos">
+          <div className="grid md:grid-cols-3 gap-4 h-full">
+            {/* Coluna Esquerda e Central (ocupando 2/3) */}
+            <div className="md:col-span-2 space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Buscar Produto</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ProductSearch onProductSelect={handleProductSelect} />
+                </CardContent>
+              </Card>
+
+              <Card className="flex-grow">
+                <CardHeader>
+                  <CardTitle>Itens da Venda ({cart.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CartView
+                    cart={cart}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onRemoveItem={handleRemoveItem}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Coluna Direita (ocupando 1/3) */}
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Cliente</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ClientSearch onClientSelect={setSelectedClient} />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pagamento</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Payment 
+                    cart={cart} 
+                    onFinalizeSale={(pm) => saleMutation.mutate(pm)} 
+                    isLoading={saleMutation.isPending} 
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <SalesReports />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

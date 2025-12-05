@@ -17,7 +17,10 @@ import CashRegisterPage from "./pages/CashRegister";
 import Index from "./pages/Index";
 import { TestIntegrations } from "./pages/TestIntegrations";
 import { SalesPage } from "./pages/Dashboard/SalesPage";
+import { PDVMarketPage } from "./pages/Dashboard/PDVMarketPage";
 import { ProductsPage } from "./pages/Dashboard/ProductsPage";
+import { SystemOverviewPage } from "./pages/Dashboard/SystemOverviewPage";
+import { FrenteDeCaixaPage } from "./pages/Dashboard/FrenteDeCaixaPage";
 import { ServiceOrdersPage } from "./pages/Dashboard/ServiceOrdersPage";
 import { UserManagementPage } from "./pages/Dashboard/UserManagementPage";
 import { ClientsPage } from "./pages/Dashboard/ClientsPage";
@@ -54,7 +57,10 @@ const App = () => (
             <Route path="/test" element={<TestIntegrations />} />
             <Route path="/dev" element={<TestIntegrations />} />
             <Route path="/vendas" element={<SalesPage />} />
+            <Route path="/pdv-market" element={<PDVMarketPage />} />
             <Route path="/produtos" element={<ProductsPage />} />
+            <Route path="/overview" element={<SystemOverviewPage />} />
+            <Route path="/caixa" element={<FrenteDeCaixaPage />} />
             <Route path="/ordens-servico" element={<ServiceOrdersPage />} />
             <Route path="/vendas/historico" element={<SalesHistoryPage />} />
             <Route path="/clientes" element={<ClientsPage />} />
@@ -64,7 +70,6 @@ const App = () => (
             <Route path="/delivery" element={<Delivery />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/users" element={<UserManagementPage />} />
-            <Route path="/logs" element={<ActivityLogsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

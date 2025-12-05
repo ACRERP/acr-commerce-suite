@@ -52,14 +52,14 @@ export function MainLayout({ children }: MainLayoutProps) {
               <div className="flex items-center gap-3 pl-3 border-l border-white/20">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-3 h-auto p-1 text-white hover:bg-white/10">
+                    <Button variant="ghost" className="flex items-center gap-3 h-auto p-2 text-white hover:bg-white/10">
                       <div className="text-right hidden sm:block">
-                        <p className="text-sm font-medium">{profile?.full_name || 'Usuário'}</p>
+                        <p className="text-sm font-medium">{profile?.name || 'Usuário'}</p>
                         <p className="text-xs text-white/80 capitalize">{profile?.role || 'Carregando...'}</p>
                       </div>
-                      <Button variant="ghost" size="icon" className="rounded-full bg-white/20 hover:bg-white/30">
+                      <div className="rounded-full bg-white/20 hover:bg-white/30 p-1">
                         <User className="w-5 h-5 text-white" />
-                      </Button>
+                      </div>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
