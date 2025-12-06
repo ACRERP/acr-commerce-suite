@@ -6,6 +6,12 @@ export function formatCurrency(value: number): string {
   }).format(value);
 }
 
+// Format date
+export function formatDate(dateString: string | Date): string {
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  return date.toLocaleDateString('pt-BR');
+}
+
 // Format date and time
 export interface FormatDateTimeOptions {
   dateOnly?: boolean;

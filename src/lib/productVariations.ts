@@ -62,6 +62,14 @@ export interface UpdateVariationData extends Partial<CreateVariationData> {
   id: string;
 }
 
+// Format currency helper
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value);
+}
+
 // Get all variations for a product
 export async function getProductVariations(productId: string) {
   const { data, error } = await supabase

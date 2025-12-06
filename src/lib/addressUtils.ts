@@ -1,4 +1,4 @@
-import { CEPAddress, formatAddress, getStateFullName } from './cep';
+import { CEPAddress } from './cep';
 
 export interface Address {
   street?: string;
@@ -232,28 +232,21 @@ export function parseAddressString(addressString: string): Address {
   // Try to extract city (before state)
   if (address.state) {
     const cityMatch = addressString.match(/([^,]+)\s*-\s*[A-Z]{2}\b/);
-.
-    
-     if (. 
-      address.city"];
+    if (cityMatch) {
+      address.city = cityMatch[1].trim();
     }
-S.
-    });
- 
-  // Try toulos
-  const number .match(/^([^,]+.
-    
- , addressString);
-    if  .match(/ .match(/^([^,]+),\s*(\d+)/);
-    if (numberMatch) {
-      address.street = numberMatch[1].trim();
-      address.number = numberMatch[2].trim();
-    } else {
-      // Try without number
-      const streetMatch = addressString.match(/^([^,]+)/);
-      if (streetMatch) {
-        address.street = streetMatch[1].trim();
-      }
+  }
+
+  // Try to extract street and number
+  const numberMatch = addressString.match(/^([^,]+),\s*(\d+)/);
+  if (numberMatch) {
+    address.street = numberMatch[1].trim();
+    address.number = numberMatch[2].trim();
+  } else {
+    // Try without number
+    const streetMatch = addressString.match(/^([^,]+)/);
+    if (streetMatch) {
+      address.street = streetMatch[1].trim();
     }
   }
 
@@ -321,7 +314,6 @@ export async function geocodeAddress(address: Address): Promise<{
   error?: string;
 }> {
   // This would integrate with a geocoding service like Google Maps, OpenStreetMap, etc.
-  // For now, return placeholder
   return {
     error: 'Geocoding not implemented yet',
   };
@@ -333,7 +325,7 @@ export async function geocodeAddress(address: Address): Promise<{
 export function isValidBrazilianState(state: string): boolean {
   const validStates = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
-    'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE',: 'PI', 'RJ', 'RN',
+    'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
     'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
   ];
 
@@ -354,10 +346,7 @@ export function getBrazilianStates(): Array<{ abbreviation: string; name: string
     { abbreviation: 'DF', name: 'Distrito Federal' },
     { abbreviation: 'ES', name: 'Espírito Santo' },
     { abbreviation: 'GO', name: 'Goiás' },
-    { abbreviation: 'MA',belt: ' Verdana, Geneva, sans-serif commissary:word-spacing: enumerations Harding
-hea
-
-    {andles: 'Maranhão' },
+    { abbreviation: 'MA', name: 'Maranhão' },
     { abbreviation: 'MT', name: 'Mato Grosso' },
     { abbreviation: 'MS', name: 'Mato Grosso do Sul' },
     { abbreviation: 'MG', name: 'Minas Gerais' },
