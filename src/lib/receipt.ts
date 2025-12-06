@@ -1,606 +1,210 @@
-import { Sale, SaleItem } from './sales';
-import { Client } from './clients';
-import { PaymentMethod } from './paymentMethods';
-import { Discount } from './discounts';
-
-// Simple interface for sale payments since it's not in the main sales module
-export interface SalePayment {
-  id: string;
-  sale_id: string;
-  payment_method_id: string;
-  amount: number;
-  status: string;
-  created_at: string;
-}
+import { formatCurrency } from './pdv';
 
 export interface ReceiptData {
-  sale: Sale;
-  items: SaleItem[];
-  payments: SalePayment[];
-  client?: Client;
-  discounts?: Discount[];
-  paymentMethods?: PaymentMethod[];
-  companyInfo?: CompanyInfo;
+  saleId: number;
+  companyName: string;
+  companyAddress?: string;
+  companyPhone?: string;
+  companyCnpj?: string;
+  operatorName: string;
+  cashRegisterId: number;
+  clientName?: string;
+  items: {
+    name: string;
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+  }[];
+  subtotal: number;
+  discount: number;
+  deliveryFee: number;
+  total: number;
+  payments: {
+    method: string;
+    amount: number;
+    change?: number;
+  }[];
+  createdAt: Date;
 }
 
-export interface CompanyInfo {
-  name: string;
-  document?: string;
-  address?: string;
-  phone?: string;
-  email?: string;
-  logo?: string;
+// Format receipt as text (for thermal printers)
+export function generateReceiptText(data: ReceiptData): string {
+  const separator = '-'.repeat(40);
+  const lines: string[] = [];
+
+  // Header
+  lines.push(data.companyName.toUpperCase().padStart(20 + data.companyName.length / 2));
+  if (data.companyAddress) lines.push(data.companyAddress);
+  if (data.companyPhone) lines.push(`Tel: ${data.companyPhone}`);
+  if (data.companyCnpj) lines.push(`CNPJ: ${data.companyCnpj}`);
+  lines.push(separator);
+
+  // Sale info
+  lines.push(`CUPOM NÃO FISCAL`);
+  lines.push(`Venda #${data.saleId}`);
+  lines.push(`Data: ${data.createdAt.toLocaleDateString('pt-BR')} ${data.createdAt.toLocaleTimeString('pt-BR')}`);
+  lines.push(`Operador: ${data.operatorName}`);
+  lines.push(`Caixa: #${data.cashRegisterId}`);
+  if (data.clientName && data.clientName !== 'Consumidor') {
+    lines.push(`Cliente: ${data.clientName}`);
+  }
+  lines.push(separator);
+
+  // Items
+  lines.push('ITENS');
+  data.items.forEach((item, i) => {
+    lines.push(`${i + 1}. ${item.name}`);
+    lines.push(`   ${item.quantity} x ${formatCurrency(item.unitPrice)} = ${formatCurrency(item.subtotal)}`);
+  });
+  lines.push(separator);
+
+  // Totals
+  lines.push(`Subtotal:        ${formatCurrency(data.subtotal).padStart(12)}`);
+  if (data.discount > 0) {
+    lines.push(`Desconto:       -${formatCurrency(data.discount).padStart(11)}`);
+  }
+  if (data.deliveryFee > 0) {
+    lines.push(`Taxa Entrega:    ${formatCurrency(data.deliveryFee).padStart(12)}`);
+  }
+  lines.push(separator);
+  lines.push(`TOTAL:           ${formatCurrency(data.total).padStart(12)}`);
+  lines.push(separator);
+
+  // Payments
+  lines.push('PAGAMENTO');
+  data.payments.forEach(p => {
+    lines.push(`${p.method}: ${formatCurrency(p.amount)}`);
+    if (p.change && p.change > 0) {
+      lines.push(`Troco: ${formatCurrency(p.change)}`);
+    }
+  });
+  lines.push(separator);
+
+  // Footer
+  lines.push('');
+  lines.push('Obrigado pela preferência!');
+  lines.push('Volte sempre!');
+  lines.push('');
+
+  return lines.join('\n');
 }
 
-export interface ReceiptOptions {
-  printHeader?: boolean;
-  printFooter?: boolean;
-  printClientInfo?: boolean;
-  printPaymentDetails?: boolean;
-  printDiscounts?: boolean;
-  printBarcode?: boolean;
-  printQrCode?: boolean;
-  fontSize?: 'small' | 'medium' | 'large';
-  paperWidth?: number; // in mm
+// Format receipt for WhatsApp
+export function generateReceiptWhatsApp(data: ReceiptData): string {
+  const lines: string[] = [];
+
+  lines.push(`📋 *CUPOM DE VENDA #${data.saleId}*`);
+  lines.push(`📅 ${data.createdAt.toLocaleDateString('pt-BR')} às ${data.createdAt.toLocaleTimeString('pt-BR')}`);
+  lines.push('');
+  
+  lines.push('*ITENS:*');
+  data.items.forEach((item, i) => {
+    lines.push(`${i + 1}. ${item.name}`);
+    lines.push(`   ${item.quantity}x ${formatCurrency(item.unitPrice)} = *${formatCurrency(item.subtotal)}*`);
+  });
+  lines.push('');
+
+  lines.push('━━━━━━━━━━━━━━━━━━━━');
+  lines.push(`Subtotal: ${formatCurrency(data.subtotal)}`);
+  if (data.discount > 0) {
+    lines.push(`Desconto: -${formatCurrency(data.discount)}`);
+  }
+  if (data.deliveryFee > 0) {
+    lines.push(`Entrega: ${formatCurrency(data.deliveryFee)}`);
+  }
+  lines.push(`*TOTAL: ${formatCurrency(data.total)}*`);
+  lines.push('━━━━━━━━━━━━━━━━━━━━');
+  lines.push('');
+
+  lines.push('*PAGAMENTO:*');
+  data.payments.forEach(p => {
+    lines.push(`💳 ${p.method}: ${formatCurrency(p.amount)}`);
+  });
+  lines.push('');
+
+  lines.push('✅ _Obrigado pela preferência!_');
+  lines.push(`🏪 ${data.companyName}`);
+
+  return lines.join('\n');
 }
 
-export class ReceiptPrinter {
-  private companyInfo: CompanyInfo;
-  private defaultOptions: ReceiptOptions = {
-    printHeader: true,
-    printFooter: true,
-    printClientInfo: true,
-    printPaymentDetails: true,
-    printDiscounts: true,
-    printBarcode: false,
-    printQrCode: false,
-    fontSize: 'medium',
-    paperWidth: 80, // Standard thermal printer width
-  };
-
-  constructor(companyInfo: CompanyInfo) {
-    this.companyInfo = companyInfo;
+// Print receipt using browser print
+export function printReceipt(data: ReceiptData): void {
+  const content = generateReceiptText(data);
+  
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    alert('Por favor, habilite pop-ups para imprimir.');
+    return;
   }
 
-  // Generate receipt HTML for printing
-  generateReceiptHTML(data: ReceiptData, options: Partial<ReceiptOptions> = {}): string {
-    const opts = { ...this.defaultOptions, ...options };
-    
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Recibo - Venda #${data.sale.id}</title>
-          <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            
-            body {
-              font-family: 'Courier New', monospace;
-              font-size: ${this.getFontSize(opts.fontSize)};
-              line-height: 1.4;
-              width: ${opts.paperWidth}mm;
-              padding: 10px;
-              background: white;
-            }
-            
-            .header {
-              text-align: center;
-              margin-bottom: 20px;
-              border-bottom: 1px dashed #000;
-              padding-bottom: 10px;
-            }
-            
-            .company-name {
-              font-size: ${this.getFontSize(opts.fontSize, 1.2)};
-              font-weight: bold;
-              margin-bottom: 5px;
-            }
-            
-            .company-info {
-              font-size: ${this.getFontSize(opts.fontSize, 0.9)};
-              margin-bottom: 3px;
-            }
-            
-            .receipt-title {
-              text-align: center;
-              font-weight: bold;
-              margin: 15px 0;
-              font-size: ${this.getFontSize(opts.fontSize, 1.1)};
-            }
-            
-            .sale-info {
-              margin-bottom: 15px;
-            }
-            
-            .info-row {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 3px;
-            }
-            
-            .client-info {
-              margin-bottom: 15px;
-              padding: 8px;
-              background: #f5f5f5;
-              border-radius: 3px;
-            }
-            
-            .items-table {
-              width: 100%;
-              margin-bottom: 15px;
-            }
-            
-            .items-table th {
-              text-align: left;
-              border-bottom: 1px solid #000;
-              padding: 5px 0;
-              font-weight: bold;
-            }
-            
-            .items-table td {
-              padding: 3px 0;
-              vertical-align: top;
-            }
-            
-            .item-name {
-              width: 50%;
-            }
-            
-            .item-qty {
-              width: 15%;
-              text-align: center;
-            }
-            
-            .item-price {
-              width: 17%;
-              text-align: right;
-            }
-            
-            .item-total {
-              width: 18%;
-              text-align: right;
-              font-weight: bold;
-            }
-            
-            .discounts {
-              margin-bottom: 15px;
-              padding: 8px;
-              background: #fff3cd;
-              border: 1px solid #ffeaa7;
-              border-radius: 3px;
-            }
-            
-            .discount-item {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 3px;
-            }
-            
-            .payments {
-              margin-bottom: 15px;
-            }
-            
-            .payment-item {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 3px;
-            }
-            
-            .totals {
-              margin-bottom: 20px;
-              border-top: 1px solid #000;
-              padding-top: 10px;
-            }
-            
-            .total-row {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 3px;
-            }
-            
-            .grand-total {
-              font-weight: bold;
-              font-size: ${this.getFontSize(opts.fontSize, 1.1)};
-              border-top: 1px solid #000;
-              padding-top: 5px;
-              margin-top: 5px;
-            }
-            
-            .footer {
-              text-align: center;
-              margin-top: 20px;
-              border-top: 1px dashed #000;
-              padding-top: 10px;
-              font-size: ${this.getFontSize(opts.fontSize, 0.9)};
-            }
-            
-            .barcode {
-              text-align: center;
-              margin: 10px 0;
-            }
-            
-            .qrcode {
-              text-align: center;
-              margin: 10px 0;
-            }
-            
-            @media print {
-              body {
-                margin: 0;
-                padding: 5px;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          ${opts.printHeader ? this.generateHeader() : ''}
-          
-          <div class="receipt-title">RECIBO DE VENDA</div>
-          
-          <div class="sale-info">
-            <div class="info-row">
-              <span>Nº da Venda:</span>
-              <span>${data.sale.id.toString().slice(-8)}</span>
-            </div>
-            <div class="info-row">
-              <span>Data:</span>
-              <span>${new Date(data.sale.created_at).toLocaleString('pt-BR')}</span>
-            </div>
-            <div class="info-row">
-              <span>Status:</span>
-              <span>${this.formatSaleStatus(data.sale.status)}</span>
-            </div>
-          </div>
-          
-          ${opts.printClientInfo && data.client ? this.generateClientInfo(data.client) : ''}
-          
-          <table class="items-table">
-            <thead>
-              <tr>
-                <th class="item-name">Produto</th>
-                <th class="item-qty">Qtd</th>
-                <th class="item-price">Unit.</th>
-                <th class="item-total">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.items.map(item => this.generateItemRow(item)).join('')}
-            </tbody>
-          </table>
-          
-          ${opts.printDiscounts && data.discounts && data.discounts.length > 0 ? 
-            this.generateDiscounts(data.discounts) : ''}
-          
-          ${opts.printPaymentDetails ? this.generatePayments(data.payments, data.paymentMethods) : ''}
-          
-          <div class="totals">
-            <div class="total-row grand-total">
-              <span>TOTAL:</span>
-              <span>R$ ${data.sale.total_amount.toFixed(2)}</span>
-            </div>
-          </div>
-          
-          ${opts.printBarcode ? this.generateBarcode(data.sale.id) : ''}
-          ${opts.printQrCode ? this.generateQRCode(data.sale.id) : ''}
-          
-          ${opts.printFooter ? this.generateFooter() : ''}
-        </body>
-      </html>
-    `;
-  }
-
-  // Generate receipt text for thermal printers
-  generateReceiptText(data: ReceiptData, options: Partial<ReceiptOptions> = {}): string {
-    const opts = { ...this.defaultOptions, ...options };
-    const width = opts.paperWidth || 80;
-    const charsPerLine = Math.floor(width / 0.125); // Approximate characters per line
-    
-    let receipt = '';
-    
-    // Header
-    if (opts.printHeader) {
-      receipt += this.centerText(this.companyInfo.name, charsPerLine) + '\n';
-      if (this.companyInfo.document) {
-        receipt += this.centerText(this.companyInfo.document, charsPerLine) + '\n';
-      }
-      if (this.companyInfo.address) {
-        receipt += this.centerText(this.companyInfo.address, charsPerLine) + '\n';
-      }
-      if (this.companyInfo.phone) {
-        receipt += this.centerText(this.companyInfo.phone, charsPerLine) + '\n';
-      }
-      receipt += '\n';
-    }
-    
-    // Title
-    receipt += this.centerText('RECIBO DE VENDA', charsPerLine) + '\n';
-    receipt += this.repeatChar('=', charsPerLine) + '\n\n';
-    
-    // Sale info
-    receipt += `Venda: ${data.sale.id.toString().slice(-8)}\n`;
-    receipt += `Data: ${new Date(data.sale.created_at).toLocaleString('pt-BR')}\n`;
-    receipt += `Status: ${this.formatSaleStatus(data.sale.status)}\n\n`;
-    
-    // Client info
-    if (opts.printClientInfo && data.client) {
-      receipt += 'CLIENTE:\n';
-      receipt += `Nome: ${data.client.name}\n`;
-      if (data.client.cpf_cnpj) {
-        receipt += `CPF/CNPJ: ${data.client.cpf_cnpj}\n`;
-      }
-      receipt += '\n';
-    }
-    
-    // Items
-    receipt += this.repeatChar('-', charsPerLine) + '\n';
-    receipt += this.formatTableRow(['PRODUTO', 'QTD', 'UNIT.', 'TOTAL'], [30, 8, 12, 15]) + '\n';
-    receipt += this.repeatChar('-', charsPerLine) + '\n';
-    
-    data.items.forEach(item => {
-      const productName = this.truncateText(item.product?.name || 'Produto', 30);
-      receipt += this.formatTableRow(
-        [productName, item.quantity.toString(), `R$${item.price.toFixed(2)}`, `R$${(item.quantity * item.price).toFixed(2)}`],
-        [30, 8, 12, 15]
-      ) + '\n';
-    });
-    
-    receipt += this.repeatChar('-', charsPerLine) + '\n\n';
-    
-    // Discounts
-    if (opts.printDiscounts && data.discounts && data.discounts.length > 0) {
-      receipt += 'DESCONTOS:\n';
-      data.discounts.forEach(discount => {
-        receipt += `${discount.name}: -R$${discount.value?.toFixed(2) || '0.00'}\n`;
-      });
-      receipt += '\n';
-    }
-    
-    // Payments
-    if (opts.printPaymentDetails) {
-      receipt += 'PAGAMENTOS:\n';
-      data.payments.forEach(payment => {
-        const method = data.paymentMethods?.find(m => m.id === payment.payment_method_id);
-        receipt += `${method?.name || 'Pagamento'}: R$${payment.amount.toFixed(2)}\n`;
-      });
-      receipt += '\n';
-    }
-    
-    // Totals
-    receipt += this.repeatChar('=', charsPerLine) + '\n';
-    receipt += `TOTAL: R$${data.sale.total_amount.toFixed(2)}\n`;
-    receipt += this.repeatChar('=', charsPerLine) + '\n\n';
-    
-    // Footer
-    if (opts.printFooter) {
-      receipt += this.centerText('Obrigado pela preferência!', charsPerLine) + '\n';
-      receipt += this.centerText('Volte sempre!', charsPerLine) + '\n\n';
-      if (this.companyInfo.email) {
-        receipt += this.centerText(this.companyInfo.email, charsPerLine) + '\n';
-      }
-    }
-    
-    receipt += '\n\n\n'; // Add space for cutting
-    
-    return receipt;
-  }
-
-  // Print receipt using browser print API
-  async printReceipt(data: ReceiptData, options: Partial<ReceiptOptions> = {}): Promise<void> {
-    const html = this.generateReceiptHTML(data, options);
-    
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      throw new Error('Não foi possível abrir a janela de impressão');
-    }
-    
-    printWindow.document.write(html);
-    printWindow.document.close();
-    
-    // Wait for content to load before printing
-    printWindow.onload = () => {
-      printWindow.print();
-      printWindow.close();
-    };
-  }
-
-  // Generate PDF receipt
-  async generatePDFReceipt(data: ReceiptData, options: Partial<ReceiptOptions> = {}): Promise<Blob> {
-    // This would require a PDF library like jsPDF or puppeteer
-    // For now, we'll return the HTML as a blob
-    const html = this.generateReceiptHTML(data, options);
-    return new Blob([html], { type: 'text/html' });
-  }
-
-  // Send receipt to email
-  async emailReceipt(data: ReceiptData, email: string, options: Partial<ReceiptOptions> = {}): Promise<void> {
-    // This would require an email service integration
-    console.log('Email receipt to:', email, 'Data:', data, 'Options:', options);
-  }
-
-  // Helper methods
-  private getFontSize(baseSize: string, multiplier = 1): string {
-    const sizes = {
-      small: '10px',
-      medium: '12px',
-      large: '14px',
-    };
-    const base = sizes[baseSize as keyof typeof sizes] || sizes.medium;
-    const size = parseFloat(base) * multiplier;
-    return `${size}px`;
-  }
-
-  private formatSaleStatus(status: string): string {
-    const statusMap: Record<string, string> = {
-      pending: 'Pendente',
-      completed: 'Concluída',
-      cancelled: 'Cancelada',
-      refunded: 'Devolvida',
-    };
-    return statusMap[status] || status;
-  }
-
-  private generateHeader(): string {
-    return `
-      <div class="header">
-        <div class="company-name">${this.companyInfo.name}</div>
-        ${this.companyInfo.document ? `<div class="company-info">${this.companyInfo.document}</div>` : ''}
-        ${this.companyInfo.address ? `<div class="company-info">${this.companyInfo.address}</div>` : ''}
-        ${this.companyInfo.phone ? `<div class="company-info">${this.companyInfo.phone}</div>` : ''}
-        ${this.companyInfo.email ? `<div class="company-info">${this.companyInfo.email}</div>` : ''}
-      </div>
-    `;
-  }
-
-  private generateClientInfo(client: Client): string {
-    return `
-      <div class="client-info">
-        <div><strong>DADOS DO CLIENTE</strong></div>
-        <div>Nome: ${client.name}</div>
-        ${client.cpf_cnpj ? `<div>CPF/CNPJ: ${client.cpf_cnpj}</div>` : ''}
-        ${client.phone ? `<div>Telefone: ${client.phone}</div>` : ''}
-      </div>
-    `;
-  }
-
-  private generateItemRow(item: SaleItem): string {
-    const productName = item.product?.name || 'Produto';
-    
-    return `
-      <tr>
-        <td class="item-name">
-          ${productName}
-        </td>
-        <td class="item-qty">${item.quantity}</td>
-        <td class="item-price">R$ ${item.price.toFixed(2)}</td>
-        <td class="item-total">R$ ${(item.quantity * item.price).toFixed(2)}</td>
-      </tr>
-    `;
-  }
-
-  private generateDiscounts(discounts: Discount[]): string {
-    return `
-      <div class="discounts">
-        <div><strong>DESCONTOS APLICADOS</strong></div>
-        ${discounts.map(discount => `
-          <div class="discount-item">
-            <span>${discount.name}</span>
-            <span>-R$ ${discount.value?.toFixed(2) || '0.00'}</span>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  private generatePayments(payments: SalePayment[], paymentMethods?: PaymentMethod[]): string {
-    return `
-      <div class="payments">
-        <div><strong>FORMAS DE PAGAMENTO</strong></div>
-        ${payments.map(payment => {
-          const method = paymentMethods?.find(m => m.id === payment.payment_method_id);
-          return `
-            <div class="payment-item">
-              <span>${method?.name || 'Pagamento'}</span>
-              <span>R$ ${payment.amount.toFixed(2)}</span>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  }
-
-  private generateBarcode(saleId: number): string {
-    return `
-      <div class="barcode">
-        <div>Código de Barras</div>
-        <div style="font-family: monospace; font-size: 20px;">${saleId.toString().slice(-12)}</div>
-      </div>
-    `;
-  }
-
-  private generateQRCode(saleId: number): string {
-    return `
-      <div class="qrcode">
-        <div>QR Code</div>
-        <div style="width: 100px; height: 100px; border: 1px solid #000; margin: 0 auto;">
-          <div style="text-align: center; line-height: 100px; font-size: 10px;">QR</div>
-        </div>
-      </div>
-    `;
-  }
-
-  private generateFooter(): string {
-    return `
-      <div class="footer">
-        <div>Obrigado pela preferência!</div>
-        <div>Volte sempre!</div>
-        ${this.companyInfo.email ? `<div>${this.companyInfo.email}</div>` : ''}
-      </div>
-    `;
-  }
-
-  // Text formatting helpers for thermal printers
-  private centerText(text: string, width: number): string {
-    const padding = Math.floor((width - text.length) / 2);
-    return ' '.repeat(Math.max(0, padding)) + text;
-  }
-
-  private repeatChar(char: string, count: number): string {
-    return char.repeat(count);
-  }
-
-  private truncateText(text: string, maxLength: number): string {
-    return text.length > maxLength ? text.substring(0, maxLength - 3) + '...' : text;
-  }
-
-  private formatTableRow(columns: string[], widths: number[]): string {
-    return columns.map((col, i) => {
-      const width = widths[i];
-      if (col.length > width) {
-        return col.substring(0, width);
-      }
-      return col.padEnd(width);
-    }).join(' ');
-  }
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Cupom #${data.saleId}</title>
+      <style>
+        body {
+          font-family: 'Courier New', monospace;
+          font-size: 12px;
+          width: 280px;
+          margin: 0 auto;
+          padding: 10px;
+        }
+        pre {
+          white-space: pre-wrap;
+          margin: 0;
+        }
+        @media print {
+          body { width: 80mm; }
+        }
+      </style>
+    </head>
+    <body>
+      <pre>${content}</pre>
+      <script>
+        window.onload = function() {
+          window.print();
+          setTimeout(() => window.close(), 500);
+        };
+      </script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
 }
 
-// Default company info
-export const defaultCompanyInfo: CompanyInfo = {
-  name: 'ACR Commerce Suite',
-  document: 'CNPJ: 00.000.000/0001-00',
-  address: 'Rua Principal, 123 - Centro',
-  phone: '(11) 1234-5678',
-  email: 'contato@acrcommerce.com.br',
-};
-
-// Create default receipt printer instance
-export const receiptPrinter = new ReceiptPrinter(defaultCompanyInfo);
-
-// Utility functions
-export function printSaleReceipt(sale: Sale, items: SaleItem[], payments: SalePayment[], options?: Partial<ReceiptOptions>) {
-  return receiptPrinter.printReceipt({
-    sale,
-    items,
-    payments,
-  }, options);
+// Share via WhatsApp
+export function shareViaWhatsApp(data: ReceiptData, phoneNumber?: string): void {
+  const message = generateReceiptWhatsApp(data);
+  const encodedMessage = encodeURIComponent(message);
+  
+  let url = `https://wa.me/`;
+  if (phoneNumber) {
+    // Format phone number (remove non-digits, add country code if needed)
+    const cleanPhone = phoneNumber.replace(/\D/g, '');
+    const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+    url += formattedPhone;
+  }
+  url += `?text=${encodedMessage}`;
+  
+  window.open(url, '_blank');
 }
 
-export function generateSaleReceiptText(sale: Sale, items: SaleItem[], payments: SalePayment[], options?: Partial<ReceiptOptions>) {
-  return receiptPrinter.generateReceiptText({
-    sale,
-    items,
-    payments,
-  }, options);
+// Share via WhatsApp Web (desktop)
+export function shareViaWhatsAppWeb(data: ReceiptData): void {
+  const message = generateReceiptWhatsApp(data);
+  const encodedMessage = encodeURIComponent(message);
+  window.open(`https://web.whatsapp.com/send?text=${encodedMessage}`, '_blank');
 }
 
-export function generateSaleReceiptHTML(sale: Sale, items: SaleItem[], payments: SalePayment[], options?: Partial<ReceiptOptions>) {
-  return receiptPrinter.generateReceiptHTML({
-    sale,
-    items,
-    payments,
-  }, options);
+// Copy to clipboard
+export async function copyReceiptToClipboard(data: ReceiptData): Promise<boolean> {
+  const content = generateReceiptWhatsApp(data);
+  try {
+    await navigator.clipboard.writeText(content);
+    return true;
+  } catch {
+    return false;
+  }
 }

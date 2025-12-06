@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  TrendingUp, 
-  DollarSign, 
-  Package, 
-  Users, 
+import {
+  TrendingUp,
+  DollarSign,
+  Package,
+  Users,
   CreditCard,
   PiggyBank,
   FileText,
@@ -26,21 +26,39 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export function EnhancedSystemOverview() {
-  // System metrics
-  const metrics = {
-    totalRevenue: 45678.90,
-    revenueGrowth: 12.5,
-    totalSales: 234,
-    salesGrowth: 8.3,
-    totalProducts: 1567,
-    lowStockProducts: 23,
-    totalCustomers: 892,
-    customerGrowth: 15.2,
-    totalExpenses: 12345.67,
-    expenseGrowth: -5.8,
-    netProfit: 33333.23,
-    profitMargin: 73.0
+interface Props {
+  metrics?: {
+    totalRevenue: number;
+    revenueGrowth: number;
+    totalSales: number;
+    salesGrowth: number;
+    totalProducts: number;
+    lowStockProducts: number;
+    totalCustomers: number;
+    customerGrowth: number;
+    totalExpenses: number;
+    expenseGrowth: number;
+    netProfit: number;
+    profitMargin: number;
+  };
+  isLoading?: boolean;
+}
+
+export function EnhancedSystemOverview({ metrics: externalMetrics, isLoading }: Props) {
+  // System metrics - Use external or defaults
+  const metrics = externalMetrics || {
+    totalRevenue: 0,
+    revenueGrowth: 0,
+    totalSales: 0,
+    salesGrowth: 0,
+    totalProducts: 0,
+    lowStockProducts: 0,
+    totalCustomers: 0,
+    customerGrowth: 0,
+    totalExpenses: 0,
+    expenseGrowth: 0,
+    netProfit: 0,
+    profitMargin: 0
   };
 
   const systemFeatures = [

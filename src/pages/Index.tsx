@@ -1,10 +1,10 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import { ACRDashboard } from "@/components/dashboard/ACRDashboard";
+import { AppGrid } from "@/components/dashboard/AppGrid";
 
 const Index = () => {
   return (
     <MainLayout>
-      <ACRDashboard />
+      <AppGrid />
     </MainLayout>
   );
 };

@@ -1,57 +1,69 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import {
-  DollarSign,
   TrendingUp,
   TrendingDown,
   ArrowUpRight,
   ArrowDownRight,
   CreditCard,
   Wallet,
-  Building,
 } from "lucide-react";
 import {
-  AreaChart,
-  Area,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
-
-const cashFlowData = [
-  { name: "Seg", entrada: 8500, saida: 4200 },
-  { name: "Ter", entrada: 12300, saida: 5800 },
-  { name: "Qua", entrada: 9800, saida: 3500 },
-  { name: "Qui", entrada: 15600, saida: 7200 },
-  { name: "Sex", entrada: 18200, saida: 6100 },
-  { name: "Sáb", entrada: 22500, saida: 4800 },
-  { name: "Dom", entrada: 5200, saida: 1200 },
-];
-
-const financeiroStatBgColorClasses: Record<string, string> = {
-  primary: "bg-primary/10",
-  success: "bg-success/10",
-  destructive: "bg-destructive/10",
-  warning: "bg-warning/10",
-};
-
-const financeiroStatTextColorClasses: Record<string, string> = {
-  primary: "text-primary",
-  success: "text-success",
-  destructive: "text-destructive",
-  warning: "text-warning",
-};
-
-const transactions = [
-  { id: 1, desc: "Venda #1234", type: "entrada", value: 1250, date: "Hoje, 14:32" },
-  { id: 2, desc: "Fornecedor ABC", type: "saida", value: 3500, date: "Hoje, 11:20" },
-  { id: 3, desc: "Venda #1233", type: "entrada", value: 890, date: "Hoje, 10:15" },
-  { id: 4, desc: "Aluguel", type: "saida", value: 5000, date: "Ontem, 09:00" },
-  { id: 5, desc: "Venda #1232", type: "entrada", value: 2340, date: "Ontem, 16:45" },
-];
+  useQuery,
+  useMutation,
+  useQueryClient
+} from '@tanstack/react-query';
+import {
+  getFinancialSummary,
+  getTransactions,
+  createTransaction,
+  CreateTransactionData
+} from '@/lib/finance';
+import { TransactionForm } from '@/components/dashboard/finance/TransactionForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const Financeiro = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
+
+  const { data: summary, isLoading: isLoadingSummary } = useQuery({
+    queryKey: ['financial_summary'],
+    queryFn: getFinancialSummary
+  });
+
+  const { data: transactions, isLoading: isLoadingTransactions } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: getTransactions
+  });
+
+  const createMutation = useMutation({
+    mutationFn: createTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['financial_summary'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast({ title: 'Sucesso', description: 'Transação registrada com sucesso.' });
+      setIsTransactionModalOpen(false);
+    },
+    onError: () => {
+      toast({ title: 'Erro', description: 'Erro ao registrar transação.', variant: 'destructive' });
+    }
+  });
+
+  const handleNewTransaction = (type: 'income' | 'expense') => {
+    setTransactionType(type);
+    setIsTransactionModalOpen(true);
+  };
+
+  const handleFormSubmit = async (data: CreateTransactionData) => {
+    await createMutation.mutateAsync(data);
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -63,23 +75,48 @@ const Financeiro = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
-              <ArrowUpRight className="w-4 h-4 text-success" />
-              Nova Entrada
+            <Button variant="outline" className="gap-2 bg-green-50 text-green-700 hover:bg-green-100 border-green-200" onClick={() => handleNewTransaction('income')}>
+              <ArrowUpRight className="w-4 h-4" />
+              Receita
             </Button>
-            <Button variant="outline" className="gap-2">
-              <ArrowDownRight className="w-4 h-4 text-destructive" />
-              Nova Saída
+            <Button variant="outline" className="gap-2 bg-red-50 text-red-700 hover:bg-red-100 border-red-200" onClick={() => handleNewTransaction('expense')}>
+              <ArrowDownRight className="w-4 h-4" />
+              Despesa
             </Button>
           </div>
         </div>
 
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Saldo Atual", value: "R$ 45.680", icon: Wallet, color: "primary", change: null },
-            { label: "Entradas (Mês)", value: "R$ 128.450", icon: TrendingUp, color: "success", change: 12.5 },
-            { label: "Saídas (Mês)", value: "R$ 82.770", icon: TrendingDown, color: "destructive", change: -3.2 },
-            { label: "A Receber", value: "R$ 23.400", icon: CreditCard, color: "warning", change: null },
+            {
+              label: "Saldo Atual",
+              value: summary?.balance ?? 0,
+              icon: Wallet,
+              color: (summary?.balance ?? 0) >= 0 ? "success" : "destructive",
+              format: true
+            },
+            {
+              label: "Receitas (Total)",
+              value: summary?.income ?? 0,
+              icon: TrendingUp,
+              color: "success",
+              format: true
+            },
+            {
+              label: "Despesas (Total)",
+              value: summary?.expenses ?? 0,
+              icon: TrendingDown,
+              color: "destructive",
+              format: true
+            },
+            {
+              label: "A Receber (Futuro)",
+              value: summary?.pending_income ?? 0,
+              icon: CreditCard,
+              color: "warning",
+              format: true
+            },
           ].map((stat, index) => (
             <div
               key={stat.label}
@@ -89,91 +126,95 @@ const Financeiro = () => {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="metric-label">{stat.label}</p>
-                  <p className={`metric-value ${stat.color === "success" ? "text-success" : stat.color === "destructive" ? "text-destructive" : ""}`}>
-                    {stat.value}
+                  <p className={`metric-value ${stat.color === 'success' ? 'text-green-600' :
+                    stat.color === 'destructive' ? 'text-red-600' :
+                      stat.color === 'warning' ? 'text-orange-600' : ''
+                    }`}>
+                    {stat.format
+                      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(stat.value))
+                      : stat.value}
                   </p>
                 </div>
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${financeiroStatBgColorClasses[stat.color]}`}>
-                  <stat.icon className={`w-5 h-5 ${financeiroStatTextColorClasses[stat.color]}`} />
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color === 'success' ? 'bg-green-100' :
+                  stat.color === 'destructive' ? 'bg-red-100' :
+                    stat.color === 'warning' ? 'bg-orange-100' : 'bg-primary/10'
+                  }`}>
+                  <stat.icon className={`w-5 h-5 ${stat.color === 'success' ? 'text-green-600' :
+                    stat.color === 'destructive' ? 'text-red-600' :
+                      stat.color === 'warning' ? 'text-orange-600' : 'text-primary'
+                    }`} />
                 </div>
               </div>
-              {stat.change !== null && (
-                <div className="flex items-center gap-1 mt-2">
-                  {stat.change > 0 ? (
-                    <TrendingUp className="w-4 h-4 text-success" />
-                  ) : (
-                    <TrendingDown className="w-4 h-4 text-destructive" />
-                  )}
-                  <span className={`text-sm font-medium ${stat.change > 0 ? "text-success" : "text-destructive"}`}>
-                    {stat.change > 0 ? "+" : ""}{stat.change}%
-                  </span>
-                  <span className="text-xs text-muted-foreground">vs mês anterior</span>
-                </div>
-              )}
             </div>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Chart Section */}
           <div className="lg:col-span-2 stat-card">
-            <h3 className="section-title mb-4">Fluxo de Caixa - Última Semana</h3>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={cashFlowData}>
-                  <defs>
-                    <linearGradient id="colorEntrada" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorSaida" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "hsl(215, 16%, 47%)", fontSize: 12 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "hsl(215, 16%, 47%)", fontSize: 12 }} tickFormatter={(v) => `R$${v/1000}k`} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "hsl(222, 47%, 11%)", border: "none", borderRadius: "8px", color: "hsl(210, 40%, 96%)" }}
-                    formatter={(value: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)}
-                  />
-                  <Area type="monotone" dataKey="entrada" stroke="hsl(142, 76%, 36%)" strokeWidth={2} fillOpacity={1} fill="url(#colorEntrada)" />
-                  <Area type="monotone" dataKey="saida" stroke="hsl(0, 84%, 60%)" strokeWidth={2} fillOpacity={1} fill="url(#colorSaida)" />
-                </AreaChart>
-              </ResponsiveContainer>
+            <h3 className="section-title mb-4">Fluxo de Caixa (Demo)</h3>
+            <div className="h-[300px] flex items-center justify-center text-muted-foreground bg-muted/20 rounded-lg">
+              <p>Gráfico será implementado com dados históricos reais em breve.</p>
             </div>
           </div>
 
+          {/* Recent Transactions List */}
           <div className="stat-card">
             <h3 className="section-title mb-4">Transações Recentes</h3>
-            <div className="space-y-3">
-              {transactions.map((tx, index) => (
-                <div
-                  key={tx.id}
-                  className="flex items-center justify-between py-2 animate-fade-in"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tx.type === "entrada" ? "bg-success/10" : "bg-destructive/10"}`}>
-                      {tx.type === "entrada" ? (
-                        <ArrowUpRight className="w-4 h-4 text-success" />
-                      ) : (
-                        <ArrowDownRight className="w-4 h-4 text-destructive" />
-                      )}
+            {isLoadingTransactions ? (
+              <div className="flex justify-center p-4">Carregando...</div>
+            ) : (
+              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                {transactions?.map((tx, index) => (
+                  <div
+                    key={tx.id}
+                    className="flex items-center justify-between py-2 border-b last:border-0"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tx.type === "income" ? "bg-green-100" : "bg-red-100"}`}>
+                        {tx.type === "income" ? (
+                          <ArrowUpRight className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <ArrowDownRight className="w-4 h-4 text-red-600" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{tx.description}</p>
+                        <div className="flex gap-2 text-xs text-muted-foreground">
+                          <span>{format(new Date(tx.date), "dd/MM/yyyy")}</span>
+                          <span>•</span>
+                          <span className="capitalize">{tx.category || 'Geral'}</span>
+                          {tx.status === 'pending' && <span className="text-orange-500 font-bold">• Pendente</span>}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">{tx.desc}</p>
-                      <p className="text-xs text-muted-foreground">{tx.date}</p>
-                    </div>
+                    <span className={`font-semibold ${tx.type === "income" ? "text-green-600" : "text-red-600"}`}>
+                      {tx.type === "income" ? "+" : "-"}
+                      {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(tx.amount)}
+                    </span>
                   </div>
-                  <span className={`font-semibold ${tx.type === "entrada" ? "text-success" : "text-destructive"}`}>
-                    {tx.type === "entrada" ? "+" : "-"}
-                    {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(tx.value)}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+                {transactions?.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">Nenhuma transação encontrada.</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
+
+        <Dialog open={isTransactionModalOpen} onOpenChange={setIsTransactionModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{transactionType === 'income' ? 'Nova Receita' : 'Nova Despesa'}</DialogTitle>
+            </DialogHeader>
+            <TransactionForm
+              defaultType={transactionType}
+              onSubmit={handleFormSubmit}
+              onCancel={() => setIsTransactionModalOpen(false)}
+              isLoading={createMutation.isPending}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );

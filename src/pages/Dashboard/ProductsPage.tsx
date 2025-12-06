@@ -6,13 +6,9 @@ import { Product } from '@/lib/products';
 import { ProductForm } from '@/components/dashboard/products/ProductForm';
 import { BulkProductImport } from '@/components/dashboard/products/BulkProductImport';
 import { ABCAnalysis } from '@/components/dashboard/products/ABCAnalysis';
+import { CategoryManagement } from '@/components/dashboard/products/CategoryManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,29 +19,39 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Collapsible,
+  CollapsibleContent,
+} from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
-import { Upload } from 'lucide-react';
+import { Upload, PlusCircle, Search, X } from 'lucide-react';
 
 
-export function ProductsPage() {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+interface ProductsPageProps {
+  openForm?: boolean;
+  defaultTab?: string;
+}
+
+export function ProductsPage({ openForm = false, defaultTab = "products" }: ProductsPageProps) {
+  const [isFormOpen, setIsFormOpen] = useState(openForm);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [showBulkImport, setShowBulkImport] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
-  
+
   // Usando hooks personalizados
   const { data: products, isLoading, error } = useProducts();
   const deleteMutation = useDeleteProduct();
 
   const handleNewProduct = () => {
     setSelectedProduct(null);
-    setIsSheetOpen(true);
+    setIsFormOpen(true);
   };
 
-    const handleEditProduct = (product: Product) => {
+  const handleEditProduct = (product: Product) => {
     setSelectedProduct(product);
-    setIsSheetOpen(true);
+    setIsFormOpen(true);
   };
 
   const handleDeleteProduct = (product: Product) => {
@@ -61,56 +67,93 @@ export function ProductsPage() {
   };
 
   const handleFormSuccess = () => {
-    setIsSheetOpen(false);
+    setIsFormOpen(false);
     setSelectedProduct(null);
   };
 
   const handleFormCancel = () => {
-    setIsSheetOpen(false);
+    setIsFormOpen(false);
     setSelectedProduct(null);
   };
 
+  // Filter products by search term
+  const filteredProducts = products?.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Produtos</h1>
-        <p className="text-gray-600">
-          Gerencie produtos e analise o desempenho do catálogo
-        </p>
+    <div className="h-[calc(100vh-100px)] flex flex-col space-y-4">
+      {/* Top Bar Horizontal Menu */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between">
+        <div className="flex items-center gap-4 flex-1">
+          <h1 className="text-xl font-bold border-r pr-4 mr-2">Produtos</h1>
+
+          <div className="relative max-w-md w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Buscar por nome, código, código de barras..."
+              className="pl-9 bg-gray-50 border-gray-200"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 ml-4">
+          <Button variant="outline" onClick={() => setShowBulkImport(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            Importar
+          </Button>
+          <Button onClick={handleNewProduct} className="bg-primary hover:bg-primary/90">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Novo Produto
+          </Button>
+        </div>
       </div>
 
-      <Tabs defaultValue="products" className="space-y-6">
-        <TabsList>
+      {/* Horizontal Collapsible Form */}
+      <Collapsible open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <CollapsibleContent className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">
+              {selectedProduct ? `✏️ Editar Produto: ${selectedProduct.name}` : '➕ Novo Produto'}
+            </h2>
+            <Button variant="ghost" size="sm" onClick={() => setIsFormOpen(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="p-4 max-h-[50vh] overflow-y-auto">
+            <ProductForm
+              product={selectedProduct || undefined}
+              onSubmit={handleFormSuccess}
+              onCancel={handleFormCancel}
+            />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Content Tabs */}
+      <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col">
+        <TabsList className="w-fit">
           <TabsTrigger value="products">Catálogo</TabsTrigger>
+          <TabsTrigger value="categories">Categorias</TabsTrigger>
           <TabsTrigger value="abc">Análise ABC</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="products">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">Catálogo de Produtos</h2>
-                <p className="text-muted-foreground">
-                  Gerencie todos os produtos do seu catálogo.
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => setShowBulkImport(true)}>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Importar em Massa
-                </Button>
-                <Button onClick={handleNewProduct}>Novo Produto</Button>
-              </div>
-            </div>
+        <TabsContent value="products" className="flex-1 overflow-auto">
+          <ProductList
+            onEditProduct={handleEditProduct}
+            onDeleteProduct={handleDeleteProduct}
+            products={filteredProducts}
+            isLoading={isLoading}
+            error={error}
+          />
+        </TabsContent>
 
-            <ProductList 
-              onEditProduct={handleEditProduct} 
-              onDeleteProduct={handleDeleteProduct} 
-              products={products || []}
-              isLoading={isLoading}
-              error={error}
-            />
-          </div>
+        <TabsContent value="categories">
+          <CategoryManagement />
         </TabsContent>
 
         <TabsContent value="abc">
@@ -118,21 +161,7 @@ export function ProductsPage() {
         </TabsContent>
       </Tabs>
 
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>{selectedProduct && !isAlertOpen ? 'Editar Produto' : 'Adicionar Novo Produto'}</SheetTitle>
-          </SheetHeader>
-          <div className="py-4">
-            <ProductForm
-              product={selectedProduct}
-              onSubmit={handleFormSuccess}
-              onCancel={handleFormCancel}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
-
+      {/* Delete Alert Dialog */}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -152,7 +181,7 @@ export function ProductsPage() {
       </AlertDialog>
 
       {/* Bulk Import Dialog */}
-      <BulkProductImport 
+      <BulkProductImport
         isOpen={showBulkImport}
         onClose={() => setShowBulkImport(false)}
       />

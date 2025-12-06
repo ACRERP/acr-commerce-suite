@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { Input } from '@/components/ui/input';
@@ -20,17 +20,25 @@ async function searchClients(searchTerm: string) {
 
 interface ClientSearchProps {
   onClientSelect: (client: Client | null) => void;
+  defaultClient?: Client | null;
 }
 
-export function ClientSearch({ onClientSelect }: ClientSearchProps) {
+export function ClientSearch({ onClientSelect, defaultClient }: ClientSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(defaultClient || null);
 
   const { data: clients, isLoading } = useQuery<Client[], Error>({
     queryKey: ['clientSearch', searchTerm],
     queryFn: () => searchClients(searchTerm),
     enabled: searchTerm.length > 1 && !selectedClient,
   });
+
+  // Update selected client when defaultClient changes
+  useEffect(() => {
+    if (defaultClient && (!selectedClient || defaultClient.id !== selectedClient.id)) {
+      setSelectedClient(defaultClient);
+    }
+  }, [defaultClient]);
 
   const handleSelect = (client: Client) => {
     setSelectedClient(client);

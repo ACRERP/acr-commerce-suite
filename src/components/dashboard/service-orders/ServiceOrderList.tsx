@@ -24,36 +24,56 @@ export interface ServiceOrder {
   id: number;
   client_id: number;
   user_id: string | null;
+  technician_id: string | null;
+  opened_by: string | null;
   device_type: string;
   device_brand: string | null;
   device_model: string | null;
   serial_number: string | null;
-  reported_issue: string;
-  technician_notes: string | null;
-  accessories_included: string | null;
-  power_on: boolean;
-  has_password: boolean;
-  password_details: string | null;
-  network_status: string | null;
-  exit_test_ok: boolean | null;
-  status: string;
-  qr_code_url: string | null;
-  client_email: string | null;
+  reported_issue: string; // Restored
+  condition: string | null; // Added
+  technician_notes: string | null; // Restored
+  accessories_included: string | null; // Restored
+  power_on: boolean; // Restored
+  has_password: boolean; // Restored
+  password_details: string | null; // Restored
+  status: string; // Restored
+
+  // Intake/Output Checklist
+  device_powers_on: boolean;
+  device_vibrates: boolean;
+  intake_analysis: string | null;
+  output_analysis: string | null;
+  intake_photos: string[] | null;
+  output_photos: string[] | null;
+
+  // Financial Fields
+  total_services: number;
+  total_parts: number;
+  discount: number;
+  additional_fees: number;
+  final_value: number;
+  payment_method: string | null;
+  payment_status: 'pending' | 'paid' | 'partially_paid';
+
   created_at: string;
   updated_at: string;
   clients: {
+    id: number;
     name: string;
-  }[] | null;
+    cpf_cnpj: string | null;
+    phone: string | null;
+  } | null;
 }
 
 async function fetchServiceOrders() {
   const { data, error } = await supabase
     .from('service_orders')
-    .select(`*, clients (name)`)
+    .select(`*, clients (id, name, cpf_cnpj)`)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
-  return data;
+  return data as ServiceOrder[];
 }
 
 const statusVariant: { [key: string]: 'default' | 'secondary' | 'destructive' | 'outline' } = {
@@ -104,10 +124,10 @@ export function ServiceOrderList({ onEditOrder, onCancelOrder }: ServiceOrderLis
           </TableRow>
         </TableHeader>
         <TableBody>
-                    {orders?.map((order) => (
+          {orders?.map((order) => (
             <TableRow key={order.id}>
               <TableCell className="font-medium">#{order.id.toString().padStart(4, '0')}</TableCell>
-                                          <TableCell>{order.clients && order.clients.length > 0 ? order.clients[0].name : 'Cliente não identificado'}</TableCell>
+              <TableCell>{order.clients ? order.clients.name : 'Cliente não identificado'}</TableCell>
               <TableCell>{order.device_type} {order.device_model}</TableCell>
               <TableCell>{order.reported_issue}</TableCell>
               <TableCell>
@@ -124,13 +144,20 @@ export function ServiceOrderList({ onEditOrder, onCancelOrder }: ServiceOrderLis
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                        <DropdownMenuItem onClick={() => onEditOrder(order)}>Editar / Ver Detalhes</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onEditOrder(order)}>Editar / Ver Detalhes</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onCancelOrder(order)} className="text-red-500">Cancelar OS</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
+          {orders?.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
+                Nenhuma ordem de serviço encontrada.
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>

@@ -5,6 +5,7 @@ export interface Product {
   name: string;
   description?: string;
   category?: string;
+  category_id?: string;
   brand?: string;
   code: string;
   sku?: string;
@@ -17,6 +18,7 @@ export interface Product {
   profit_margin?: number;
   profit_amount?: number;
   image_url?: string;
+  variations?: ProductVariation[];
   created_at: string;
   updated_at: string;
 }
@@ -25,6 +27,7 @@ export interface CreateProductData {
   name: string;
   description?: string;
   category?: string;
+  category_id?: string;
   brand?: string;
   code: string;
   sku?: string;
@@ -139,4 +142,60 @@ export async function getLowStockProducts() {
   return (data as Product[]).filter(product => 
     product.stock_quantity <= product.minimum_stock_level
   );
+}
+
+// VARIATIONS
+
+export interface ProductVariation {
+  id: number;
+  product_id: number;
+  name: string;
+  sku?: string;
+  stock_quantity: number;
+  price?: number;
+  cost_price?: number;
+  attributes: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateVariationData {
+  product_id: number;
+  name: string;
+  sku?: string;
+  stock_quantity: number;
+  price?: number;
+  cost_price?: number;
+  attributes: Record<string, any>;
+}
+
+export async function getProductVariations(productId: number) {
+  const { data, error } = await supabase
+    .from('product_variations')
+    .select('*')
+    .eq('product_id', productId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data as ProductVariation[];
+}
+
+export async function createVariation(variation: CreateVariationData) {
+  const { data, error } = await supabase
+    .from('product_variations')
+    .insert(variation)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as ProductVariation;
+}
+
+export async function deleteVariation(id: number) {
+  const { error } = await supabase
+    .from('product_variations')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
 }

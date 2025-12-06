@@ -6,7 +6,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, ImageIcon } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -47,6 +47,7 @@ export function ProductList({ onEditProduct, onDeleteProduct, products, isLoadin
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[80px]">Imagem</TableHead>
             <TableHead>Produto</TableHead>
             <TableHead>Categoria</TableHead>
             <TableHead>Estoque</TableHead>
@@ -57,12 +58,25 @@ export function ProductList({ onEditProduct, onDeleteProduct, products, isLoadin
         <TableBody>
           {products?.map((product) => (
             <TableRow key={product.id}>
+              <TableCell>
+                {product.image_url ? (
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="h-10 w-10 object-cover rounded-md bg-gray-100"
+                  />
+                ) : (
+                  <div className="h-10 w-10 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
+                    <ImageIcon className="h-5 w-5" />
+                  </div>
+                )}
+              </TableCell>
               <TableCell className="font-medium">{product.name}</TableCell>
               <TableCell>{product.category}</TableCell>
               <TableCell>{product.stock_quantity}</TableCell>
               <TableCell>{product.code}</TableCell>
               <TableCell className="text-right">
-                                                <DropdownMenu>
+                <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
                       <span className="sr-only">Abrir menu</span>
