@@ -18,27 +18,27 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  receiptPrinter, 
-  printSaleReceipt, 
-  generateSaleReceiptText, 
-  generateSaleReceiptHTML,
   ReceiptData,
-  ReceiptOptions 
+  generateReceiptText,
+  printReceipt
 } from '@/lib/receipt';
 import { Sale, SaleItem } from '@/lib/sales';
 import { Client } from '@/lib/clients';
 import { Discount } from '@/lib/discounts';
 import { PaymentMethod } from '@/lib/paymentMethods';
-import { SalePayment } from '@/lib/receipt';
 import { 
   Printer, 
   FileText, 
   Download, 
   Mail, 
   MoreHorizontal,
-  CheckCircle,
-  AlertCircle
+  CheckCircle
 } from 'lucide-react';
+
+interface SalePayment {
+  payment_method_id: string;
+  amount: number;
+}
 
 interface ReceiptButtonProps {
   sale: Sale;
@@ -51,6 +51,31 @@ interface ReceiptButtonProps {
   size?: 'default' | 'sm' | 'lg' | 'icon';
   variant?: 'default' | 'outline' | 'ghost';
   showDropdown?: boolean;
+}
+
+function convertToReceiptData(sale: Sale, items: SaleItem[], payments: SalePayment[]): ReceiptData {
+  return {
+    saleId: typeof sale.id === 'string' ? parseInt(sale.id) : sale.id,
+    companyName: 'ACR Store',
+    operatorName: sale.seller?.name || 'Operador',
+    cashRegisterId: 1,
+    clientName: sale.client?.name,
+    items: items.map(item => ({
+      name: item.product?.name || 'Produto',
+      quantity: item.quantity,
+      unitPrice: item.price,
+      subtotal: item.quantity * item.price
+    })),
+    subtotal: sale.subtotal || sale.total_amount,
+    discount: sale.discount_amount || 0,
+    deliveryFee: 0,
+    total: sale.total_amount,
+    payments: payments.map(p => ({
+      method: p.payment_method_id,
+      amount: p.amount
+    })),
+    createdAt: new Date(sale.created_at)
+  };
 }
 
 export function ReceiptButton({
@@ -71,21 +96,14 @@ export function ReceiptButton({
   const [isPrinting, setIsPrinting] = React.useState(false);
   const [emailAddress, setEmailAddress] = React.useState('');
 
-  const receiptData: ReceiptData = {
-    sale,
-    items,
-    payments,
-    client,
-    discounts,
-    paymentMethods,
-  };
+  const receiptData = convertToReceiptData(sale, items, payments);
 
-  const handlePrint = async (options?: Partial<ReceiptOptions>) => {
+  const handlePrint = async () => {
     if (isPrinting) return;
     
     setIsPrinting(true);
     try {
-      await printSaleReceipt(sale, items, payments, options);
+      printReceipt(receiptData);
       
       toast({
         title: 'Recibo impresso',
@@ -104,36 +122,9 @@ export function ReceiptButton({
     }
   };
 
-  const handleDownloadHTML = () => {
-    try {
-      const html = generateSaleReceiptHTML(sale, items, payments);
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `recibo-venda-${sale.id.toString().slice(-8)}.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      toast({
-        title: 'Recibo baixado',
-        description: 'O recibo foi baixado como arquivo HTML.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Erro ao baixar',
-        description: 'Não foi possível baixar o recibo.',
-        variant: 'destructive',
-      });
-    }
-  };
-
   const handleDownloadText = () => {
     try {
-      const text = generateSaleReceiptText(sale, items, payments);
+      const text = generateReceiptText(receiptData);
       const blob = new Blob([text], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       
@@ -168,28 +159,17 @@ export function ReceiptButton({
       return;
     }
 
-    try {
-      // In a real implementation, this would call an email service
-      await receiptPrinter.emailReceipt(receiptData, emailAddress);
-      
-      toast({
-        title: 'Recibo enviado',
-        description: `O recibo foi enviado para ${emailAddress}.`,
-      });
-      
-      setIsEmailDialogOpen(false);
-    } catch (error) {
-      toast({
-        title: 'Erro ao enviar',
-        description: 'Não foi possível enviar o recibo por email.',
-        variant: 'destructive',
-      });
-    }
+    toast({
+      title: 'Funcionalidade em desenvolvimento',
+      description: 'O envio por email será implementado em breve.',
+    });
+    
+    setIsEmailDialogOpen(false);
   };
 
   const handleCopyToClipboard = async () => {
     try {
-      const text = generateSaleReceiptText(sale, items, payments);
+      const text = generateReceiptText(receiptData);
       await navigator.clipboard.writeText(text);
       
       toast({
@@ -200,26 +180,6 @@ export function ReceiptButton({
       toast({
         title: 'Erro ao copiar',
         description: 'Não foi possível copiar o recibo.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handlePrintPreview = () => {
-    try {
-      const html = generateSaleReceiptHTML(sale, items, payments);
-      const previewWindow = window.open('', '_blank', 'width=400,height=600');
-      
-      if (previewWindow) {
-        previewWindow.document.write(html);
-        previewWindow.document.close();
-      } else {
-        throw new Error('Não foi possível abrir a janela de visualização');
-      }
-    } catch (error) {
-      toast({
-        title: 'Erro na visualização',
-        description: 'Não foi possível abrir a visualização do recibo.',
         variant: 'destructive',
       });
     }
@@ -257,14 +217,6 @@ export function ReceiptButton({
           <DropdownMenuItem onClick={() => setIsPrintDialogOpen(true)}>
             <Printer className="h-4 w-4 mr-2" />
             Imprimir
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handlePrintPreview}>
-            <FileText className="h-4 w-4 mr-2" />
-            Visualizar
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDownloadHTML}>
-            <Download className="h-4 w-4 mr-2" />
-            Baixar HTML
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleDownloadText}>
             <Download className="h-4 w-4 mr-2" />
@@ -313,11 +265,11 @@ export function ReceiptButton({
             <AlertDialogAction
               onClick={() => handlePrint()}
               disabled={isPrinting}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               {isPrinting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
                   Imprimindo...
                 </>
               ) : (
@@ -353,7 +305,7 @@ export function ReceiptButton({
               value={emailAddress}
               onChange={(e) => setEmailAddress(e.target.value)}
               placeholder="cliente@exemplo.com"
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full mt-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <AlertDialogFooter>
@@ -361,7 +313,7 @@ export function ReceiptButton({
             <AlertDialogAction
               onClick={handleEmail}
               disabled={!emailAddress}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               <Mail className="h-4 w-4 mr-2" />
               Enviar
@@ -383,32 +335,5 @@ export function QuickPrintButton({ sale, items, payments }: Pick<ReceiptButtonPr
       showDropdown={false}
       size="sm"
     />
-  );
-}
-
-// Receipt action buttons group
-export function ReceiptActions({ sale, items, payments, client, discounts, paymentMethods }: ReceiptButtonProps) {
-  return (
-    <div className="flex gap-2">
-      <ReceiptButton
-        sale={sale}
-        items={items}
-        payments={payments}
-        client={client}
-        discounts={discounts}
-        paymentMethods={paymentMethods}
-        showDropdown={false}
-        variant="default"
-      />
-      <ReceiptButton
-        sale={sale}
-        items={items}
-        payments={payments}
-        client={client}
-        discounts={discounts}
-        paymentMethods={paymentMethods}
-        size="sm"
-      />
-    </div>
   );
 }
