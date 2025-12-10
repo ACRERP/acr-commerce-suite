@@ -4,6 +4,9 @@ import { Bell, Search, User, LogOut, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUISettings } from "@/contexts/UISettingsContext";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
+import { DensitySelector } from "@/components/ui/density-selector";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GlobalCommandPalette } from "../dashboard/GlobalCommandPalette";
+import { AlertCenter } from "@/components/alerts/AlertCenter";
+import { cn } from "@/lib/utils";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -20,17 +25,22 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const { profile, signOut } = useAuth();
+  const { sidebarCollapsed, densityMode } = useUISettings();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={cn("min-h-screen bg-gray-50", `density-${densityMode}`)}>
       <Sidebar />
 
       {/* Main Content */}
-      <div className="pl-64 transition-all duration-300">
+      <div className={cn(
+        "transition-all duration-300",
+        sidebarCollapsed ? "pl-16" : "pl-64"
+      )}>
         {/* Top Header - Estilo ACR */}
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border shadow-sm">
           <div className="flex items-center justify-between h-16 px-6">
-            <div className="flex items-center gap-4 flex-1 max-w-md">
+            <div className="flex items-center gap-4 flex-1">
+              <Breadcrumbs />
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -41,10 +51,9 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="relative text-foreground hover:bg-muted">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full animate-pulse-subtle" />
-              </Button>
+              <DensitySelector />
+
+              <AlertCenter />
 
               <Button variant="outline" className="border-border text-foreground hover:bg-muted">
                 {new Date().toLocaleDateString('pt-BR')}

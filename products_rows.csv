@@ -1,0 +1,354 @@
+id,name,sku,price,stock,category,status,description,image_url,cost_price,min_stock,created_at,updated_at
+1,Capinha iPhone 14 Pro,CAP-IP14P-001,89.90,45,Capinhas,active,Capinha de silicone com proteção completa,,,10,2025-11-21 18:11:29.57149+00,2025-11-21 18:11:29.57149+00
+2,Capinha iPhone 13,CAP-IP13-001,69.90,38,Capinhas,active,Capinha transparente ultra fina,,,15,2025-11-21 18:11:29.57149+00,2025-11-21 18:11:29.57149+00
+3,Carregador Tipo-C 20W,CAR-TC20-001,45.00,28,Carregadores,active,Carregador rápido Type-C 20W,,,20,2025-11-21 18:11:29.57149+00,2025-11-21 18:11:29.57149+00
+4,Carregador iPhone 20W,CAR-IP20-001,55.00,22,Carregadores,active,Carregador rápido original iPhone,,,15,2025-11-21 18:11:29.57149+00,2025-11-21 18:11:29.57149+00
+5,Película de Vidro iPhone,PEL-VID-IP001,35.00,15,Películas,low,Película de vidro temperado 9H,,,25,2025-11-21 18:11:29.57149+00,2025-11-21 18:11:29.57149+00
+6,Película de Vidro Android,PEL-VID-AND001,25.00,8,Películas,critical,Película universal para Android,,,30,2025-11-21 18:11:29.57149+00,2025-11-21 18:11:29.57149+00
+7,Fone Bluetooth TWS,FON-TWS-001,159.90,12,Fones,active,Fone sem fio com case de carregamento,,,10,2025-11-21 18:11:29.57149+00,2025-11-21 18:11:29.57149+00
+8,Cabo Lightning 1m,CAB-LIG-001,25.00,50,Cabos,active,Cabo original Apple 1 metro,,,20,2025-11-21 18:11:29.57149+00,2025-11-21 18:11:29.57149+00
+9,Cabo Type-C 1m,CAB-TC-001,20.00,45,Cabos,active,Cabo Type-C rápido 1 metro,,,20,2025-11-21 18:11:29.57149+00,2025-11-21 18:11:29.57149+00
+10,Power Bank 10000mAh,PB-10K-001,89.90,18,Power Banks,active,Power bank portátil com entrada dupla,,,12,2025-11-21 18:11:29.57149+00,2025-11-21 18:11:29.57149+00
+35,Tela Redmi Mi 8 Lite Com Aro,XIACA32,120.00,50,Telas,active,"Tela AMOLED original 6.4""",,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+36,Tela Orig Samsung M21/ M21s M215 Sem Aro,NWSam2649,125.00,30,Telas,active,Tela original Samsung M21 sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+37,Tela Redmi 8 Com Aro,XIACA45,110.00,40,Telas,active,Tela Redmi 8 com aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+38,Tela Orig Samsung A23 4G A235 Com Aro,NWSam2613,117.00,35,Telas,active,Tela original Samsung A23 com aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+39,Tela Incell Motorola Moto G41 XT2167 Com Aro,NWMoto301,117.00,25,Telas,active,Tela Incell Motorola Moto G41 com aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+40,Tela Redmi 7 Com Aro,XIACA44,150.00,30,Telas,active,Tela Redmi 7 com aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+41,Tela Orig Motorola Moto G20 Xt2128 Com Aro,NWMoto285,93.60,28,Telas,active,Tela original Motorola Moto G20 com aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+42,Tela Redmi Note 8 Com Aro,XIACA34,110.00,45,Telas,active,Tela Redmi Note 8 com aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+43,Tela Redmi 12c Com Aro,XIACA61,120.00,38,Telas,active,Tela Redmi 12c com aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+44,Tela Incell Motorola Moto G71 5G XT2169 Com Aro,NWMoto319,117.00,22,Telas,active,Tela Incell Motorola Moto G71 5G com aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+45,Tela Incell Moto G52/G82 Xt2225 Sem Aro,NWMoto323,139.20,20,Telas,active,Tela Incell Moto G52/G82 sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+46,Tela Incell Iphone 8 Plus,IPHONE37,93.60,35,Telas,active,Tela Incell iPhone 8 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+47,Tela Asus Zenfone 3 Ze520kl,AZUSSA28,130.00,15,Telas,active,Tela Asus Zenfone 3 Ze520kl,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+48,Tela Orig Samsung J7 Prime Sem Aro,SAMSUNGJ7,78.20,25,Telas,active,Tela original Samsung J7 Prime sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+49,Tela Vivid Samsung A52/A52s 5G A526 A528 Com Aro Biometria,SAMSUNGA52,343.20,18,Telas,active,Tela Vivid Samsung A52/A52s com biometria,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+50,Tela Realme C53/C51/C60 Note 50/Note 53,REALMEC53,130.00,20,Telas,active,Tela Realme C53/C51/C60,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+51,Tela Orig Motorola Moto G7 Play Xt1952 Serm Aro,MOTOG7PLAY,78.00,22,Telas,active,Tela original Motorola Moto G7 Play com aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+52,Tela Orig Motorola Moto G7 XT19262/G7 Plus XT1965 Sem Aro,MOTOG7PLUS,101.40,20,Telas,active,Tela original Motorola Moto G7 Plus sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+53,Tela Orig Motorola Moto G6 Plus XT1926 Sem Aro,MOTOG6PLUS,93.60,18,Telas,active,Tela original Motorola Moto G6 Plus sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+54,Tela Orig Motorola Moto G6 Play Xt1922 Com Aro,MOTOG6PLAYA,85.80,25,Telas,active,Tela original Motorola Moto G6 Play com aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+55,Tela Orig Motorola Moto G6 Play Xt1922 Sem Aro,MOTOG6PLAYS,74.88,20,Telas,active,Tela original Motorola Moto G6 Play sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+56,Tela Orig Motorola Moto G6 Xt1925 Sem Aro,MOTOG6,109.20,15,Telas,active,Tela original Motorola Moto G6 sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+57,Tela Orig Motorola Moto G9 Play Xt2083 Sem Aro,MOTOG9PLAY,73.32,22,Telas,active,Tela original Motorola Moto G9 Play sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+58,Tela Oled Note 11 4g / Note 11s Orig Sem Aro,NOTE11OLED,256.00,12,Telas,active,Tela OLED Note 11 4G/Note 11s original sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+59,Tela Orig Redmi Note 12s Sem Aro,REDMINOTE12S,278.40,10,Telas,active,Tela original Redmi Note 12s sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+60,Tela Incell Note 11 4g / Note 11s Sem Aro,NOTE11INCELL,105.00,30,Telas,active,Tela Incell Note 11 4G/Note 11s sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+61,Tela Note 8 Pro Sem Aro,NOTE8PRO1,98.99,25,Telas,active,Tela Note 8 Pro sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+62,Tela Note 8 Pro Sem Aro,NOTE8PRO2,137.00,15,Telas,active,Tela Note 8 Pro sem aro (premium),,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+63,Tela Orig Motorola Moto G5s Xt1792 Sem Aro,MOTOG5S,74.88,20,Telas,active,Tela original Motorola Moto G5s sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+64,Tela Orig Motorola Moto G5S Plus Xt1802 Sem Aro,MOTOG5SPLUS,74.88,18,Telas,active,Tela original Motorola Moto G5S Plus sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+65,Tela Oled Poco X5 5G Sem Aro,POCOX5OLED,421.20,8,Telas,active,Tela OLED Poco X5 5G sem aro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+66,Tela Premium Iphone 14 Pro Max,IPHONE14PROMAX,655.20,5,Telas,active,Tela Premium iPhone 14 Pro Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+67,Bateria Compativel J7 Prime2,BATSAM2620,57.75,40,Baterias,active,Bateria compatível J7 Prime2,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+68,Bateria Compativel J8 2018 J810,BATSAM2622,66.00,35,Baterias,active,Bateria compatível J8 2018,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+69,Bateria Compativel A02 A022,BATSAM2625,57.75,45,Baterias,active,Bateria compatível A02,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+70,Bateria Compativel A03 A035,BATSAM2627,57.75,40,Baterias,active,Bateria compatível A03,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+71,Bateria Compativel A03s A037F,BATSAM2628,57.75,38,Baterias,active,Bateria compatível A03s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+72,Bateria Compativel A03 Core A032,BATSAM2629,57.75,42,Baterias,active,Bateria compatível A03 Core,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+73,Bateria Compativel A04 A045,BATSAM2630,66.00,35,Baterias,active,Bateria compatível A04,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+74,Bateria Compativel A04E A042F,BATSAM2631,66.00,33,Baterias,active,Bateria compatível A04E,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+75,Bateria Compativel A04s A047,BATSAM2632,66.00,36,Baterias,active,Bateria compatível A04s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+76,Bateria Compativel A05 A055,BATSAM2633,74.25,30,Baterias,active,Bateria compatível A05,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+77,Bateria Compativel A05s A057,BATSAM2634,74.25,28,Baterias,active,Bateria compatível A05s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+78,Bateria Compativel A10 A105,BATSAM2635,66.00,32,Baterias,active,Bateria compatível A10,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+79,Bateria Compativel A10s A107,BATSAM2636,66.00,30,Baterias,active,Bateria compatível A10s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+80,Bateria Compativel A11 A115,BATSAM2637,66.00,34,Baterias,active,Bateria compatível A11,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+81,Bateria Compativel A12 (A125 / A127),BATSAM2638,66.00,31,Baterias,active,Bateria compatível A12,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+82,Bateria Compativel A13 5G A136,BATSAM2639,66.00,29,Baterias,active,Bateria compatível A13 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+83,Bateria Compativel A13 4G A135,BATSAM2640,66.00,33,Baterias,active,Bateria compatível A13 4G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+84,Bateria Compativel A14 5g A146,BATSAM2641,66.00,27,Baterias,active,Bateria compatível A14 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+85,Bateria Compativel A15 4G A155,BATSAM2642,74.25,25,Baterias,active,Bateria compatível A15 4G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+86,Bateria Compativel A20 A205,BATSAM2643,66.00,30,Baterias,active,Bateria compatível A20,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+87,Bateria Compativel A20s A207,BATSAM2644,66.00,28,Baterias,active,Bateria compatível A20s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+88,Bateria Compativel A21s A217,BATSAM2645,66.00,26,Baterias,active,Bateria compatível A21s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+89,Bateria Compativel A22 4G A225,BATSAM2646,66.00,24,Baterias,active,Bateria compatível A22 4G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+90,Bateria Compativel A23 4G A235,BATSAM2647,66.00,25,Baterias,active,Bateria compatível A23 4G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+91,Bateria Compativel A24 4G A245,BATSAM2648,82.50,20,Baterias,active,Bateria compatível A24 4G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+92,Bateria Compativel A30s A307,BATSAM2650,57.75,22,Baterias,active,Bateria compatível A30s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+93,Bateria Compativel A31 A315,BATSAM2651,57.75,21,Baterias,active,Bateria compatível A31,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+94,Bateria Compativel A32 4G A325,BATSAM2652,66.00,23,Baterias,active,Bateria compatível A32 4G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+95,Bateria Compativel A33 5G A336,BATSAM2653,82.50,18,Baterias,active,Bateria compatível A33 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+96,Bateria Compativel A34 5g A346,BATSAM2654,90.75,15,Baterias,active,Bateria compatível A34 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+97,Bateria Compativel A50 A505,BATSAM2655,66.00,20,Baterias,active,Bateria compatível A50,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+98,Bateria Compativel A51 A515,BATSAM2656,66.00,19,Baterias,active,Bateria compatível A51,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+99,Bateria Compativel A52/A52s 5G A526 A528,BATSAM2657,82.50,17,Baterias,active,Bateria compatível A52/A52s 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+100,Bateria Compativel A53 5G A536,BATSAM2658,90.75,14,Baterias,active,Bateria compatível A53 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+101,Bateria Compativel A54 5G A546,BATSAM2659,99.00,12,Baterias,active,Bateria compatível A54 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+102,Bateria Compativel A70 A705,BATSAM2660,74.25,16,Baterias,active,Bateria compatível A70,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+103,Bateria Compativel A71 A715,BATSAM2661,74.25,15,Baterias,active,Bateria compatível A71,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+104,Bateria Compativel A80 A805,BATSAM2662,99.00,10,Baterias,active,Bateria compatível A80,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+105,Bateria Compativel M10 M105,BATSAM2663,66.00,18,Baterias,active,Bateria compatível M10,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+106,Bateria Compativel M12 M127,BATSAM2664,57.75,20,Baterias,active,Bateria compatível M12,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+107,Bateria Compativel M13 M135,BATSAM2665,66.00,17,Baterias,active,Bateria compatível M13,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+108,Bateria Compativel M14 5g M146,BATSAM2666,66.00,16,Baterias,active,Bateria compatível M14 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+109,Bateria Compativel M20 M205,BATSAM2667,66.00,15,Baterias,active,Bateria compatível M20,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+110,Bateria Compativel M21 M215,BATSAM2668,66.00,14,Baterias,active,Bateria compatível M21,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+111,Bateria Compativel M22 4G M225,BATSAM2669,74.25,13,Baterias,active,Bateria compatível M22 4G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+112,Bateria Compativel M23 M236,BATSAM2670,74.25,12,Baterias,active,Bateria compatível M23,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+113,Bateria Compativel M30 M305,BATSAM2671,74.25,14,Baterias,active,Bateria compatível M30,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+114,Bateria Compativel M32 M325,BATSAM2672,82.50,11,Baterias,active,Bateria compatível M32,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+115,Bateria Compativel M33 M336,BATSAM2673,90.75,10,Baterias,active,Bateria compatível M33,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+116,Bateria Compativel M34 M346,BATSAM2674,99.00,9,Baterias,active,Bateria compatível M34,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+117,Bateria Compativel M51 M515F,BATSAM2675,99.00,8,Baterias,active,Bateria compatível M51,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+118,Bateria Compativel M52 M526,BATSAM2676,99.00,8,Baterias,active,Bateria compatível M52,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+119,Bateria Compativel M53 M536,BATSAM2677,99.00,7,Baterias,active,Bateria compatível M53,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+120,Bateria Compativel M62 M625,BATSAM2678,107.25,6,Baterias,active,Bateria compatível M62,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+121,Bateria Compativel Rox S21,BATSAM2679,99.00,10,Baterias,active,Bateria compatível Rox S21,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+122,Bateria Compativel Rox S21 fe,BATSAM2680,99.00,9,Baterias,active,Bateria compatível Rox S21 FE,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+123,Bateria Compativel Rox S22,BATSAM2681,99.00,8,Baterias,active,Bateria compatível Rox S22,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+124,Bateria Compativel Rox S23,BATSAM2682,107.25,7,Baterias,active,Bateria compatível Rox S23,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+125,Bateria Compativel Rox S23fe,BATSAM2683,107.25,6,Baterias,active,Bateria compatível Rox S23 FE,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+126,Bateria Compativel Rox S23 Plus,BATSAM2684,115.50,5,Baterias,active,Bateria compatível Rox S23 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+127,Bateria Compativel S23 Ultra,BATSAM2685,115.50,4,Baterias,active,Bateria compatível S23 Ultra,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+128,Bateria Z3 play / Js40,BATMOTOZ3,62.12,15,Baterias,active,Bateria Z3 Play/JS40,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+129,Bateria Z2 play / HZ40,BATMOTOZ2,62.12,14,Baterias,active,Bateria Z2 Play/HZ40,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+130,Bateria Z play / GL40,BATMOTOZP,58.40,16,Baterias,active,Bateria Z Play/GL40,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+131,Bateria One Fusion plus / LG50,BATMOTOFUSION,63.36,12,Baterias,active,Bateria One Fusion Plus/LG50,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+132,Bateria One Vision / Action / KR40,BATMOTOVISION,63.36,13,Baterias,active,Bateria One Vision/Action/KR40,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+133,Bateria One Hyper / KG50,BATMOTOHYPER,63.36,11,Baterias,active,Bateria One Hyper/KG50,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+134,Bateria E5 Play,BATMOTOE5,63.36,14,Baterias,active,Bateria E5 Play,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+135,Bateria G 5g plus / Lz50,BATMOTO5GPLUS,63.36,10,Baterias,active,Bateria G 5G Plus/LZ50,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+136,Bateria G 5g / mk50,BATMOTO5G,63.36,11,Baterias,active,Bateria G 5G/MK50,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+137,Bateria G9 plus / MG50,BATMOTOG9PLUS,65.84,12,Baterias,active,Bateria G9 Plus/MG50,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+138,Bateria G8 power / K750,BATMOTOG8P,63.36,13,Baterias,active,Bateria G8 Power/K750,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+139,Bateria G8 play / KG40,BATMOTOG8PLAY,63.36,14,Baterias,active,Bateria G8 Play/KG40,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+140,Bateria G8 / G8 plus / KD40,BATMOTOG8,63.36,12,Baterias,active,Bateria G8/G8 Plus/KD40,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+141,Bateria G7 plus / JG40,BATMOTOG7PLUS,63.36,13,Baterias,active,Bateria G7 Plus/JG40,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+142,Bateria G7 JG30,BATMOTOG7,62.12,14,Baterias,active,Bateria G7/JG30,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+143,Bateria G6 play / K6 plus / BL270,BATMOTOG6PLAY,62.12,15,Baterias,active,Bateria G6 Play/K6 Plus/BL270,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+144,Bateria Gold Iphone 13 Pro Max,GOLDIP13PROMAX,181.40,8,Baterias,active,Bateria Gold iPhone 13 Pro Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+145,Bateria Gold Iphone 13 Pro,GOLDIP13PRO,181.40,9,Baterias,active,Bateria Gold iPhone 13 Pro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+146,Bateria Gold Iphone 13,GOLDIP13,175.20,10,Baterias,active,Bateria Gold iPhone 13,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+147,Bateria Gold Iphone 12 Pro Max,GOLDIP12PROMAX,187.60,7,Baterias,active,Bateria Gold iPhone 12 Pro Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+148,Bateria Gold Iphone 12,GOLDIP12,187.60,8,Baterias,active,Bateria Gold iPhone 12,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+149,Bateria Gold Iphone 11 Pro Max,GOLDIP11PROMAX,181.40,9,Baterias,active,Bateria Gold iPhone 11 Pro Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+150,Bateria Gold Iphone 11 Pro,GOLDIP11PRO,175.20,10,Baterias,active,Bateria Gold iPhone 11 Pro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+151,Bateria Gold Iphone11,GOLDIP11,162.80,11,Baterias,active,Bateria Gold iPhone 11,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+152,Bateria Gold Iphone XR,GOLDIPXR,154.12,12,Baterias,active,Bateria Gold iPhone XR,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+153,Bateria Gold Iphone XS Max,GOLDIPXSMAX,162.80,10,Baterias,active,Bateria Gold iPhone XS Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+154,Bateria Gold Iphone 7 Plus,GOLDIP7PLUS,103.20,15,Baterias,active,Bateria Gold iPhone 7 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+155,Bateria Gold Iphone 7G,GOLDIP7,94.52,16,Baterias,active,Bateria Gold iPhone 7,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+156,Bateria Gold Iphone 8 Plus,GOLDIP8PLUS,103.20,14,Baterias,active,Bateria Gold iPhone 8 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+157,Bateria Gold Iphone 8G,GOLDIP8,94.52,15,Baterias,active,Bateria Gold iPhone 8,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+158,Bateria Gold Iphone X,GOLDIPX,154.12,11,Baterias,active,Bateria Gold iPhone X,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+159,Bateria Gold Iphone XS,GOLDIPXS,154.12,10,Baterias,active,Bateria Gold iPhone XS,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+160,Bateria GOLD Iphone 6s Plus,GOLDIP6SPLUS,95.76,12,Baterias,active,Bateria Gold iPhone 6s Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+161,Bateria Gold Iphone 6G iPhone 6 A1549,GOLDIP6,87.08,13,Baterias,active,Bateria Gold iPhone 6,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+162,Bateria Gold Iphone 6 Plus,GOLDIP6PLUS,95.76,11,Baterias,active,Bateria Gold iPhone 6 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+163,Bateria Gold Iphone 6s,GOLDIP6S,88.32,12,Baterias,active,Bateria Gold iPhone 6s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+164,Tampa Traseira Motorola G6 Play Xt1922,TAMMT0206,53.40,50,Acessórios,active,Tampa traseira Motorola G6 Play,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+165,Tampa Traseira Motorola G7 XT19262,TAMMT0207,53.40,45,Acessórios,active,Tampa traseira Motorola G7,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+166,Tampa Traseira Motorola G7 Plus XT 1965,TAMMT0208,53.40,40,Acessórios,active,Tampa traseira Motorola G7 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+167,Tampa Traseira Motorola G7 Play Xt1952,TAMMT0209,53.40,48,Acessórios,active,Tampa traseira Motorola G7 Play,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+168,Tampa Traseira Motorola G7 Power XT1955,TAMMT0210,53.40,42,Acessórios,active,Tampa traseira Motorola G7 Power,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+169,Tampa Traseira Motorola G8 XT 2045,TAMMT0211,53.40,38,Acessórios,active,Tampa traseira Motorola G8,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+170,Tampa Traseira Motorola G8 Play Xt2015,TAMMT0212,53.40,44,Acessórios,active,Tampa traseira Motorola G8 Play,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+171,Tampa Traseira Motorola G8 Plus XT2019,TAMMT0213,53.40,36,Acessórios,active,Tampa traseira Motorola G8 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+172,Tampa Traseira Motorola G8 Power XT 2041,TAMMT0214,53.40,35,Acessórios,active,Tampa traseira Motorola G8 Power,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+173,Tampa Traseira Motorola G8 Power Lite XT 2055,TAMMT0215,53.40,32,Acessórios,active,Tampa traseira Motorola G8 Power Lite,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+174,Tampa Traseira Motorola G9 Play Xt2083,TAMMT0216,53.40,40,Acessórios,active,Tampa traseira Motorola G9 Play,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+175,Tampa Traseira Motorola G9 Power Xt2091,TAMMT0217,53.40,38,Acessórios,active,Tampa traseira Motorola G9 Power,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+176,Tampa Traseira Motorola G9 Plus Xt2087,TAMMT0218,56.52,30,Acessórios,active,Tampa traseira Motorola G9 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+177,Tampa Traseira Motorola G04 Xt2421,TAMMT0219,61.20,25,Acessórios,active,Tampa traseira Motorola G04,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+178,Tampa Traseira Motorola G10 Xt2127,TAMMT0220,43.68,35,Acessórios,active,Tampa traseira Motorola G10,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+179,Tampa Traseira Motorola G13 Xt2331,TAMMT0221,41.20,28,Acessórios,active,Tampa traseira Motorola G13,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+180,Tampa Traseira Motorola G14 Xt2341,TAMMT0222,43.00,30,Acessórios,active,Tampa traseira Motorola G14,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+181,Tampa Traseira Motorola G15,TAMMT0223,46.80,26,Acessórios,active,Tampa traseira Motorola G15,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+182,Tampa Traseira Motorola G20 Xt2128,TAMMT0224,43.80,32,Acessórios,active,Tampa traseira Motorola G20,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+183,Tampa Traseira Motorola G22 Xt2231,TAMMT0225,43.00,29,Acessórios,active,Tampa traseira Motorola G22,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+184,Tampa Traseira Motorola G23 XT2333,TAMMT0226,41.20,27,Acessórios,active,Tampa traseira Motorola G23,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+185,Tampa Traseira Motorola G24 Xt2423,TAMMT0227,48.80,24,Acessórios,active,Tampa traseira Motorola G24,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+186,Tampa Traseira Motorola G30,TAMMT0228,42.20,30,Acessórios,active,Tampa traseira Motorola G30,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+187,Tampa Traseira Motorola G31 XT2173,TAMMT0229,61.20,22,Acessórios,active,Tampa traseira Motorola G31,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+188,Tampa Traseira Motorola G32 Xt2235,TAMMT0230,54.32,25,Acessórios,active,Tampa traseira Motorola G32,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+189,Tampa Traseira Motorola G34,TAMMT0231,59.00,20,Acessórios,active,Tampa traseira Motorola G34,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+190,Tampa Traseira Motorola G41 XT2167,TAMMT0232,51.20,28,Acessórios,active,Tampa traseira Motorola G41,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+191,Tampa Traseira Motorola G42 XT2233,TAMMT0233,51.20,26,Acessórios,active,Tampa traseira Motorola G42,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+192,Tampa Traseira Motorola G50 5G XT 2149,TAMMT0234,59.00,23,Acessórios,active,Tampa traseira Motorola G50 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+193,Tampa Traseira Motorola G52 XT 2221,TAMMT0235,59.00,21,Acessórios,active,Tampa traseira Motorola G52,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+194,Tampa Traseira Motorola G53 XT2335,TAMMT0236,59.00,19,Acessórios,active,Tampa traseira Motorola G53,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+195,Tampa Traseira Motorola G54 XT 2343,TAMMT0237,58.00,18,Acessórios,active,Tampa traseira Motorola G54,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+196,Tampa Traseira tola G60 XT2135,TAMMT0238,31.20,25,Acessórios,active,Tampa traseira G60,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+197,Tampa Traseira Motorola G60s XT2133,TAMMT0239,51.20,22,Acessórios,active,Tampa traseira Motorola G60s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+198,Tampa Traseira Motorola G62 XT2223,TAMMT0240,59.00,20,Acessórios,active,Tampa traseira Motorola G62,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+199,Tampa Traseira Motorola G71 5G XT2169,TAMMT0241,59.00,18,Acessórios,active,Tampa traseira Motorola G71 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+200,Tampa Traseira Motorola G73 XT2237,TAMMT0242,65.00,16,Acessórios,active,Tampa traseira Motorola G73,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+201,Tampa Traseira Motorola G82 Xt2225,TAMMT0243,59.00,17,Acessórios,active,Tampa traseira Motorola G82,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+202,Tampa Traseira Motorola G84 5G XT2347,TAMMT0244,66.00,14,Acessórios,active,Tampa traseira Motorola G84 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+203,Tampa Traseira Motorola G5G Xt2113,TAMMT0246,66.00,15,Acessórios,active,Tampa traseira Motorola G5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+204,Tampa Traseira Motorola G5G Plus XT2075,TAMMT0247,59.00,13,Acessórios,active,Tampa traseira Motorola G5G Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+205,Tampa Traseira G100 XT2125,TAMMT0248,39.00,20,Acessórios,active,Tampa traseira G100,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+206,Tampa Traseira Motorola G200 5G XT 2175,TAMMT0249,59.00,12,Acessórios,active,Tampa traseira Motorola G200 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+207,Tampa Traseira Motorola E6 Play Xt2029,TAMMT0250,53.40,25,Acessórios,active,Tampa traseira Motorola E6 Play,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+208,Tampa Traseira Motorola E6 Plus XT2025,TAMMT0251,53.40,23,Acessórios,active,Tampa traseira Motorola E6 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+209,Tampa Traseira Motorola E6s Xt2053,TAMMT0252,53.40,24,Acessórios,active,Tampa traseira Motorola E6s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+210,Tampa Traseira Motorola E6i Xt2053,TAMMT0253,53.40,22,Acessórios,active,Tampa traseira Motorola E6i,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+211,Tampa Traseira Motorola E7 Xt2025,TAMMT0254,53.40,21,Acessórios,active,Tampa traseira Motorola E7,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+212,Tampa Traseira Motorola E7 Power Xt2097,TAMMT0255,53.40,20,Acessórios,active,Tampa traseira Motorola E7 Power,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+213,Tampa Traseira Motorola E7 Plus Xt2081,TAMMT0256,53.40,19,Acessórios,active,Tampa traseira Motorola E7 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+214,Tampa Traseira Motorola E13 Xt2345,TAMMT0257,51.20,18,Acessórios,active,Tampa traseira Motorola E13,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+215,Tampa Traseira Motorola E20 Xt2155,TAMMT0258,51.20,17,Acessórios,active,Tampa traseira Motorola E20,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+216,Tampa Traseira Motorola E22 Xt2239,TAMMT0259,51.20,16,Acessórios,active,Tampa traseira Motorola E22,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+217,Tampa Traseira Motorola E32 XT2227,TAMMT0260,51.20,15,Acessórios,active,Tampa traseira Motorola E32,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+218,Tampa Traseira Motorola E40 XT2159,TAMMT0261,59.00,14,Acessórios,active,Tampa traseira Motorola E40,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+219,Tampa Traseira Motorola One XT 1941,TAMMT0262,43.40,20,Acessórios,active,Tampa traseira Motorola One,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+220,Tampa Traseira Motorola One Vision XT 1970,TAMMT0263,51.20,18,Acessórios,active,Tampa traseira Motorola One Vision,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+221,Tampa Traseira Motorola One Macro XT 2016,TAMMT0264,51.20,16,Acessórios,active,Tampa traseira Motorola One Macro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+222,Tampa Traseira Motorola One Hyper XT 2027,TAMMT0265,51.20,15,Acessórios,active,Tampa traseira Motorola One Hyper,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+223,Tampa Traseira Motorola One Action XT 2013,TAMMT0266,51.20,14,Acessórios,active,Tampa traseira Motorola One Action,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+224,Tampa Traseira Motorola One Zoom XT 2010,TAMMT0267,59.00,13,Acessórios,active,Tampa traseira Motorola One Zoom,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+225,Tampa Traseira Motorola One Fusion XT2073,TAMMT0268,51.20,12,Acessórios,active,Tampa traseira Motorola One Fusion,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+226,Tampa Traseira Motorola One Fusion Plus XT 2067,TAMMT0269,59.00,11,Acessórios,active,Tampa traseira Motorola One Fusion Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+227,Tampa Traseira Motorola Edge XT 2063,TAMMT0270,68.00,10,Acessórios,active,Tampa traseira Motorola Edge,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+228,Tampa Traseira Motorola Edge Plus XT 2061,TAMMT0271,80.00,8,Acessórios,active,Tampa traseira Motorola Edge Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+229,Tampa Traseira Motorola Edge 20 Pro XT2153,TAMMT0272,78.00,7,Acessórios,active,Tampa traseira Motorola Edge 20 Pro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+230,Tampa Traseira Motorola Edge 20 XT2143,TAMMT0273,78.00,8,Acessórios,active,Tampa traseira Motorola Edge 20,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+231,Tampa Traseira Motorola Edge 30 Neo,TAMMT0274,80.00,6,Acessórios,active,Tampa traseira Motorola Edge 30 Neo,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+232,Tampa Traseira Motorola Edge 40 Neo 5g XT2303,TAMMT0275,80.00,5,Acessórios,active,Tampa traseira Motorola Edge 40 Neo 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+233,Tampa Traseira Iphone X,TAMIPX,36.40,30,Acessórios,active,Tampa traseira iPhone X,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+234,Tampa Traseira Iphone 15 Pro,TAMIP15PRO,75.00,25,Acessórios,active,Tampa traseira iPhone 15 Pro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+235,Tampa Traseira Iphone 15,TAMIP15,70.00,28,Acessórios,active,Tampa traseira iPhone 15,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+236,Tampa Traseira Iphone 14 Pro Max,TAMIP14PROMAX,56.00,32,Acessórios,active,Tampa traseira iPhone 14 Pro Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+237,Tampa Traseira Iphone 14 Pro,TAMIP14PRO,52.40,30,Acessórios,active,Tampa traseira iPhone 14 Pro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+238,Tampa Traseira Iphone 14,TAMIP14,50.40,35,Acessórios,active,Tampa traseira iPhone 14,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+239,Tampa Traseira Iphone 13 Pro Max,TAMIP13PROMAX,56.00,28,Acessórios,active,Tampa traseira iPhone 13 Pro Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+240,Tampa Traseira Iphone 13 Pro,TAMIP13PRO,50.20,26,Acessórios,active,Tampa traseira iPhone 13 Pro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+241,Tampa Traseira Iphone13,TAMIP13,47.60,30,Acessórios,active,Tampa traseira iPhone 13,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+242,Tampa Traseira Iphone 12 Pro Max,TAMIP12PROMAX,56.00,32,Acessórios,active,Tampa traseira iPhone 12 Pro Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+243,Tampa Traseira Iphone 12 Pro,TAMIP12PRO,46.00,28,Acessórios,active,Tampa traseira iPhone 12 Pro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+244,Tampa Traseira Iphone 12,TAMIP12,44.80,30,Acessórios,active,Tampa traseira iPhone 12,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+245,Tampa Traseira Iphone 11 Pro Max,TAMIP11PROMAX,46.00,25,Acessórios,active,Tampa traseira iPhone 11 Pro Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+246,Tampa Traseira Iphone 11 Pro,TAMIP11PRO,44.60,24,Acessórios,active,Tampa traseira iPhone 11 Pro,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+247,Tampa Traseira Iphone11,TAMIP11,42.00,28,Acessórios,active,Tampa traseira iPhone 11,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+248,Tampa Traseira Iphone XR,TAMIPXR,36.40,30,Acessórios,active,Tampa traseira iPhone XR,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+249,Tampa Traseira Iphone XS Max,TAMIPXSMAX,39.20,26,Acessórios,active,Tampa traseira iPhone XS Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+250,Tampa Traseira Iphone XS,TAMIPXS,38.00,25,Acessórios,active,Tampa traseira iPhone XS,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+251,Tampa Traseira Iphone15 Pro Max,TAMIP15PROMAX,78.00,22,Acessórios,active,Tampa traseira iPhone 15 Pro Max,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+252,Tampa Redmi Note 11s 5g,TAMREDMI11S,55.00,20,Acessórios,active,Tampa traseira Redmi Note 11s 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+253,Tampa Motorola Moto One Hyper,TAMMOTOHYPER,43.00,15,Acessórios,active,Tampa traseira Motorola Moto One Hyper,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+254,Dock de Carga Motorola G6 Xt1925,DOCKMOTO6,56.00,20,Acessórios,active,Dock de carga Motorola G6,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+255,Dock de Carga Motorola G6 Play Xt1922,DOCKMOTO6PLAY,62.20,18,Acessórios,active,Dock de carga Motorola G6 Play,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+256,Dock de Carga Motorola G7 Play Xt1952,DOCKMOTO7PLAY,43.60,22,Acessórios,active,Dock de carga Motorola G7 Play,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+257,Dock de Carga Motorola G7 Power XT1955,DOCKMOTO7POWER,43.60,20,Acessórios,active,Dock de carga Motorola G7 Power,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+258,Dock de Carga Motorola G8 XT 2045,DOCKMOTO8,49.80,18,Acessórios,active,Dock de carga Motorola G8,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+259,Dock de Carga Motorola G8 Power XT 2041,DOCKMOTO8POWER,49.80,16,Acessórios,active,Dock de carga Motorola G8 Power,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+260,Dock de Carga Motorola G8 Power Lite XT 2055,DOCKMOTO8PLITE,49.80,15,Acessórios,active,Dock de carga Motorola G8 Power Lite,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+261,Dock de Carga Motorola G9 Play Xt2083,DOCKMOTO9PLAY,49.80,14,Acessórios,active,Dock de carga Motorola G9 Play,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+262,Dock de Carga Motorola G9 Power Xt2091,DOCKMOTO9POWER,49.80,13,Acessórios,active,Dock de carga Motorola G9 Power,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+263,Dock de Carga Motorola G9 Plus Xt2087,DOCKMOTO9PLUS,56.00,12,Acessórios,active,Dock de carga Motorola G9 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+264,Dock de Carga Motorola G04 Xt2421,DOCKMOTO04,49.80,15,Acessórios,active,Dock de carga Motorola G04,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+265,Dock de Carga nacional Motorola G10 Xt2127,DOCKMOTO10,62.20,11,Acessórios,active,Dock de carga nacional Motorola G10,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+266,Dock de Carga Motorola G13 Xt2331,DOCKMOTO13,56.00,13,Acessórios,active,Dock de carga Motorola G13,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+267,Dock de Carga Motorola G14 Xt2341,DOCKMOTO14,56.00,12,Acessórios,active,Dock de carga Motorola G14,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+268,Dock de Carga Motorola G15,DOCKMOTO15,56.00,11,Acessórios,active,Dock de carga Motorola G15,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+269,Dock de Carga original nacional Motorola G20 Xt2128,DOCKMOTO20,62.20,10,Acessórios,active,Dock de carga original nacional Motorola G20,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+270,Dock de Carga Motorola G22 Xt2231,DOCKMOTO22,49.80,12,Acessórios,active,Dock de carga Motorola G22,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+271,Dock de Carga Motorola G23 XT2333,DOCKMOTO23,49.80,11,Acessórios,active,Dock de carga Motorola G23,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+272,Dock de Carga Motorola G24 Xt2423,DOCKMOTO24,56.00,10,Acessórios,active,Dock de carga Motorola G24,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+273,Dock de Carga Motorola G30,DOCKMOTO30,62.20,9,Acessórios,active,Dock de carga Motorola G30,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+274,Dock de Carga Motorola G31 XT2173,DOCKMOTO31,62.20,8,Acessórios,active,Dock de carga Motorola G31,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+275,Dock de Carga Motorola G32 Xt2235,DOCKMOTO32,56.00,10,Acessórios,active,Dock de carga Motorola G32,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+276,Dock de Carga Motorola G34,DOCKMOTO34,56.00,9,Acessórios,active,Dock de carga Motorola G34,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+277,Dock de Carga Motorola G35,DOCKMOTO35,56.00,8,Acessórios,active,Dock de carga Motorola G35,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+278,Dock de Carga Motorola G41 XT2167,DOCKMOTO41,68.40,7,Acessórios,active,Dock de carga Motorola G41,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+279,Dock de Carga Motorola G42 XT2233,DOCKMOTO42,68.40,6,Acessórios,active,Dock de carga Motorola G42,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+280,Dock de Carga Motorola G50 5G XT 2149,DOCKMOTO50,62.20,8,Acessórios,active,Dock de carga Motorola G50 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+281,Dock de Carga original Motorola G52 XT 2221,DOCKMOTO52,74.60,5,Acessórios,active,Dock de carga original Motorola G52,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+282,Dock de Carga Motorola G53 XT2335,DOCKMOTO53,74.60,4,Acessórios,active,Dock de carga Motorola G53,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+283,Dock de Carga Motorola G54 XT 2343,DOCKMOTO54,74.60,4,Acessórios,active,Dock de carga Motorola G54,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+284,Dock de Carga tola G60 XT2135,DOCKMOTO60,49.80,6,Acessórios,active,Dock de carga G60,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+285,Dock de Carga Motorola G60s XT2133,DOCKMOTO60S,49.80,5,Acessórios,active,Dock de carga Motorola G60s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+286,Dock de Carga Motorola G62 XT2223,DOCKMOTO62,87.00,3,Acessórios,active,Dock de carga Motorola G62,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+287,Dock de Carga Motorola G71 5G XT2169,DOCKMOTO71,87.00,3,Acessórios,active,Dock de carga Motorola G71 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+288,Dock de Carga Motorola G73 XT2237,DOCKMOTO73,99.40,2,Acessórios,active,Dock de carga Motorola G73,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+289,Dock de Carga Motorola G82 Xt2225,DOCKMOTO82,99.40,2,Acessórios,active,Dock de carga Motorola G82,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+290,Dock de Carga Motorola G84 5G XT2347,DOCKMOTO84,87.00,2,Acessórios,active,Dock de carga Motorola G84 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+291,Dock de Carga Motorola G85,DOCKMOTO85,25.00,5,Acessórios,active,Dock de carga Motorola G85,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+292,Dock de Carga Motorola G5G Xt2113,DOCKMOTO5G,68.40,4,Acessórios,active,Dock de carga Motorola G5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+293,Dock de Carga Motorola G5G Plus XT2075,DOCKMOTO5GPLUS,74.60,3,Acessórios,active,Dock de carga Motorola G5G Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+294,Dock de Carga G100 XT2125,DOCKMOTO100,56.00,5,Acessórios,active,Dock de carga G100,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+295,Dock de Carga Motorola G200 5G XT 2175,DOCKMOTO200,49.80,4,Acessórios,active,Dock de carga Motorola G200 5G,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+296,Dock de Carga Motorola E4 Xt1763,DOCKMOTOE4,37.40,8,Acessórios,active,Dock de carga Motorola E4,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+297,Dock de Carga Motorola E4 Plus Xt1770,DOCKMOTOE4PLUS,37.40,7,Acessórios,active,Dock de carga Motorola E4 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+298,Dock de Carga Motorola G6 Play / E5 XT1944,DOCKMOTO6E5,43.60,6,Acessórios,active,Dock de carga Motorola G6 Play/E5,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+299,Dock de Carga Motorola E6 Play Xt2029,DOCKMOTOE6PLAY,43.60,7,Acessórios,active,Dock de carga Motorola E6 Play,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+300,Dock de Carga Motorola E6 Plus XT2025,DOCKMOTOE6PLUS,43.60,6,Acessórios,active,Dock de carga Motorola E6 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+301,Dock de Carga Motorola E6s Xt2053,DOCKMOTOE6S,43.60,6,Acessórios,active,Dock de carga Motorola E6s,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+302,Dock de Carga Motorola E6i Xt2053,DOCKMOTOE6I,43.60,5,Acessórios,active,Dock de carga Motorola E6i,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+303,Dock de Carga Motorola E7 Power Xt2097,DOCKMOTOE7POWER,49.80,5,Acessórios,active,Dock de carga Motorola E7 Power,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+304,Dock de Carga Motorola E7 Plus Xt2081,DOCKMOTOE7PLUS,49.80,4,Acessórios,active,Dock de carga Motorola E7 Plus,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+305,Dock de Carga Motorola E13 Xt2345,DOCKMOTOE13,49.80,5,Acessórios,active,Dock de carga Motorola E13,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+306,Dock de Carga Motorola E20 Xt2155,DOCKMOTOE20,49.80,4,Acessórios,active,Dock de carga Motorola E20,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+307,Dock de Carga Motorola E22 Xt2239,DOCKMOTOE22,49.80,4,Acessórios,active,Dock de carga Motorola E22,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+308,Dock de Carga Motorola E32 XT2227,DOCKMOTOE32,49.80,3,Acessórios,active,Dock de carga Motorola E32,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+309,Dock de Carga Motorola E40 XT2159,DOCKMOTOE40,49.80,3,Acessórios,active,Dock de carga Motorola E40,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+310,Dock de Carga Motorola One XT 1941,DOCKMOTOONE,49.80,4,Acessórios,active,Dock de carga Motorola One,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+311,Dock de Carga Motorola One Vision XT 1970,DOCKMOTOONEVIS,49.80,3,Acessórios,active,Dock de carga Motorola One Vision,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+312,Dock de Carga Motorola One Action XT 2013,DOCKMOTOONEACT,49.80,3,Acessórios,active,Dock de carga Motorola One Action,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+313,Dock de Carga Samsung A01 A015M,DOCKSAM01,28.50,15,Acessórios,active,Dock de carga Samsung A01,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+314,Dock de Carga Samsung A02 A022,DOCKSAM02,28.50,14,Acessórios,active,Dock de carga Samsung A02,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+315,Chip Triplo Corte TIM 5G Pré-Pago Cobertura Nacional,CHIPTIM5G,25.40,100,Chips,active,Chip TIM 5G pré-pago,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+316,Chip Triplo Corte Vivo 5G Pré-Pago Cobertura Nacional,CHIPVIVO5G,32.00,80,Chips,active,Chip Vivo 5G pré-pago,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+317,Chip Triplo Corte Claro 5G Pré-Pago Cobertura Nacional,CHIPCLARO5G,26.60,90,Chips,active,Chip Claro 5G pré-pago,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+318,Cartão Memória Sandisk Ultra 32gb 100mb/s Classe 10 Microsd,SD32GB,59.99,40,Cartões,active,Cartão Sandisk 32GB,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+319,cartão memória sandisk ultra 16gb 100mb/s classe 10 microsd,SD16GB,54.99,35,Cartões,active,Cartão Sandisk 16GB,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+320,Cartão de Memoria Sandisk Ultra Microsdxc Uhs-I Card With Adapter – 128Gb,SD128GB,104.99,25,Cartões,active,Cartão Sandisk 128GB,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+321,Cartão de Memoria Micro Sd Altomex Al-mo-8 8gb,SD8GB,29.99,30,Cartões,active,Cartão Altomex 8GB,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+322,Cartão de Memória Microsdxc Uhs-I Card With Adapter – 64Gb,SD64GB,78.00,28,Cartões,active,Cartão Sandisk 64GB,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+323,Carregador Apple 20w Turbo iPhone iPad Iwatch Original Apple,CARGAPPLE20W,139.90,15,Carregadores,active,Carregador Apple 20W original,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+324,Carregador 5.1 Carga Rápida De Viagem v8 H´maston,CARGHMV8,34.99,25,Carregadores,active,Carregador H´maston V8 5.1A,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+325,CARREGADOR XIAOMI TURBO TIPO C 67W,CARGXIAOMI67W,40.00,20,Carregadores,active,Carregador Xiaomi Turbo 67W,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+326,Carregador HMaston 3.1A Y614 (Sem Cabo),CARGHM3A,24.99,30,Carregadores,active,Carregador HMaston 3.1A,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+327,CARREGADOR V8 LELONG 5.1 LE-233FV,CARGLELONGV8,29.99,28,Carregadores,active,Carregador V8 Lelong 5.1A,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+328,Carregador USB-C IPHONE Turbo 20W,CARGUSB20W,35.99,22,Carregadores,active,Carregador USB-C iPhone 20W,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+329,CARREGADOR 5V 5.1A 2 PORTAS USB LE-239 (SEM CABO),CARG2USB,23.99,25,Carregadores,active,Carregador 2 portas USB 5.1A,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+330,Carregador HMaston 2.1A F001 (SEM CABO),CARGHM2A,20.99,30,Carregadores,active,Carregador HMaston 2.1A,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+331,Carregador V8 Kaid 2.4A KD109S,CARGKAIDV8,35.99,18,Carregadores,active,Carregador V8 Kaid 2.4A,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+332,Carregador Magnetico Sem fio A-Gold BTE52,CARGMAGAGOLD,42.99,20,Carregadores,active,Carregador magnético A-Gold,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+333,Carregador sem Fio ALTOMEX 15W AW69,CARGWIREALT,42.99,18,Carregadores,active,Carregador sem fio Altomex 15W,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+334,Carregador Tipo C Duplo 2 Usb 5.1a Le-242fc Lelong,CARG2TYPEC,29.99,22,Carregadores,active,Carregador Tipo C duplo 2 USB,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+335,Carregador IOS Turbo HMaston Y18-2,CARGIOSTURBO,35.99,20,Carregadores,active,Carregador iOS Turbo HMaston,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+336,Carregador V8 4.1a Y18-1,CARGV841A,35.99,19,Carregadores,active,Carregador V8 4.1A,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+337,Carregador HMaston 3.1A Y05,CARGHM31A,24.99,24,Carregadores,active,Carregador HMaston 3.1A Y05,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+338,Carregador Duas Entradas Tipo C e USB Turbo 5.1,CARG2TURBO,35.88,16,Carregadores,active,Carregador duplo Turbo 5.1A,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+339,Carregador Rápido 2 Entradas 1 cabo Usb HMaston,CARGHMFAST,35.88,17,Carregadores,active,Carregador rápido HMaston,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+340,Carregador V8 5.1 2 Entrada Usb Cabo,CARGV8CABO,34.99,18,Carregadores,active,Carregador V8 5.1 com cabo,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+341,Power Bank A-Gold 10000mAh BTE09A,POWERBANK10K,84.99,15,Power Banks,active,Power Bank A-Gold 10000mAh,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+342,Pen Drive Usb 16gb Flash Drive Memory Stick Cruzer Blade 2.0,PENDRIVE16,54.00,30,Storage,active,Pen Drive 16GB Cruzer Blade,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+343,Pen Drive Usb 8GB Flash Drive Memory Stick Cruzer Blade 2.0,PENDRIVE8,48.00,35,Storage,active,Pen Drive 8GB Cruzer Blade,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+344,Pen Drive Usb 64gb Flash Drive Memory Stick Cruzer Blade 2.0,PENDRIVE64,72.00,20,Storage,active,Pen Drive 64GB Cruzer Blade,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+345,Pendrive Usb 128gb Flash Drive Memory Stick Cruzer Blade 2.0,PENDRIVE128,102.00,15,Storage,active,Pen Drive 128GB Cruzer Blade,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+346,Pen Drive Usb 32gb Flash Drive Memory Stick Cruzer Blade 2.0,PENDRIVE32,66.00,25,Storage,active,Pen Drive 32GB Cruzer Blade,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+347,Pendrive Kapbom 64gb Ka-a-64 2.0 Cor Prateado,PENDRIVEK64,78.00,18,Storage,active,Pendrive Kapbom 64GB,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+348,Pendrive KAPBOM 16GB,PENDRIVEK16,48.99,22,Storage,active,Pendrive Kapbom 16GB,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+349,Cola T700 15Ml,COLAT700,11.20,50,Ferramentas,active,Cola T700 15ml,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+350,Cola B700 15Ml,COLAB700,11.20,48,Ferramentas,active,Cola B700 15ml,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+351,Cola de alta performance multiuso B7000 de 110ML,COLAB7000,30.00,20,Ferramentas,active,Cola B7000 110ml,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+352,Cola de alta performance multiuso COLA PRETA T7000 de 110ML,COLAT7000,30.00,18,Ferramentas,active,Cola T7000 preta 110ml,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+353,HUB USB 4 Portas TIPO C FY735,HUBUSB4C,48.99,12,Gadgets,active,HUB USB 4 portas Tipo C,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+354,HUB USB 3 PORTAS FY834,HUBUSB3,29.99,15,Gadgets,active,HUB USB 3 portas,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+355,Case Para HD SATA FY720,CASEHD,29.99,18,Gadgets,active,Case para HD SATA,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+356,Repetidor de Sinal WI-FI H300,WIFIREPEATER,54.99,10,Gadgets,active,Repetidor de sinal Wi-Fi,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+357,Pilha Alcalina Blitzen Modelo R6P,PILHABLITZEN,48.00,20,Pilhas,active,Pilha alcalina Blitzen R6P,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+358,Bateria Golden Ultra AAA,BATGOLDAAA,45.00,18,Pilhas,active,Bateria Golden Ultra AAA,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+359,5 Pilhas Baterias 23a 12v A23 Alcalina,PILHAS23A,24.00,25,Pilhas,active,Pilhas 23A 12V alcalina,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+360,Fone Lightning Ios Ear-x Al-x7 Altomex,FONELIGHT,58.80,15,Áudio,active,Fone Lightning iOS Altomex,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+361,Microfone Sem Fio Tomate MT1201,MICWIRELESS,142.00,8,Áudio,active,Microfone sem fio Tomate,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+362,Microfone sem fio SM 58,MICSM58,58.80,12,Áudio,active,Microfone sem fio SM 58,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+363,Microfone Lelong LE996W,MICLELONG,85.00,10,Áudio,active,Microfone Lelong,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+364,Microfone TOMATE MT1010,MICTOMATE,36.00,14,Áudio,active,Microfone Tomate MT1010,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+365,Câmera Espiã ALTOMEX A9,CAMSPYA9,78.00,8,Câmeras,active,Câmera espiã Altomex A9,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+366,camera lehmox ley-19,CAMLEHMOX,114.00,6,Câmeras,active,Câmera Lehmox LEY-19,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+367,Câmera de lâmpada Altomex E27,CAMLAMP,132.00,5,Câmeras,active,Câmera de lâmpada Altomex,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+368,"Controle Wireless 2.4ghz Twin Vibration Para Ps2, Ps1",CONTROLPS2,66.00,12,Games,active,Controle wireless PS2/PS1,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+369,Controle Xbox 360 sem Fio ALTO-6560w Altomex,CONTROLXBOX,120.00,8,Games,active,Controle Xbox 360 sem fio,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+370,Controle PS4 Com Fio Altomex Alto4,CONTROLPS4,96.00,10,Games,active,Controle PS4 com fio,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+371,Controle Joystick para PS2 DualShock com Fio KNUP -KP-GM014 KNUP,CONTROLPS2KNUP,42.00,15,Games,active,Controle PS2 KNUP,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+372,Controle PS4 S/Fio Boomax,CONTROLPS4BOOM,114.00,7,Games,active,Controle PS4 sem fio Boomax,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+373,Balança Portátil Bm-a08 2g A 50kg - Tara E Desligamento,BALANCA,33.60,20,Utilitários,active,Balança portátil BM-A08,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+374,Bomba Elétrica Universal Para Água: Prática E Eficiente Para Garrafões E Bebedouros,BOMBAGUA,33.60,18,Utilitários,active,Bomba elétrica universal,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+375,Calculadora 12 Dígitos Pilha AA Bm-A132 - Bommax,CALCULADORA,30.00,25,Utilitários,active,Calculadora 12 dígitos,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+376,Aparador-depilador De Pelos Nazais Lelong Le-774,APARADOR,33.60,15,Utilitários,active,Aparador de pelos nasais,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00
+377,Mini Balança Digital Alta Precisão Até 500g Mh-503 Tomate,MINIBALANCA,33.60,12,Utilitários,active,Mini balança digital,,,5,2025-11-29 17:00:08.204301+00,2025-11-29 17:00:08.204301+00

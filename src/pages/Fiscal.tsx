@@ -1,6 +1,7 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Receipt, Calculator, FileCheck, AlertTriangle } from "lucide-react";
+import { Plus, FileText, Receipt, Calculator, FileCheck, AlertTriangle, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const recentNotes = [
   { id: "NF-001234", client: "Tech Corp Ltda", value: 15680, status: "autorizada", date: "15/01/2024" },
@@ -42,6 +43,8 @@ const fiscalStatusTextColorClasses: Record<string, string> = {
 };
 
 const Fiscal = () => {
+  const navigate = useNavigate();
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -52,10 +55,16 @@ const Fiscal = () => {
               Gestão fiscal e tributária
             </p>
           </div>
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Emitir NF-e
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => navigate('/fiscal/configuracoes')}>
+              <Settings className="w-4 h-4" />
+              Configurações
+            </Button>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Emitir NF-e
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

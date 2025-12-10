@@ -1,12 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+@import './styles/design-system.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 98%; /* Softer white/gray */
+    --background: 0 0% 98%;
+    /* Softer white/gray */
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -16,7 +19,8 @@
     --popover-foreground: 222 47% 11%;
 
     /* SMBStore Green Primary */
-    --primary: 142 76% 36%; /* Hex: #16a34a (green-600 approx) */
+    --primary: 142 76% 36%;
+    /* Hex: #16a34a (green-600 approx) */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96%;
@@ -40,26 +44,36 @@
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 142 76% 36%; /* Match Primary */
+    --ring: 142 76% 36%;
+    /* Match Primary */
 
-    --radius: 0.5rem; /* Slightly tighter radius for "Pro" feel */
+    --radius: 0.5rem;
+    /* Slightly tighter radius for "Pro" feel */
 
     /* Navy Sidebar (Bling/SMBStore Professional look) */
-    --sidebar-background: 222 47% 11%; /* Dark Navy */
+    --sidebar-background: 222 47% 11%;
+    /* Dark Navy */
     --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 142 76% 36%; /* Green highlighting in sidebar */
+    --sidebar-primary: 142 76% 36%;
+    /* Green highlighting in sidebar */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%; /* Slightly lighter navy for hover */
+    --sidebar-accent: 217 33% 17%;
+    /* Slightly lighter navy for hover */
     --sidebar-accent-foreground: 210 40% 96%;
     --sidebar-border: 217 33% 17%;
     --sidebar-ring: 142 76% 36%;
     --sidebar-muted: 215 16% 57%;
 
-    --chart-1: 142 76% 36%; /* Green */
-    --chart-2: 217 91% 60%; /* Blue */
-    --chart-3: 38 92% 50%;  /* Yellow */
-    --chart-4: 0 84% 60%;   /* Red */
-    --chart-5: 262 83% 58%; /* Purple */
+    --chart-1: 142 76% 36%;
+    /* Green */
+    --chart-2: 217 91% 60%;
+    /* Blue */
+    --chart-3: 38 92% 50%;
+    /* Yellow */
+    --chart-4: 0 84% 60%;
+    /* Red */
+    --chart-5: 262 83% 58%;
+    /* Purple */
   }
 
   .dark {
@@ -97,7 +111,8 @@
     --input: 217 33% 17%;
     --ring: 142 76% 36%;
 
-    --sidebar-background: 222 47% 6%; /* Even darker in dark mode */
+    --sidebar-background: 222 47% 6%;
+    /* Even darker in dark mode */
     --sidebar-foreground: 210 40% 96%;
     --sidebar-primary: 142 76% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -119,6 +134,98 @@
     font-family: 'Inter', sans-serif;
   }
 }
+
+/* Density Mode Variables */
+.density-compact {
+  --spacing-card: 0.75rem;
+  /* 12px */
+  --spacing-section: 1rem;
+  /* 16px */
+  --spacing-gap: 0.5rem;
+  /* 8px */
+  --spacing-page: 1rem;
+  /* 16px */
+  --font-size-base: 0.875rem;
+  /* 14px */
+  --line-height: 1.4;
+}
+
+.density-compact .p-4 {
+  padding: 0.75rem !important;
+}
+
+.density-compact .p-6 {
+  padding: 1rem !important;
+}
+
+.density-compact .gap-4 {
+  gap: 0.5rem !important;
+}
+
+.density-compact .gap-6 {
+  gap: 0.75rem !important;
+}
+
+.density-compact .mb-6 {
+  margin-bottom: 1rem !important;
+}
+
+.density-compact .space-y-4>*+* {
+  margin-top: 0.5rem !important;
+}
+
+.density-comfortable {
+  --spacing-card: 1rem;
+  /* 16px */
+  --spacing-section: 1.5rem;
+  /* 24px */
+  --spacing-gap: 1rem;
+  /* 16px */
+  --spacing-page: 1.5rem;
+  /* 24px */
+  --font-size-base: 1rem;
+  /* 16px */
+  --line-height: 1.5;
+}
+
+.density-spacious {
+  --spacing-card: 1.5rem;
+  /* 24px */
+  --spacing-section: 2rem;
+  /* 32px */
+  --spacing-gap: 1.5rem;
+  /* 24px */
+  --spacing-page: 2rem;
+  /* 32px */
+  --font-size-base: 1.125rem;
+  /* 18px */
+  --line-height: 1.6;
+}
+
+.density-spacious .p-4 {
+  padding: 1.5rem !important;
+}
+
+.density-spacious .p-6 {
+  padding: 2rem !important;
+}
+
+.density-spacious .gap-4 {
+  gap: 1.5rem !important;
+}
+
+.density-spacious .gap-6 {
+  gap: 2rem !important;
+}
+
+.density-spacious .mb-6 {
+  margin-bottom: 2rem !important;
+}
+
+.density-spacious .space-y-4>*+* {
+  margin-top: 1.5rem !important;
+}
+
 
 @layer utilities {
   .glass-card {
@@ -178,12 +285,15 @@
 .animation-delay-100 {
   animation-delay: 100ms;
 }
+
 .animation-delay-200 {
   animation-delay: 200ms;
 }
+
 .animation-delay-300 {
   animation-delay: 300ms;
 }
+
 .animation-delay-400 {
   animation-delay: 400ms;
 }
@@ -192,12 +302,15 @@
 .bg-acr-blue {
   background-color: #0066cc;
 }
+
 .text-acr-blue {
   color: #0066cc;
 }
+
 .hover\:bg-acr-blue\/90:hover {
   background-color: rgba(0, 102, 204, 0.9);
 }
+
 .bg-acr-blue\/10 {
   background-color: rgba(0, 102, 204, 0.1);
 }
@@ -205,9 +318,11 @@
 .bg-acr-green {
   background-color: #28a745;
 }
+
 .text-acr-green {
   color: #28a745;
 }
+
 .hover\:bg-acr-green\/90:hover {
   background-color: rgba(40, 167, 69, 0.9);
 }
@@ -215,9 +330,11 @@
 .bg-acr-orange {
   background-color: #ff6600;
 }
+
 .text-acr-orange {
   color: #ff6600;
 }
+
 .hover\:bg-acr-orange\/90:hover {
   background-color: rgba(255, 102, 0, 0.9);
 }

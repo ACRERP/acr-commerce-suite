@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { ClientList, Client } from '@/components/dashboard/clients/ClientList';
 import { ClientForm } from '@/components/dashboard/clients/ClientForm';
+import { ClientHistoryModal } from '@/components/dashboard/clients/ClientHistoryModal';
 import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
@@ -15,13 +17,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Collapsible,
-  CollapsibleContent,
-} from '@/components/ui/collapsible';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import * as z from 'zod';
-import { PlusCircle, Search, X } from 'lucide-react';
+import { PlusCircle, Search, X, Users, UserPlus, TrendingUp, DollarSign } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
@@ -57,13 +56,42 @@ export function ClientsPage({ openForm = false }: ClientsPageProps) {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyClient, setHistoryClient] = useState<Client | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Buscar estatísticas
+  const { data: stats } = useQuery({
+    queryKey: ['client-stats'],
+    queryFn: async () => {
+      const { data: clients } = await supabase
+        .from('clients')
+        .select('id, created_at');
+
+      const total = clients?.length || 0;
+
+      // Clientes novos (últimos 30 dias)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const newClients = clients?.filter(c =>
+        new Date(c.created_at) >= thirtyDaysAgo
+      ).length || 0;
+
+      return {
+        total,
+        newClients,
+        active: Math.floor(total * 0.7), // Placeholder
+        avgTicket: 259 // Placeholder
+      };
+    }
+  });
 
   const addMutation = useMutation({
     mutationFn: addClient,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['client-stats'] });
       toast({ title: 'Sucesso!', description: 'Cliente adicionado com sucesso.' });
       setIsFormOpen(false);
     },
@@ -88,6 +116,7 @@ export function ClientsPage({ openForm = false }: ClientsPageProps) {
     mutationFn: deleteClient,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['client-stats'] });
       toast({ title: 'Sucesso!', description: 'Cliente excluído com sucesso.' });
       setIsAlertOpen(false);
     },
@@ -120,60 +149,141 @@ export function ClientsPage({ openForm = false }: ClientsPageProps) {
   };
 
   return (
-    <div className="h-[calc(100vh-100px)] flex flex-col space-y-4">
-      {/* Top Bar Horizontal Menu */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <h1 className="text-xl font-bold border-r pr-4 mr-2">Clientes</h1>
-
-          <div className="relative max-w-md w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Buscar por nome, CPF/CNPJ, telefone..."
-              className="pl-9 bg-gray-50 border-gray-200"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Clientes
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Gerencie sua base de clientes
+          </p>
         </div>
-
-        <Button onClick={handleNewClient} className="bg-primary hover:bg-primary/90 ml-4">
-          <PlusCircle className="mr-2 h-4 w-4" />
+        <Button onClick={handleNewClient} className="hover:scale-105 transition-transform">
+          <PlusCircle className="w-4 h-4 mr-2" />
           Novo Cliente
         </Button>
       </div>
 
-      {/* Horizontal Collapsible Form */}
-      <Collapsible open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <CollapsibleContent className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">
-              {selectedClient ? `✏️ Editar Cliente: ${selectedClient.name}` : '➕ Novo Cliente'}
-            </h2>
-            <Button variant="ghost" size="sm" onClick={() => setIsFormOpen(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="p-4">
-            <ClientForm
-              onSubmit={handleSubmit}
-              isLoading={addMutation.isPending || updateMutation.isPending}
-              client={selectedClient}
-            />
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+      {/* Dashboard - 4 Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Total de Clientes
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+                  {stats?.total || 0}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Client List */}
-      <div className="flex-1 overflow-auto">
-        <ClientList
-          onEditClient={handleEditClient}
-          onDeleteClient={handleDeleteClient}
-          searchTerm={searchTerm}
-        />
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Clientes Ativos
+                </p>
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
+                  {stats?.active || 0}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Novos este Mês
+                </p>
+                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-2">
+                  {stats?.newClients || 0}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <UserPlus className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Ticket Médio
+                </p>
+                <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-2">
+                  R$ {stats?.avgTicket || 0}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Delete Alert Dialog */}
+      {/* Busca */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Buscar por nome, CPF/CNPJ, telefone..."
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Formulário em Dialog/Modal */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedClient ? `Editar Cliente: ${selectedClient.name}` : 'Novo Cliente'}
+            </DialogTitle>
+          </DialogHeader>
+          <ClientForm
+            onSubmit={handleSubmit}
+            isLoading={addMutation.isPending || updateMutation.isPending}
+            client={selectedClient}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Lista de Clientes */}
+      <ClientList
+        onEditClient={handleEditClient}
+        onDeleteClient={handleDeleteClient}
+        onViewPurchaseHistory={(client) => {
+          setHistoryClient(client);
+          setIsHistoryOpen(true);
+        }}
+        searchTerm={searchTerm}
+      />
+
+      {/* Dialog de Confirmação de Exclusão */}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -188,6 +298,16 @@ export function ClientsPage({ openForm = false }: ClientsPageProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Modal de Histórico */}
+      <ClientHistoryModal
+        client={historyClient}
+        isOpen={isHistoryOpen}
+        onClose={() => {
+          setIsHistoryOpen(false);
+          setHistoryClient(null);
+        }}
+      />
     </div>
   );
 }

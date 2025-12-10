@@ -91,6 +91,21 @@ export async function createTransaction(transaction: CreateTransactionData) {
   return data as Transaction;
 }
 
+export async function updateTransaction(
+  id: number,
+  transaction: Partial<CreateTransactionData>
+) {
+  const { data, error } = await supabase
+    .from('transactions')
+    .update(transaction)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Transaction;
+}
+
 export async function deleteTransaction(id: number) {
   const { error } = await supabase
     .from('transactions')
@@ -100,14 +115,3 @@ export async function deleteTransaction(id: number) {
   if (error) throw error;
 }
 
-export async function updateTransaction(id: number, updates: Partial<CreateTransactionData>) {
-  const { data, error } = await supabase
-    .from('transactions')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Transaction;
-}

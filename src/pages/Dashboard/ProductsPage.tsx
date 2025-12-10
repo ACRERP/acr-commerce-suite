@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useProducts, useDeleteProduct } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { ProductList } from '@/components/dashboard/products/ProductList';
 import { Product } from '@/lib/products';
 import { ProductForm } from '@/components/dashboard/products/ProductForm';
@@ -19,12 +20,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Collapsible,
-  CollapsibleContent,
-} from '@/components/ui/collapsible';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, PlusCircle, Search, X } from 'lucide-react';
+import { Upload, PlusCircle, Search, X, Package, TrendingUp, AlertTriangle, DollarSign } from 'lucide-react';
 
 
 interface ProductsPageProps {
@@ -83,56 +81,141 @@ export function ProductsPage({ openForm = false, defaultTab = "products" }: Prod
     product.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
+  // Calcular estatísticas
+  const total = products?.length || 0;
+  const active = products?.filter(p => p.stock > 0).length || 0;
+  const lowStock = products?.filter(p => p.stock > 0 && p.stock <= (p.min_stock || 5)).length || 0;
+  const totalValue = products?.reduce((sum, p) => sum + (p.price * p.stock), 0) || 0;
+
   return (
-    <div className="h-[calc(100vh-100px)] flex flex-col space-y-4">
-      {/* Top Bar Horizontal Menu */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <h1 className="text-xl font-bold border-r pr-4 mr-2">Produtos</h1>
-
-          <div className="relative max-w-md w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Buscar por nome, código, código de barras..."
-              className="pl-9 bg-gray-50 border-gray-200"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Produtos
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Gerencie seu catálogo de produtos
+          </p>
         </div>
-
-        <div className="flex items-center gap-2 ml-4">
+        <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setShowBulkImport(true)}>
             <Upload className="w-4 h-4 mr-2" />
             Importar
           </Button>
-          <Button onClick={handleNewProduct} className="bg-primary hover:bg-primary/90">
-            <PlusCircle className="mr-2 h-4 w-4" />
+          <Button onClick={handleNewProduct} className="hover:scale-105 transition-transform">
+            <PlusCircle className="w-4 h-4 mr-2" />
             Novo Produto
           </Button>
         </div>
       </div>
 
-      {/* Horizontal Collapsible Form */}
-      <Collapsible open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <CollapsibleContent className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">
-              {selectedProduct ? `✏️ Editar Produto: ${selectedProduct.name}` : '➕ Novo Produto'}
-            </h2>
-            <Button variant="ghost" size="sm" onClick={() => setIsFormOpen(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="p-4 max-h-[50vh] overflow-y-auto">
-            <ProductForm
-              product={selectedProduct || undefined}
-              onSubmit={handleFormSuccess}
-              onCancel={handleFormCancel}
+      {/* Dashboard - 4 Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Total de Produtos
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+                  {total}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <Package className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Produtos Ativos
+                </p>
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
+                  {active}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Estoque Baixo
+                </p>
+                <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-2">
+                  {lowStock}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Valor Total
+                </p>
+                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-2">
+                  {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totalValue)}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Busca */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Buscar por nome, código, código de barras..."
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-        </CollapsibleContent>
-      </Collapsible>
+        </CardContent>
+      </Card>
+
+      {/* Formulário em Dialog/Modal */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedProduct ? `Editar Produto: ${selectedProduct.name}` : 'Novo Produto'}
+            </DialogTitle>
+          </DialogHeader>
+          <ProductForm
+            product={selectedProduct || undefined}
+            onSubmit={handleFormSuccess}
+            onCancel={handleFormCancel}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Content Tabs */}
       <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col">
