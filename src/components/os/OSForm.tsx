@@ -17,8 +17,10 @@ import {
     Trash2,
     CheckCircle,
     AlertCircle,
-    Package
+    Package,
+    UserPlus
 } from 'lucide-react';
+import { CreateClientDialog } from '@/components/clients/CreateClientDialog';
 import { toast } from 'sonner';
 
 interface OSFormProps {
@@ -34,6 +36,7 @@ export function OSForm({ osId, onClose, onSuccess }: OSFormProps) {
     const [servicos, setServicos] = useState<any[]>([]);
     const [pecas, setPecas] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [isCreateClientOpen, setIsCreateClientOpen] = useState(false);
 
     const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<ServiceOrder>({
         defaultValues: {
@@ -175,7 +178,19 @@ export function OSForm({ osId, onClose, onSuccess }: OSFormProps) {
                 <TabsContent value="cliente" className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <Label>Cliente *</Label>
+                            <div className="flex items-center justify-between">
+                                <Label>Cliente *</Label>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 px-2 text-primary-500 hover:text-primary-700"
+                                    onClick={() => setIsCreateClientOpen(true)}
+                                >
+                                    <UserPlus className="w-3 h-3 mr-1" />
+                                    Novo
+                                </Button>
+                            </div>
                             <Input
                                 type="number"
                                 {...register('client_id', { required: true })}
@@ -606,6 +621,17 @@ export function OSForm({ osId, onClose, onSuccess }: OSFormProps) {
                     )}
                 </Button>
             </div>
-        </form>
+
+            <CreateClientDialog
+                open={isCreateClientOpen}
+                onOpenChange={setIsCreateClientOpen}
+                onSuccess={(newClient) => {
+                    if (newClient?.id) {
+                        setValue('client_id', newClient.id);
+                        toast.success(`Cliente ${newClient.name} criado e selecionado!`);
+                    }
+                }}
+            />
+        </form >
     );
 }

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { CashRegister, Sale, SaleItem, SalePayment, CartItem, CashMovement } from '@/lib/pdv';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 // =====================================================
 // CASH REGISTER HOOKS
@@ -27,11 +28,10 @@ export function useOpenCashRegister() {
 export function useOpenCash() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ openingBalance, notes }: { openingBalance: number; notes?: string }) => {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
       const { data, error } = await supabase
@@ -134,6 +134,7 @@ export function useCloseCash() {
 export function useCreateSale() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ 
@@ -155,7 +156,6 @@ export function useCreateSale() {
       cashRegisterId?: number;
       notes?: string;
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
       const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
@@ -371,6 +371,7 @@ export function useCart() {
 export function useWithdrawal() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ 
@@ -384,7 +385,6 @@ export function useWithdrawal() {
       description?: string;
       category?: 'sangria' | 'despesa' | 'troco_externo';
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
       const { data, error } = await supabase

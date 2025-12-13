@@ -3,7 +3,7 @@ import { supabase } from './supabaseClient';
 // ==================== TYPES ====================
 
 export interface Supplier {
-  id: number;
+  id: string;
   code: string;
   name: string;
   company_name?: string;
@@ -55,9 +55,9 @@ export interface ProductLowStock {
   code: string;
   name: string;
   category?: string;
-  stock: number;
-  min_stock: number;
-  cost: number;
+  stock_quantity: number;
+  minimum_stock_level: number;
+  cost_price: number;
   price: number;
   supplier_name?: string;
   quantity_to_order: number;
@@ -294,16 +294,16 @@ export async function getStockMovementsByType(movementType: MovementType, limit 
 export async function getStockValueReport() {
   const { data, error } = await supabase
     .from('products')
-    .select('id, code, name, stock, cost, price, category')
+    .select('id, code, name, stock_quantity, cost_price, price, category')
     .eq('active', true);
   
   if (error) throw error;
   
   const report = data.map(product => ({
     ...product,
-    cost_value: product.stock * product.cost,
-    sale_value: product.stock * product.price,
-    potential_profit: product.stock * (product.price - product.cost)
+    cost_value: product.stock_quantity * (product.cost_price || 0),
+    sale_value: product.stock_quantity * product.price,
+    potential_profit: product.stock_quantity * (product.price - (product.cost_price || 0))
   }));
   
   const totals = report.reduce((acc, item) => ({

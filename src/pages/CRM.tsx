@@ -1,6 +1,5 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -26,40 +25,38 @@ import {
     Star,
     UserPlus,
     Search,
-    Filter,
     MoreVertical,
     CheckCircle,
     Clock,
     AlertCircle,
     Eye,
-    Edit,
-    Trash2,
-    ArrowRight,
+    Briefcase,
+    Zap
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 import { useState } from "react";
-import { format, differenceInDays } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 // Lead status configuration
 const leadStatuses = [
-    { id: 'novo', label: 'Novo', color: 'bg-blue-100 text-blue-700', icon: UserPlus },
-    { id: 'contato', label: 'Em Contato', color: 'bg-yellow-100 text-yellow-700', icon: Phone },
-    { id: 'proposta', label: 'Proposta Enviada', color: 'bg-purple-100 text-purple-700', icon: Mail },
-    { id: 'negociacao', label: 'Negociação', color: 'bg-orange-100 text-orange-700', icon: MessageSquare },
-    { id: 'convertido', label: 'Convertido', color: 'bg-green-100 text-green-700', icon: CheckCircle },
-    { id: 'perdido', label: 'Perdido', color: 'bg-red-100 text-red-700', icon: AlertCircle },
+    { id: 'novo', label: 'Novo Lead', color: 'bg-blue-100 text-blue-700', icon: UserPlus, border: 'border-blue-200' },
+    { id: 'contato', label: 'Em Contato', color: 'bg-yellow-100 text-yellow-700', icon: Phone, border: 'border-yellow-200' },
+    { id: 'proposta', label: 'Proposta Enviada', color: 'bg-indigo-100 text-indigo-700', icon: Mail, border: 'border-indigo-200' },
+    { id: 'negociacao', label: 'Negociação', color: 'bg-orange-100 text-orange-700', icon: MessageSquare, border: 'border-orange-200' },
+    { id: 'convertido', label: 'Convertido', color: 'bg-green-100 text-green-700', icon: CheckCircle, border: 'border-green-200' },
+    { id: 'perdido', label: 'Perdido', color: 'bg-red-100 text-red-700', icon: AlertCircle, border: 'border-red-200' },
 ];
 
 // Customer segments
 const customerSegments = [
-    { id: 'vip', label: 'VIP', color: 'bg-yellow-500', description: 'Compras acima de R$ 5.000' },
-    { id: 'recorrente', label: 'Recorrente', color: 'bg-green-500', description: 'Compras mensais' },
-    { id: 'inativo', label: 'Inativo', color: 'bg-gray-500', description: 'Sem compras há 90 dias' },
-    { id: 'novo', label: 'Novo', color: 'bg-blue-500', description: 'Primeiro mês' },
+    { id: 'vip', label: 'VIP', color: 'text-amber-500 bg-amber-50 dark:bg-amber-900/20', description: 'Compras acima de R$ 5.000', icon: Star },
+    { id: 'recorrente', label: 'Recorrente', color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20', description: 'Compras mensais', icon: Zap },
+    { id: 'inativo', label: 'Inativo', color: 'text-neutral-500 bg-neutral-100 dark:bg-neutral-800', description: 'Sem compras há 90 dias', icon: Clock },
+    { id: 'novo', label: 'Novo', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20', description: 'Primeiro mês', icon: UserPlus },
 ];
 
 const CRM = () => {
@@ -74,257 +71,266 @@ const CRM = () => {
         email: '',
         source: 'site',
         notes: '',
+        value: '',
+        priority: 'medium',
+        expected_close_date: ''
     });
 
-    // Fetch clients for segmentation
-    const { data: clients } = useQuery({
-        queryKey: ['crm_clients'],
+    // --- QUERIES ---
+
+    // 1. Fetch Client Metrics (View) - Otimizado
+    const { data: clientsData, isLoading: loadingClients } = useQuery({
+        queryKey: ['client_metrics'],
         queryFn: async () => {
             const { data, error } = await supabase
-                .from('clients')
+                .from('v_client_metrics')
+                .select('*')
+                .order('last_purchase_date', { ascending: false });
+
+            if (error) throw error;
+            return data || [];
+        }
+    });
+
+    // 2. Fetch Leads (Table) - Real persistence
+    const { data: leadsData, isLoading: loadingLeads } = useQuery({
+        queryKey: ['leads'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('leads')
                 .select('*')
                 .order('created_at', { ascending: false });
+
+            if (error) throw error;
             return data || [];
         }
     });
 
-    // Fetch sales for RFM analysis
-    const { data: salesData } = useQuery({
-        queryKey: ['crm_sales'],
-        queryFn: async () => {
-            const { data, error } = await supabase
-                .from('sales')
-                .select('client_id, total, created_at')
-                .not('client_id', 'is', null);
-            return data || [];
+    // --- MUTATIONS ---
+
+    const addLeadMutation = useMutation({
+        mutationFn: async (leadData: any) => {
+            const { error } = await supabase.from('leads').insert([{
+                ...leadData,
+                status: 'novo'
+            }]);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['leads'] });
+            setShowNewLead(false);
+            setNewLead({ name: '', phone: '', email: '', source: 'site', notes: '', value: '', priority: 'medium', expected_close_date: '' });
+            toast({ title: 'Lead adicionado com sucesso!' });
+        },
+        onError: (error: any) => {
+            toast({ title: 'Erro ao adicionar lead', description: error.message, variant: 'destructive' });
         }
     });
 
-    // Calculate client stats
-    const clientStats = clients?.reduce((acc, client) => {
-        const clientSales = salesData?.filter(s => s.client_id === client.id) || [];
-        const totalPurchases = clientSales.reduce((sum, s) => sum + (s.total || 0), 0);
-        const lastPurchase = clientSales.length > 0
-            ? new Date(Math.max(...clientSales.map(s => new Date(s.created_at).getTime())))
-            : null;
-        const daysSinceLastPurchase = lastPurchase ? differenceInDays(new Date(), lastPurchase) : 999;
+    const updateLeadStatusMutation = useMutation({
+        mutationFn: async ({ id, status }: { id: string, status: string }) => {
+            const { error } = await supabase.from('leads').update({ status }).eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['leads'] });
+            toast({ title: 'Status atualizado com sucesso' });
+        },
+        onError: (error: any) => {
+            toast({ title: 'Erro ao atualizar status', description: error.message, variant: 'destructive' });
+        }
+    });
 
-        let segment = 'novo';
-        if (totalPurchases >= 5000) segment = 'vip';
-        else if (clientSales.length >= 3 && daysSinceLastPurchase < 60) segment = 'recorrente';
-        else if (daysSinceLastPurchase > 90) segment = 'inativo';
-
-        acc.push({
-            ...client,
-            totalPurchases,
-            purchaseCount: clientSales.length,
-            lastPurchase,
-            daysSinceLastPurchase,
-            segment,
-        });
-        return acc;
-    }, [] as any[]) || [];
+    // --- COMPUTED ---
 
     // Segment counts
     const segmentCounts = {
-        vip: clientStats.filter(c => c.segment === 'vip').length,
-        recorrente: clientStats.filter(c => c.segment === 'recorrente').length,
-        inativo: clientStats.filter(c => c.segment === 'inativo').length,
-        novo: clientStats.filter(c => c.segment === 'novo').length,
+        vip: clientsData?.filter(c => c.segment === 'vip').length || 0,
+        recorrente: clientsData?.filter(c => c.segment === 'recorrente').length || 0,
+        inativo: clientsData?.filter(c => c.segment === 'inativo').length || 0,
+        novo: clientsData?.filter(c => c.segment === 'novo').length || 0,
     };
 
-    // Mock leads data (would come from a leads table in production)
-    const [leads, setLeads] = useState([
-        { id: 1, name: 'João Silva', phone: '(11) 99999-1234', email: 'joao@email.com', status: 'novo', source: 'site', createdAt: new Date(), notes: 'Interessado em celulares' },
-        { id: 2, name: 'Maria Santos', phone: '(11) 98888-5678', email: 'maria@email.com', status: 'contato', source: 'whatsapp', createdAt: new Date(Date.now() - 86400000), notes: 'Orçamento de conserto' },
-        { id: 3, name: 'Pedro Lima', phone: '(11) 97777-9012', email: 'pedro@email.com', status: 'proposta', source: 'indicacao', createdAt: new Date(Date.now() - 172800000), notes: 'Empresa de TI' },
-    ]);
-
     // Lead status counts
+    const leads = leadsData || [];
     const leadCounts = leadStatuses.reduce((acc, status) => {
         acc[status.id] = leads.filter(l => l.status === status.id).length;
         return acc;
     }, {} as Record<string, number>);
 
-    // Add new lead
-    const handleAddLead = () => {
-        const lead = {
-            id: leads.length + 1,
-            ...newLead,
-            status: 'novo',
-            createdAt: new Date(),
-        };
-        setLeads([lead, ...leads]);
-        setNewLead({ name: '', phone: '', email: '', source: 'site', notes: '' });
-        setShowNewLead(false);
-        toast({ title: 'Lead adicionado com sucesso!' });
-    };
-
-    // Update lead status
-    const updateLeadStatus = (leadId: number, newStatus: string) => {
-        setLeads(leads.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
-        toast({ title: 'Status atualizado!' });
-    };
-
     // Filter leads
     const filteredLeads = leads.filter(lead =>
         lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.phone.includes(searchTerm) ||
-        lead.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (lead.phone && lead.phone.includes(searchTerm)) ||
+        (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     // Filter clients
-    const filteredClients = clientStats.filter(client =>
+    const filteredClients = (clientsData || []).filter(client =>
         client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.phone?.includes(searchTerm) ||
-        client.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        (client.phone && client.phone.includes(searchTerm)) ||
+        (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase()))
     );
+
+    const totalLeads = leadsData?.length || 0;
+    const convertedLeads = leadsData?.filter(l => l.status === 'convertido').length || 0;
+    const conversionRate = totalLeads > 0 ? ((convertedLeads / totalLeads) * 100).toFixed(1) : 0;
 
     return (
         <MainLayout>
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
+            <div className="container-premium py-8 space-y-8 animate-fade-in-up">
+                {/* Header Premium */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="page-header">CRM - Relacionamento</h1>
-                        <p className="text-muted-foreground mt-1">
-                            Gestão de leads, clientes e oportunidades
+                        <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-neutral-50 dark:to-neutral-400 tracking-tight mb-2">
+                            CRM & Vendas
+                        </h1>
+                        <p className="text-lg text-neutral-600 dark:text-neutral-400 flex items-center gap-2">
+                            <Target className="w-5 h-5" />
+                            Gestão inteligente de relacionamento e oportunidades
                         </p>
                     </div>
-                    <Button className="gap-2" onClick={() => setShowNewLead(true)}>
-                        <Plus className="w-4 h-4" />
+                    <Button
+                        onClick={() => setShowNewLead(true)}
+                        className="btn-primary hover-lift flex items-center gap-2 px-6 py-3 shadow-lg shadow-primary-500/20"
+                    >
+                        <Plus className="w-5 h-5" />
                         Novo Lead
                     </Button>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card>
-                        <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Total Leads</p>
-                                    <p className="text-2xl font-bold">{leads.length}</p>
-                                    <p className="text-xs text-green-600">+{leadCounts.novo || 0} novos</p>
-                                </div>
-                                <div className="p-2 rounded-lg bg-blue-100">
-                                    <Target className="w-5 h-5 text-blue-600" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Total Clientes</p>
-                                    <p className="text-2xl font-bold">{clients?.length || 0}</p>
-                                    <p className="text-xs text-muted-foreground">{segmentCounts.vip} VIPs</p>
-                                </div>
-                                <div className="p-2 rounded-lg bg-green-100">
-                                    <Users className="w-5 h-5 text-green-600" />
+                {/* Stats Grid Premium */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {/* Total Leads */}
+                    <div className="card-premium hover-lift group relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary-100 dark:bg-primary-900/30 rounded-bl-full -mr-8 -mt-8 opacity-50 transition-transform duration-500 group-hover:scale-110" />
+                        <div className="relative z-10 flex items-start justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Total de Leads</p>
+                                <h3 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight">{leadsData?.length || 0}</h3>
+                                <div className="flex items-center gap-1 mt-2 text-xs text-success-600 font-medium">
+                                    <TrendingUp className="w-3 h-3" />
+                                    <span>+12% este mês</span>
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Em Negociação</p>
-                                    <p className="text-2xl font-bold">{(leadCounts.contato || 0) + (leadCounts.proposta || 0) + (leadCounts.negociacao || 0)}</p>
-                                    <p className="text-xs text-orange-600">Oportunidades ativas</p>
-                                </div>
-                                <div className="p-2 rounded-lg bg-orange-100">
-                                    <TrendingUp className="w-5 h-5 text-orange-600" />
-                                </div>
+                            <div className="p-3 rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/30 transition-transform duration-300 group-hover:scale-110">
+                                <Users className="w-6 h-6" />
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Clientes Inativos</p>
-                                    <p className="text-2xl font-bold text-red-600">{segmentCounts.inativo}</p>
-                                    <p className="text-xs text-muted-foreground">Sem compras 90+ dias</p>
-                                </div>
-                                <div className="p-2 rounded-lg bg-red-100">
-                                    <AlertCircle className="w-5 h-5 text-red-600" />
-                                </div>
+                        </div>
+                    </div>
+                    {/* Clientes Ativos */}
+                    <div className="card-premium hover-lift group relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 dark:bg-blue-900/30 rounded-bl-full -mr-8 -mt-8 opacity-50 transition-transform duration-500 group-hover:scale-110" />
+                        <div className="relative z-10 flex items-start justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Clientes Ativos</p>
+                                <h3 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight">{clientsData?.length || 0}</h3>
+                                <Badge className="mt-2 bg-blue-100 text-blue-700 hover:bg-blue-200 border-0">{segmentCounts.novo} Novos</Badge>
                             </div>
-                        </CardContent>
-                    </Card>
+                            <div className="p-3 rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/30 transition-transform duration-300 group-hover:scale-110">
+                                <Target className="w-6 h-6" />
+                            </div>
+                        </div>
+                    </div>
+                    {/* Em Negociação */}
+                    <div className="card-premium hover-lift group relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 dark:bg-orange-900/30 rounded-bl-full -mr-8 -mt-8 opacity-50 transition-transform duration-500 group-hover:scale-110" />
+                        <div className="relative z-10 flex items-start justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Em Negociação</p>
+                                <h3 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight">{(leadCounts.contato || 0) + (leadCounts.proposta || 0) + (leadCounts.negociacao || 0)}</h3>
+                                <p className="text-xs text-neutral-400 mt-2">Oportunidades ativas</p>
+                            </div>
+                            <div className="p-3 rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-900/30 transition-transform duration-300 group-hover:scale-110">
+                                <MessageSquare className="w-6 h-6" />
+                            </div>
+                        </div>
+                    </div>
+                    {/* Taxa de Conversão */}
+                    <div className="card-premium hover-lift group relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-success-100 dark:bg-success-900/30 rounded-bl-full -mr-8 -mt-8 opacity-50 transition-transform duration-500 group-hover:scale-110" />
+                        <div className="relative z-10 flex items-start justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Conversão</p>
+                                <h3 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight">{conversionRate}%</h3>
+                                <Badge className="mt-2 bg-success-100 text-success-700 hover:bg-success-200 border-0">Meta: 25%</Badge>
+                            </div>
+                            <div className="p-3 rounded-xl bg-success-100 text-success-600 dark:bg-success-900/30 transition-transform duration-300 group-hover:scale-110">
+                                <TrendingUp className="w-6 h-6" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Search */}
-                <div className="flex gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                {/* Search Bar Premium */}
+                <div className="card-premium p-4">
+                    <div className="relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                         <Input
                             placeholder="Buscar por nome, telefone ou email..."
-                            className="pl-9"
+                            className="input-premium pl-10 h-11"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Button variant="outline" className="gap-2">
-                        <Filter className="w-4 h-4" />
-                        Filtros
-                    </Button>
                 </div>
 
-                {/* Tabs */}
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-3 mb-6">
-                        <TabsTrigger value="leads" className="gap-2">
-                            <Target className="w-4 h-4" />
-                            Leads ({leads.length})
+                {/* Tabs Premium */}
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                    <TabsList className="grid w-full max-w-2xl grid-cols-3 p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+                        <TabsTrigger value="leads" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200">
+                            <Target className="w-4 h-4 mr-2" />
+                            Pipeline Leads ({leads.length})
                         </TabsTrigger>
-                        <TabsTrigger value="segmentos" className="gap-2">
-                            <Users className="w-4 h-4" />
-                            Segmentação
+                        <TabsTrigger value="segmentos" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200">
+                            <Users className="w-4 h-4 mr-2" />
+                            Carteira VIP
                         </TabsTrigger>
-                        <TabsTrigger value="followup" className="gap-2">
-                            <Calendar className="w-4 h-4" />
+                        <TabsTrigger value="followup" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200">
+                            <Calendar className="w-4 h-4 mr-2" />
                             Follow-up
                         </TabsTrigger>
                     </TabsList>
 
-                    {/* Leads Tab */}
-                    <TabsContent value="leads">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            {/* Leads Pipeline */}
+                    {/* Leads Tab - Kanban Style */}
+                    <TabsContent value="leads" className="mt-0">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto pb-4">
                             {['novo', 'contato', 'proposta', 'negociacao'].map(statusId => {
                                 const status = leadStatuses.find(s => s.id === statusId)!;
                                 const StatusIcon = status.icon;
                                 const statusLeads = filteredLeads.filter(l => l.status === statusId);
 
                                 return (
-                                    <Card key={statusId} className="h-fit">
-                                        <CardHeader className="pb-2">
-                                            <CardTitle className="text-sm flex items-center gap-2">
-                                                <StatusIcon className="w-4 h-4" />
+                                    <div key={statusId} className="flex flex-col min-w-[280px]">
+                                        <div className={`p-3 rounded-t-xl bg-white dark:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between sticky top-0 z-10`}>
+                                            <div className="flex items-center gap-2 font-bold text-sm text-neutral-700 dark:text-neutral-300">
+                                                <div className={`p-1.5 rounded-md ${status.color.split(' ')[0]} ${status.color.split(' ')[1]}`}>
+                                                    <StatusIcon className="w-3.5 h-3.5" />
+                                                </div>
                                                 {status.label}
-                                                <Badge variant="secondary" className="ml-auto">{statusLeads.length}</Badge>
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-2">
+                                            </div>
+                                            <Badge variant="secondary" className="bg-neutral-100 text-neutral-600 dark:bg-neutral-900 dark:text-neutral-400 font-mono">{statusLeads.length}</Badge>
+                                        </div>
+
+                                        <div className="bg-neutral-50/50 dark:bg-neutral-900/30 rounded-b-xl border border-t-0 border-neutral-100 dark:border-neutral-800 p-2 min-h-[400px] flex flex-col gap-3">
                                             {statusLeads.map(lead => (
-                                                <div key={lead.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                                    <div className="flex items-start justify-between">
-                                                        <div>
-                                                            <p className="font-medium text-sm">{lead.name}</p>
-                                                            <p className="text-xs text-muted-foreground">{lead.phone}</p>
+                                                <div key={lead.id} className="group bg-white dark:bg-neutral-800 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md hover:border-primary-200 transition-all cursor-pointer">
+                                                    <div className="flex items-start justify-between mb-2">
+                                                        <div className="flex-1 min-w-0 pr-2">
+                                                            <p className="font-bold text-sm text-neutral-900 dark:text-white truncate">{lead.name}</p>
+                                                            <div className="flex items-center gap-2 text-xs text-neutral-500 mt-0.5">
+                                                                {lead.source && (
+                                                                    <Badge variant="outline" className="h-4 px-1 text-[10px] uppercase tracking-wider">{lead.source}</Badge>
+                                                                )}
+                                                                <span className="truncate">{format(new Date(lead.created_at), 'dd/MM', { locale: ptBR })}</span>
+                                                            </div>
                                                         </div>
                                                         <Select
                                                             value={lead.status}
-                                                            onValueChange={(value) => updateLeadStatus(lead.id, value)}
+                                                            onValueChange={(value) => updateLeadStatusMutation.mutate({ id: lead.id, status: value })}
                                                         >
-                                                            <SelectTrigger className="w-8 h-8 p-0 border-0">
-                                                                <MoreVertical className="w-4 h-4" />
+                                                            <SelectTrigger className="w-6 h-6 p-0 border-none opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100">
+                                                                <MoreVertical className="w-4 h-4 text-neutral-400" />
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 {leadStatuses.map(s => (
@@ -333,239 +339,374 @@ const CRM = () => {
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
-                                                    {lead.notes && (
-                                                        <p className="text-xs text-muted-foreground mt-2 italic">"{lead.notes}"</p>
+
+                                                    {lead.phone && (
+                                                        <div className="flex items-center justify-between mt-2">
+                                                            <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
+                                                                <Phone className="w-3 h-3" />
+                                                                {lead.phone}
+                                                            </div>
+                                                            <Button
+                                                                size="sm"
+                                                                className="h-7 w-7 p-0 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-sm hover:shadow-green-200 transition-all"
+                                                                title="Abrir WhatsApp"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    window.open(`https://wa.me/55${lead.phone!.replace(/\D/g, '')}`, '_blank');
+                                                                }}
+                                                            >
+                                                                <MessageSquare className="w-3.5 h-3.5" />
+                                                            </Button>
+                                                        </div>
                                                     )}
-                                                    <div className="flex items-center gap-2 mt-2">
-                                                        <Badge variant="outline" className="text-xs">
-                                                            {lead.source}
-                                                        </Badge>
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {format(new Date(lead.createdAt), 'dd/MM', { locale: ptBR })}
-                                                        </span>
-                                                    </div>
+
+                                                    {lead.notes && (
+                                                        <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-900/50 rounded-lg text-xs text-neutral-600 dark:text-neutral-400 italic border border-neutral-100 dark:border-neutral-800">
+                                                            "{lead.notes}"
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                             {statusLeads.length === 0 && (
-                                                <p className="text-center text-sm text-muted-foreground py-4">
-                                                    Nenhum lead
-                                                </p>
+                                                <div className="flex-1 flex flex-col items-center justify-center text-neutral-400 opacity-60">
+                                                    <Briefcase className="w-8 h-8 mb-2 stroke-1" />
+                                                    <span className="text-xs">Sem oportunidades</span>
+                                                </div>
                                             )}
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </div>
                                 );
                             })}
                         </div>
                     </TabsContent>
 
                     {/* Segmentation Tab */}
-                    <TabsContent value="segmentos">
-                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-                            {customerSegments.map(segment => (
-                                <Card key={segment.id} className={`border-l-4`} style={{ borderLeftColor: segment.color.replace('bg-', '') }}>
-                                    <CardContent className="p-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className={`w-3 h-3 rounded-full ${segment.color}`} />
-                                            <span className="font-medium">{segment.label}</span>
+                    <TabsContent value="segmentos" className="mt-0 space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                            {customerSegments.map(segment => {
+                                const Icon = segment.icon;
+                                return (
+                                    <div key={segment.id} className="card-premium p-4 hover:border-primary-200 transition-colors">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className={`p-2 rounded-lg ${segment.color} bg-opacity-10`}>
+                                                <Icon className="w-5 h-5" />
+                                            </div>
+                                            <span className="font-bold text-neutral-900 dark:text-neutral-100">{segment.label}</span>
                                         </div>
-                                        <p className="text-2xl font-bold">{segmentCounts[segment.id as keyof typeof segmentCounts]}</p>
-                                        <p className="text-xs text-muted-foreground">{segment.description}</p>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                        <p className="text-3xl font-extrabold text-neutral-900 dark:text-white mb-1">
+                                            {segmentCounts[segment.id as keyof typeof segmentCounts]}
+                                        </p>
+                                        <p className="text-xs text-neutral-500 font-medium">{segment.description}</p>
+                                    </div>
+                                );
+                            })}
                         </div>
 
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Clientes por Segmento</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-2">
-                                    {filteredClients.slice(0, 15).map(client => (
-                                        <div key={client.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${customerSegments.find(s => s.id === client.segment)?.color || 'bg-gray-200'
-                                                    } text-white`}>
-                                                    {client.segment === 'vip' ? <Star className="w-5 h-5" /> : <Users className="w-5 h-5" />}
+                        <div className="card-premium overflow-hidden">
+                            <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/30">
+                                <h3 className="font-bold text-lg flex items-center gap-2">
+                                    <Users className="w-5 h-5 text-primary-500" />
+                                    Clientes por Segmento
+                                </h3>
+                                <Badge variant="outline">Top 50</Badge>
+                            </div>
+                            <div className="p-0">
+                                <div className="space-y-1 p-2">
+                                    {loadingClients ? <div className="p-8 text-center text-neutral-500">Carregando carteira de clientes...</div> : filteredClients.slice(0, 50).map(client => {
+                                        const segment = customerSegments.find(s => s.id === client.segment);
+                                        return (
+                                            <div key={client.client_id} className="flex items-center justify-between p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors group">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${segment?.color || 'bg-neutral-100 text-neutral-600'}`}>
+                                                        {client.name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-sm text-neutral-900 dark:text-white">{client.name}</p>
+                                                        <div className="flex items-center gap-2 text-xs text-neutral-500">
+                                                            <Phone className="w-3 h-3" />
+                                                            {client.phone || 'Sem telefone'}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="font-medium">{client.name}</p>
-                                                    <p className="text-sm text-muted-foreground">{client.phone || 'Sem telefone'}</p>
+                                                <div className="flex items-center gap-6">
+                                                    <div className="text-right hidden md:block">
+                                                        <p className="font-bold text-neutral-900 dark:text-white">
+                                                            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(client.total_spent)}
+                                                        </p>
+                                                        <p className="text-xs text-neutral-500">{client.purchase_count} compras</p>
+                                                    </div>
+                                                    <Badge className={`${segment?.color} border-0 capitalize px-2 py-0.5 min-w-[80px] justify-center`}>
+                                                        {segment?.label}
+                                                    </Badge>
+                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        {client.phone && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                                onClick={() => window.open(`https://wa.me/55${client.phone!.replace(/\D/g, '')}`, '_blank')}
+                                                            >
+                                                                <MessageSquare className="w-4 h-4" />
+                                                            </Button>
+                                                        )}
+                                                        <Link to={`/clientes/${client.client_id}`}>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                <Eye className="w-4 h-4 text-neutral-500" />
+                                                            </Button>
+                                                        </Link>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
-                                                <div className="text-right">
-                                                    <p className="font-bold">
-                                                        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(client.totalPurchases)}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">{client.purchaseCount} compras</p>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </TabsContent>
+
+                    {/* Follow-up Tab */}
+                    <TabsContent value="followup" className="mt-0">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="card-premium p-0 overflow-hidden border-l-4 border-l-danger-500">
+                                <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-3 bg-danger-50 dark:bg-danger-900/20">
+                                    <div className="p-2 bg-white dark:bg-neutral-800 rounded-lg text-danger-600 shadow-sm">
+                                        <Clock className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-danger-700 dark:text-danger-400">Risco de Churn</h3>
+                                        <p className="text-xs text-danger-600/80">Clientes inativos há +90 dias</p>
+                                    </div>
+                                </div>
+                                <div className="p-4 space-y-3">
+                                    {(clientsData || []).filter(c => c.segment === 'inativo').slice(0, 5).map(client => (
+                                        <div key={client.client_id} className="flex items-center justify-between p-3 bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 rounded-xl hover:shadow-md transition-shadow">
+                                            <div>
+                                                <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{client.name}</p>
+                                                <p className="text-xs font-medium text-danger-500">
+                                                    {client.days_since_last_purchase} dias sem comprar
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs">
+                                                    <Phone className="w-3 h-3" />
+                                                    Ligar
+                                                </Button>
+                                                {client.phone && (
+                                                    <Button
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600 text-white border-0"
+                                                        onClick={() => window.open(`https://wa.me/55${client.phone!.replace(/\D/g, '')}`, '_blank')}
+                                                    >
+                                                        <MessageSquare className="w-3.5 h-3.5" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {!loadingClients && (clientsData || []).filter(c => c.segment === 'inativo').length === 0 && (
+                                        <div className="text-center py-8 text-muted-foreground">
+                                            <CheckCircle className="w-12 h-12 mx-auto mb-2 text-success-500 opacity-50" />
+                                            <p className="text-success-600 font-medium">Carteira 100% Ativa!</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="card-premium p-0 overflow-hidden border-l-4 border-l-amber-400">
+                                <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20">
+                                    <div className="p-2 bg-white dark:bg-neutral-800 rounded-lg text-amber-500 shadow-sm">
+                                        <Star className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-amber-700 dark:text-amber-400">Oportunidades VIP</h3>
+                                        <p className="text-xs text-amber-600/80">Clientes de alto valor</p>
+                                    </div>
+                                </div>
+                                <div className="p-4 space-y-3">
+                                    {(clientsData || []).filter(c => c.segment === 'vip').slice(0, 5).map(client => (
+                                        <div key={client.client_id} className="flex items-center justify-between p-3 bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 rounded-xl hover:shadow-md transition-shadow">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+                                                    <Star className="w-4 h-4" />
                                                 </div>
-                                                <Badge className={customerSegments.find(s => s.id === client.segment)?.color + ' text-white'}>
-                                                    {customerSegments.find(s => s.id === client.segment)?.label}
-                                                </Badge>
-                                                <Link to={`/clientes/${client.id}`}>
-                                                    <Button variant="ghost" size="icon">
-                                                        <Eye className="w-4 h-4" />
+                                                <div>
+                                                    <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{client.name}</p>
+                                                    <p className="text-xs text-neutral-500">
+                                                        Total: <span className="text-amber-600 font-bold">{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(client.total_spent)}</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {client.phone && (
+                                                    <Button
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600 text-white border-0"
+                                                        onClick={() => window.open(`https://wa.me/55${client.phone!.replace(/\D/g, '')}`, '_blank')}
+                                                    >
+                                                        <MessageSquare className="w-3.5 h-3.5" />
+                                                    </Button>
+                                                )}
+                                                <Link to={`/clientes/${client.client_id}`}>
+                                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                                                        <Eye className="w-4 h-4 text-neutral-400" />
                                                     </Button>
                                                 </Link>
                                             </div>
                                         </div>
                                     ))}
+                                    {!loadingClients && (clientsData || []).filter(c => c.segment === 'vip').length === 0 && (
+                                        <p className="text-center py-8 text-muted-foreground text-sm">
+                                            Nenhum cliente atingiu o nível VIP ainda.
+                                        </p>
+                                    )}
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Follow-up Tab */}
-                    <TabsContent value="followup">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Clock className="w-5 h-5 text-orange-600" />
-                                        Clientes Inativos (Reativar)
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-3">
-                                        {clientStats.filter(c => c.segment === 'inativo').slice(0, 8).map(client => (
-                                            <div key={client.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                                                <div>
-                                                    <p className="font-medium">{client.name}</p>
-                                                    <p className="text-sm text-red-600">
-                                                        {client.daysSinceLastPurchase} dias sem comprar
-                                                    </p>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <Button size="sm" variant="outline" className="gap-1">
-                                                        <Phone className="w-3 h-3" />
-                                                        Ligar
-                                                    </Button>
-                                                    <Button size="sm" variant="outline" className="gap-1">
-                                                        <MessageSquare className="w-3 h-3" />
-                                                        WhatsApp
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {clientStats.filter(c => c.segment === 'inativo').length === 0 && (
-                                            <p className="text-center py-8 text-muted-foreground">
-                                                🎉 Todos os clientes estão ativos!
-                                            </p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Star className="w-5 h-5 text-yellow-500" />
-                                        Clientes VIP (Fidelização)
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-3">
-                                        {clientStats.filter(c => c.segment === 'vip').slice(0, 8).map(client => (
-                                            <div key={client.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                                                <div className="flex items-center gap-3">
-                                                    <Star className="w-5 h-5 text-yellow-500" />
-                                                    <div>
-                                                        <p className="font-medium">{client.name}</p>
-                                                        <p className="text-sm text-yellow-700">
-                                                            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(client.totalPurchases)} em compras
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <Link to={`/clientes/${client.id}`}>
-                                                    <Button size="sm" variant="outline">
-                                                        Ver Cliente
-                                                    </Button>
-                                                </Link>
-                                            </div>
-                                        ))}
-                                        {clientStats.filter(c => c.segment === 'vip').length === 0 && (
-                                            <p className="text-center py-8 text-muted-foreground">
-                                                Nenhum cliente VIP ainda
-                                            </p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            </div>
                         </div>
                     </TabsContent>
+
                 </Tabs>
 
-                {/* New Lead Modal */}
+                {/* New Lead Modal Premium */}
                 <Dialog open={showNewLead} onOpenChange={setShowNewLead}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                <UserPlus className="w-5 h-5" />
+                    <DialogContent className="sm:max-w-[600px] border-0 shadow-2xl overflow-hidden p-0 gap-0 rounded-2xl">
+                        <DialogHeader className="p-6 bg-gradient-to-r from-primary-600 to-primary-700 text-white">
+                            <DialogTitle className="flex items-center gap-3 text-2xl">
+                                <div className="p-2 bg-white/20 rounded-lg backdro-blur-sm">
+                                    <UserPlus className="w-6 h-6 text-white" />
+                                </div>
                                 Novo Lead
                             </DialogTitle>
+                            <p className="text-primary-100 mt-1">Cadastre uma nova oportunidade no CRM</p>
                         </DialogHeader>
-                        <div className="space-y-4 py-4">
-                            <div>
-                                <Label>Nome *</Label>
-                                <Input
-                                    value={newLead.name}
-                                    onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
-                                    placeholder="Nome do lead"
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label>Telefone</Label>
+
+                        <div className="p-6 space-y-6 bg-white dark:bg-neutral-900">
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Informações Principais</Label>
                                     <Input
-                                        value={newLead.phone}
-                                        onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
-                                        placeholder="(00) 00000-0000"
+                                        value={newLead.name}
+                                        onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+                                        placeholder="Nome completo do lead"
+                                        className="h-12 text-lg bg-neutral-50 border-neutral-200 focus:border-primary-500 focus:ring-primary-500/20"
                                     />
                                 </div>
-                                <div>
-                                    <Label>Email</Label>
-                                    <Input
-                                        type="email"
-                                        value={newLead.email}
-                                        onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
-                                        placeholder="email@exemplo.com"
-                                    />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Contato</Label>
+                                        <div className="relative mt-1.5">
+                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                                            <Input
+                                                value={newLead.phone}
+                                                onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+                                                placeholder="(00) 00000-0000"
+                                                className="pl-9 bg-neutral-50"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Email</Label>
+                                        <div className="relative mt-1.5">
+                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                                            <Input
+                                                type="email"
+                                                value={newLead.email}
+                                                onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+                                                placeholder="email@exemplo.com"
+                                                className="pl-9 bg-neutral-50"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <Label>Origem</Label>
-                                <Select value={newLead.source} onValueChange={(v) => setNewLead({ ...newLead, source: v })}>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="site">Site</SelectItem>
-                                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                                        <SelectItem value="indicacao">Indicação</SelectItem>
-                                        <SelectItem value="instagram">Instagram</SelectItem>
-                                        <SelectItem value="facebook">Facebook</SelectItem>
-                                        <SelectItem value="google">Google</SelectItem>
-                                        <SelectItem value="outro">Outro</SelectItem>
-                                    </SelectContent>
-                                </Select>
+
+                            <div className="space-y-2">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Detalhes do Negócio</Label>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <Label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1 block">Valor Estimado</Label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">R$</span>
+                                            <Input
+                                                type="number"
+                                                value={newLead.value}
+                                                onChange={(e) => setNewLead({ ...newLead, value: e.target.value })}
+                                                placeholder="0.00"
+                                                className="pl-8 bg-neutral-50"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1 block">Prioridade</Label>
+                                        <Select value={newLead.priority} onValueChange={(v) => setNewLead({ ...newLead, priority: v })}>
+                                            <SelectTrigger className="bg-neutral-50">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="low">Baixa</SelectItem>
+                                                <SelectItem value="medium">Média</SelectItem>
+                                                <SelectItem value="high">Alta</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div>
+                                        <Label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1 block">Fechamento</Label>
+                                        <Input
+                                            type="date"
+                                            value={newLead.expected_close_date}
+                                            onChange={(e) => setNewLead({ ...newLead, expected_close_date: e.target.value })}
+                                            className="bg-neutral-50"
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <Label>Observações</Label>
+
+                            <div className="space-y-2">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Outros Detalhes</Label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Select value={newLead.source} onValueChange={(v) => setNewLead({ ...newLead, source: v })}>
+                                        <SelectTrigger className="h-10 bg-neutral-50">
+                                            <SelectValue placeholder="Origem" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="site">Site</SelectItem>
+                                            <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                                            <SelectItem value="indicacao">Indicação</SelectItem>
+                                            <SelectItem value="instagram">Instagram</SelectItem>
+                                            <SelectItem value="facebook">Facebook</SelectItem>
+                                            <SelectItem value="google">Google</SelectItem>
+                                            <SelectItem value="outro">Outro</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                                 <Textarea
                                     value={newLead.notes}
                                     onChange={(e) => setNewLead({ ...newLead, notes: e.target.value })}
-                                    placeholder="Interesse, produtos mencionados..."
+                                    placeholder="Observações, interesses, produtos..."
+                                    className="min-h-[100px] resize-none bg-neutral-50 mt-2"
                                 />
                             </div>
                         </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setShowNewLead(false)}>
+
+                        <DialogFooter className="p-6 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-100 dark:border-neutral-800 gap-3">
+                            <Button variant="outline" onClick={() => setShowNewLead(false)} className="h-11 px-6 border-neutral-200 hover:bg-neutral-100 hover:text-neutral-900">
                                 Cancelar
                             </Button>
-                            <Button onClick={handleAddLead} disabled={!newLead.name}>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Adicionar Lead
+                            <Button
+                                onClick={() => addLeadMutation.mutate(newLead)}
+                                disabled={!newLead.name || addLeadMutation.isPending}
+                                className="h-11 px-8 btn-primary hover-lift shadow-lg shadow-primary-500/20"
+                            >
+                                {addLeadMutation.isPending ? (
+                                    <>
+                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></span>
+                                        Salvando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Criar Lead
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

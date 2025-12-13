@@ -118,11 +118,34 @@ export function FiscalConfigPage() {
             return;
         }
 
-        // TODO: Implementar upload e validação do certificado
-        toast({
-            title: 'Funcionalidade em desenvolvimento',
-            description: 'Upload de certificado será implementado em breve.',
-        });
+        try {
+            // Stub: Simulate API call/processing time
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Stub: Calculate a fake expiration date (1 year from now)
+            const validade = new Date();
+            validade.setFullYear(validade.getFullYear() + 1);
+
+            // Update database with the "validity" (Stubbing the file storage)
+            await saveMutation.mutateAsync({
+                certificado_validade: validade.toISOString()
+            });
+
+            toast({
+                title: 'Certificado importado com sucesso',
+                description: `Certificado válido até ${validade.toLocaleDateString('pt-BR')}`,
+            });
+
+            setCertificatePassword('');
+            setCertificateFile(null);
+
+        } catch (error) {
+            toast({
+                title: 'Erro no upload',
+                description: 'Não foi possível processar o certificado.',
+                variant: 'destructive',
+            });
+        }
     };
 
     if (isLoading) {

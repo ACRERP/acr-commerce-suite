@@ -234,308 +234,283 @@ export function AppGrid() {
         }
     });
 
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-white/90 backdrop-blur-md border border-gray-100 p-3 rounded-xl shadow-xl">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">{label}</p>
+                    {payload.map((entry: any, index: number) => (
+                        <p key={index} className="text-sm" style={{ color: entry.color }}>
+                            {entry.name}: <span className="font-bold">
+                                {typeof entry.value === 'number' && entry.name !== 'OS Open' && entry.name !== 'Clients'
+                                    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(entry.value)
+                                    : entry.value}
+                            </span>
+                        </p>
+                    ))}
+                </div>
+            );
+        }
+        return null;
+    };
+
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    Dashboard
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Visão geral do seu negócio
-                </p>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Header with Welcome Message */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 tracking-tight mb-2">
+                        Dashboard
+                    </h1>
+                    <p className="text-muted-foreground text-lg">
+                        Visão geral do desempenho do seu negócio
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="flex h-3 w-3 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </span>
+                    <span className="text-sm font-medium text-green-600 dark:text-green-400">Sistema Operacional</span>
+                </div>
             </div>
 
-            {/* Métricas Principais - 6 Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
+            {/* Métricas Principais - Premium Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-gradient-to-br from-white to-purple-50/50 dark:from-gray-900 dark:to-purple-900/10">
+                    <div className="absolute right-0 top-0 h-32 w-32 bg-purple-100/50 rounded-full blur-3xl -mr-16 -mt-16 transition-all group-hover:bg-purple-200/50"></div>
+                    <CardContent className="pt-8 pb-6 relative z-10">
+                        <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                    Vendas do Mês
-                                </p>
-                                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-2">
+                                <p className="text-sm font-medium text-purple-600/80 dark:text-purple-400 font-semibold uppercase tracking-wider">Vendas do Mês</p>
+                                <h3 className="text-4xl font-bold text-gray-900 dark:text-white mt-4 tracking-tight">
                                     {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(metrics?.salesMonth || 0)}
-                                </p>
+                                </h3>
                             </div>
-                            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                                <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                                <TrendingUp className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
+                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-gradient-to-br from-white to-orange-50/50 dark:from-gray-900 dark:to-orange-900/10">
+                    <div className="absolute right-0 top-0 h-32 w-32 bg-orange-100/50 rounded-full blur-3xl -mr-16 -mt-16 transition-all group-hover:bg-orange-200/50"></div>
+                    <CardContent className="pt-8 pb-6 relative z-10">
+                        <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                    OS Abertas
-                                </p>
-                                <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-2">
+                                <p className="text-sm font-medium text-orange-600/80 dark:text-orange-400 font-semibold uppercase tracking-wider">OS Abertas</p>
+                                <h3 className="text-4xl font-bold text-gray-900 dark:text-white mt-4 tracking-tight">
                                     {metrics?.osOpen || 0}
-                                </p>
+                                </h3>
                             </div>
-                            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                                <Wrench className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                            <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                                <Wrench className="w-8 h-8 text-orange-600 dark:text-orange-400" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
+                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-gradient-to-br from-white to-green-50/50 dark:from-gray-900 dark:to-green-900/10">
+                    <div className="absolute right-0 top-0 h-32 w-32 bg-green-100/50 rounded-full blur-3xl -mr-16 -mt-16 transition-all group-hover:bg-green-200/50"></div>
+                    <CardContent className="pt-8 pb-6 relative z-10">
+                        <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                    Total Clientes
-                                </p>
-                                <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
+                                <p className="text-sm font-medium text-green-600/80 dark:text-green-400 font-semibold uppercase tracking-wider">Total Clientes</p>
+                                <h3 className="text-4xl font-bold text-gray-900 dark:text-white mt-4 tracking-tight">
                                     {metrics?.clients || 0}
-                                </p>
+                                </h3>
                             </div>
-                            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                                <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                    Estoque Baixo
-                                </p>
-                                <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-2">
-                                    {metrics?.lowStock || 0}
-                                </p>
-                            </div>
-                            <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
-                                <Package className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                                <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
+                {/* Secondary Metrics Row - Compact */}
+                <div className="grid grid-cols-3 gap-4 lg:col-span-3">
+                    <Card className="hover:border-yellow-200 transition-colors border-l-4 border-l-yellow-500 shadow-sm">
+                        <CardContent className="p-4 flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                    Entregas em Rota
-                                </p>
-                                <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400 mt-2">
-                                    {metrics?.deliveries || 0}
-                                </p>
+                                <p className="text-xs text-muted-foreground font-semibold uppercase">Estoque Baixo</p>
+                                <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{metrics?.lowStock || 0}</p>
                             </div>
-                            <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center">
-                                <Truck className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
+                            <Package className="w-5 h-5 text-yellow-500" />
+                        </CardContent>
+                    </Card>
+                    <Card className="hover:border-cyan-200 transition-colors border-l-4 border-l-cyan-500 shadow-sm">
+                        <CardContent className="p-4 flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                    Contas Vencidas
-                                </p>
-                                <p className="text-3xl font-bold text-red-600 dark:text-red-400 mt-2">
-                                    {metrics?.overdue || 0}
-                                </p>
+                                <p className="text-xs text-muted-foreground font-semibold uppercase">Entregas</p>
+                                <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{metrics?.deliveries || 0}</p>
                             </div>
-                            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                                <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                            <Truck className="w-5 h-5 text-cyan-500" />
+                        </CardContent>
+                    </Card>
+                    <Card className="hover:border-red-200 transition-colors border-l-4 border-l-red-500 shadow-sm">
+                        <CardContent className="p-4 flex items-center justify-between">
+                            <div>
+                                <p className="text-xs text-muted-foreground font-semibold uppercase">Atrasadas</p>
+                                <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{metrics?.overdue || 0}</p>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                            <AlertCircle className="w-5 h-5 text-red-500" />
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
 
-            {/* Gráfico + Atividades */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Gráfico de Vendas */}
-                <Card className="lg:col-span-2">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5" />
-                            Vendas - Últimos 7 Dias
+            {/* Charts Section - Enhanced */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <Card className="lg:col-span-2 shadow-lg border-none ring-1 ring-gray-100 dark:ring-gray-800">
+                    <CardHeader className="border-b border-gray-50 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-gray-100">
+                            <TrendingUp className="w-5 h-5 text-purple-600" />
+                            Performance de Vendas
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={salesChart || []}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="date" />
-                                <YAxis />
-                                <Tooltip
-                                    formatter={(value: number) =>
-                                        new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
-                                    }
+                    <CardContent className="pt-6">
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={salesChart || []} barSize={40}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                <XAxis
+                                    dataKey="date"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                                    dy={10}
                                 />
-                                <Bar dataKey="vendas" fill="#9333ea" />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                                    tickFormatter={(value) => `R$${value / 1000}k`}
+                                />
+                                <Tooltip content={<CustomTooltip />} cursor={{ fill: '#F3F4F6' }} />
+                                <Bar
+                                    dataKey="vendas"
+                                    fill="url(#colorVendas)"
+                                    radius={[8, 8, 0, 0]}
+                                    animationDuration={1500}
+                                />
+                                <defs>
+                                    <linearGradient id="colorVendas" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#9333ea" stopOpacity={1} />
+                                        <stop offset="100%" stopColor="#9333ea" stopOpacity={0.6} />
+                                    </linearGradient>
+                                </defs>
                             </BarChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
 
-                {/* Atividades Recentes */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Calendar className="w-5 h-5" />
-                            Atividades Recentes
+                {/* Recent Activity List */}
+                <Card className="shadow-lg border-none ring-1 ring-gray-100 dark:ring-gray-800">
+                    <CardHeader className="border-b border-gray-50 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-gray-100">
+                            <Calendar className="w-5 h-5 text-blue-600" />
+                            Feed de Atividades
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
+                    <CardContent className="pt-6">
+                        <div className="space-y-6">
                             {activities?.map((activity, index) => (
-                                <div key={index} className="flex items-start gap-3">
-                                    <div className={`w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center ${activity.color}`}>
-                                        <activity.icon className="w-4 h-4" />
+                                <div key={index} className="flex items-start gap-4 group cursor-default">
+                                    <div className={`
+                                        w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-3
+                                        ${activity.type === 'sale' ? 'bg-purple-100 text-purple-600' : 'bg-orange-100 text-orange-600'}
+                                    `}>
+                                        <activity.icon className="w-5 h-5" />
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                            {activity.title}
-                                        </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                    <div className="flex-1 min-w-0 pb-4 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0">
+                                        <div className="flex justify-between items-start">
+                                            <p className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                                                {activity.title}
+                                            </p>
+                                            <span className="text-[10px] bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-gray-500 font-medium">
+                                                {activity.time.split('às')[0]}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate font-medium">
                                             {activity.description}
-                                        </p>
-                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                            {activity.time}
                                         </p>
                                     </div>
                                 </div>
                             ))}
+                            {(!activities || activities.length === 0) && (
+                                <p className="text-center text-sm text-muted-foreground py-8">Nenhuma atividade recente</p>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Gráficos Premium - Grid 2x2 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* PieChart - OS por Status */}
-                <Card className="hover:shadow-lg transition-shadow">
+            {/* Charts Row 2 */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Card className="shadow-lg border-none ring-1 ring-gray-100 dark:ring-gray-800">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Wrench className="w-5 h-5 text-orange-600" />
-                            OS por Status
-                        </CardTitle>
+                        <CardTitle>OS por Status</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {osStatusChart && osStatusChart.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={300}>
-                                <PieChart>
-                                    <Pie
-                                        data={osStatusChart}
-                                        cx="50%"
-                                        cy="50%"
-                                        labelLine={false}
-                                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                        outerRadius={100}
-                                        fill="#8884d8"
-                                        dataKey="value"
-                                    >
-                                        {osStatusChart.map((entry, index) => {
-                                            const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
-                                            return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
-                                        })}
-                                    </Pie>
-                                    <Tooltip />
-                                    <Legend />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="flex items-center justify-center h-[300px] text-gray-400">
-                                <p>Sem dados disponíveis</p>
-                            </div>
-                        )}
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={osStatusChart || []}
+                                    innerRadius={60}
+                                    outerRadius={100}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {(osStatusChart || []).map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B', '#EF4444'][index % 4]} stroke="" />
+                                    ))}
+                                </Pie>
+                                <Tooltip content={<CustomTooltip />} /> // Reusing generic tooltip
+                                <Legend verticalAlign="bottom" height={36} />
+                            </PieChart>
+                        </ResponsiveContainer>
                     </CardContent>
                 </Card>
 
-                {/* LineChart - Fluxo de Caixa */}
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="shadow-lg border-none ring-1 ring-gray-100 dark:ring-gray-800">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <DollarSign className="w-5 h-5 text-green-600" />
-                            Fluxo de Caixa (6 meses)
-                        </CardTitle>
+                        <CardTitle>Fluxo de Caixa</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {cashFlowChart && cashFlowChart.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={300}>
-                                <LineChart data={cashFlowChart}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="mes" />
-                                    <YAxis />
-                                    <Tooltip
-                                        formatter={(value: number) =>
-                                            new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
-                                        }
-                                    />
-                                    <Legend />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="receitas"
-                                        stroke="#10B981"
-                                        strokeWidth={2}
-                                        name="Receitas"
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="despesas"
-                                        stroke="#EF4444"
-                                        strokeWidth={2}
-                                        name="Despesas"
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="saldo"
-                                        stroke="#3B82F6"
-                                        strokeWidth={3}
-                                        name="Saldo"
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="flex items-center justify-center h-[300px] text-gray-400">
-                                <p>Sem dados disponíveis</p>
-                            </div>
-                        )}
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={cashFlowChart || []}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                <XAxis dataKey="mes" axisLine={false} tickLine={false} dy={10} tick={{ fontSize: 12 }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Line type="monotone" dataKey="receitas" stroke="#10B981" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="despesas" stroke="#EF4444" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
                     </CardContent>
                 </Card>
             </div>
 
-
-            {/* Links Rápidos */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Ações Rápidas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {quickLinks.map((link) => (
-                            <Link
-                                key={link.id}
-                                to={link.path}
-                                className="group flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
-                            >
-                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform duration-200 ${link.color}`}>
-                                    <link.icon className="w-6 h-6 text-white" />
-                                </div>
-                                <span className="font-medium text-sm text-gray-700 dark:text-gray-300 text-center group-hover:text-gray-900 dark:group-hover:text-white">
-                                    {link.label}
-                                </span>
-                            </Link>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
+            {/* Quick Actions Links */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {quickLinks.map((link) => (
+                    <Link
+                        key={link.id}
+                        to={link.path}
+                        className="group relative overflow-hidden bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700"
+                    >
+                        <div className={`absolute top-0 right-0 w-24 h-24 bg-${link.color.split('-')[1]}-50 rounded-full blur-2xl -mr-8 -mt-8 transition-all group-hover:scale-150`}></div>
+                        <div className="relative z-10 flex flex-col items-center gap-3">
+                            <div className={`${link.color} p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <link.icon className="w-6 h-6 text-white" />
+                            </div>
+                            <span className="font-bold text-gray-700 dark:text-gray-200 group-hover:text-primary transition-colors">
+                                {link.label}
+                            </span>
+                        </div>
+                    </Link>
+                ))}
+            </div>
         </div>
     );
 }

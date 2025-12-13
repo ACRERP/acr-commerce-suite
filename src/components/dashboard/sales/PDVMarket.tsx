@@ -5,13 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  ShoppingCart, 
-  Plus, 
-  Minus, 
-  Trash2, 
-  CreditCard, 
-  DollarSign, 
+import {
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2,
+  CreditCard,
+  DollarSign,
   Smartphone,
   Receipt,
   Search,
@@ -28,6 +28,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useProducts } from '@/hooks/useProducts';
 import { useClients } from '@/hooks/useClients';
+import { useCreateSale } from '@/hooks/useSales';
 import { useToast } from '@/hooks/use-toast';
 
 interface CartItem {
@@ -80,7 +81,7 @@ export function PDVMarket() {
     change: number;
     date: Date;
   } | null>(null);
-  
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { data: products = [] } = useProducts();
   const { data: clients = [] } = useClients();
@@ -102,8 +103,8 @@ export function PDVMarket() {
 
   // Calculate totals
   const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
-  const discount = 0; // TODO: Implement discount logic
-  const total = subtotal - discount;
+  const [discount, setDiscount] = useState(0);
+  const total = Math.max(0, subtotal - discount);
 
   // Calculate change
   const received = parseFloat(receivedAmount) || 0;
@@ -115,7 +116,7 @@ export function PDVMarket() {
       const existingItem = prevCart.find(item => item.id === product.id);
       if (existingItem) {
         return prevCart.map(item =>
-          item.id === product.id 
+          item.id === product.id
             ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.price }
             : item
         );
@@ -141,9 +142,9 @@ export function PDVMarket() {
       removeFromCart(id);
       return;
     }
-    setCart(prevCart => 
+    setCart(prevCart =>
       prevCart.map(item =>
-        item.id === id 
+        item.id === id
           ? { ...item, quantity, subtotal: quantity * item.price }
           : item
       )
@@ -162,6 +163,11 @@ export function PDVMarket() {
     setReceivedAmount('');
     setShowPayment(false);
   };
+
+  // Mutation
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const createSaleMutation = useCreateSale();
 
   // Process sale
   const processSale = async () => {
@@ -193,8 +199,21 @@ export function PDVMarket() {
     }
 
     try {
-      // TODO: Implement actual sale processing
       const saleData = {
+        client_id: selectedClient?.id,
+        total_amount: total,
+        payment_method: selectedPaymentMethod as any, // Cast to match PaymentMethod type
+        items: cart.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price
+        }))
+      };
+
+      await createSaleMutation.mutateAsync(saleData);
+
+      // Local state for Receipt (keep UI logic)
+      setCurrentSale({
         items: cart,
         client: selectedClient,
         paymentMethod: selectedPaymentMethod,
@@ -204,22 +223,15 @@ export function PDVMarket() {
         received,
         change,
         date: new Date()
-      };
+      });
 
-      setCurrentSale(saleData);
       setShowReceipt(true);
       clearCart();
-      
-      toast({
-        title: "Venda realizada",
-        description: "Venda processada com sucesso!"
-      });
+
+      // Toast is handled by mutation onSuccess, but we can add extra feedback if needed
     } catch (error) {
-      toast({
-        title: "Erro na venda",
-        description: "Não foi possível processar a venda",
-        variant: "destructive"
-      });
+      // Toast handled by mutation onError
+      console.error(error);
     }
   };
 
@@ -233,7 +245,7 @@ export function PDVMarket() {
   return (
     <div className="h-screen bg-gray-50 p-4">
       <div className="h-full max-w-7xl mx-auto grid grid-cols-12 gap-4">
-        
+
         {/* Left Panel - Product Search */}
         <div className="col-span-8 space-y-4">
           {/* Search Bar */}
@@ -287,7 +299,7 @@ export function PDVMarket() {
                           <p className="font-bold text-green-600">
                             {format(product.sale_price, 'R$ ##,##0.00', { locale: ptBR })}
                           </p>
-                          <Badge 
+                          <Badge
                             variant={product.stock_quantity > 0 ? "default" : "destructive"}
                             className="text-xs mt-1"
                           >
@@ -305,7 +317,7 @@ export function PDVMarket() {
 
         {/* Right Panel - Cart and Payment */}
         <div className="col-span-4 space-y-4">
-          
+
           {/* Cart */}
           <Card className="flex-1">
             <CardHeader>
@@ -395,8 +407,8 @@ export function PDVMarket() {
 
                   {/* Action Buttons */}
                   <div className="space-y-2">
-                    <Button 
-                      className="w-full" 
+                    <Button
+                      className="w-full"
                       size="lg"
                       onClick={() => setShowPayment(true)}
                     >
@@ -419,12 +431,31 @@ export function PDVMarket() {
               <CardTitle>Pagamento</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Discount Input */}
+              <div>
+                <label className="text-sm font-medium">Desconto</label>
+                <Input
+                  type="number"
+                  placeholder="0,00"
+                  value={discount}
+                  onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                  className="text-lg"
+                />
+              </div>
+
               {/* Total Amount */}
               <div className="text-center p-4 bg-gray-50 rounded">
                 <p className="text-sm text-gray-600">Total a pagar</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {format(total, 'R$ ##,##0.00', { locale: ptBR })}
-                </p>
+                <div className="flex flex-col items-center">
+                  {discount > 0 && (
+                    <span className="text-sm text-gray-400 line-through">
+                      {format(subtotal, 'R$ ##,##0.00', { locale: ptBR })}
+                    </span>
+                  )}
+                  <p className="text-2xl font-bold text-green-600">
+                    {format(total, 'R$ ##,##0.00', { locale: ptBR })}
+                  </p>
+                </div>
               </div>
 
               {/* Payment Methods */}
@@ -473,7 +504,7 @@ export function PDVMarket() {
               {selectedPaymentMethod === 'fiado' && (
                 <div>
                   <label htmlFor="client-select" className="text-sm font-medium">Cliente</label>
-                  <select 
+                  <select
                     id="client-select"
                     className="w-full p-2 border rounded"
                     value={selectedClient?.id || ''}
@@ -524,9 +555,9 @@ export function PDVMarket() {
                   <h2 className="text-xl font-bold">ACR Commerce</h2>
                   <p className="text-sm text-gray-600">PDV Market</p>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="text-left space-y-2">
                   <p className="text-sm">
                     <strong>Data:</strong> {format(currentSale.date, 'dd/MM/yyyy HH:mm', { locale: ptBR })}

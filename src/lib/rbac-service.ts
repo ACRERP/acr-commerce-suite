@@ -113,6 +113,25 @@ export async function assignRole(userId: string, roleId: number, assignedBy?: st
   if (error) throw error;
 }
 
+export async function updateUserRole(userId: string, roleName: string): Promise<void> {
+    // Helper to find role by name and assign it, replacing old ones if necessary or just adding
+    // Implementation can be simple: remove all roles, add new one. Or just add.
+    // For simplicity, let's assume single role per user for this function context if typical.
+    // Or just find the ID and call assignRole.
+    
+    const { data: roles } = await supabase.from('roles').select('id').eq('name', roleName).single();
+    if (roles) {
+         // Remove existing roles?
+        const currentRoles = await getUserRoles(userId);
+        for(const ur of currentRoles) {
+            await removeRole(userId, ur.role_id);
+        }
+        await assignRole(userId, roles.id);
+    } else {
+        throw new Error(`Role ${roleName} not found`);
+    }
+}
+
 export async function removeRole(userId: string, roleId: number): Promise<void> {
   const { error } = await supabase
     .from('user_roles')
@@ -126,29 +145,44 @@ export async function removeRole(userId: string, roleId: number): Promise<void> 
 // ============ USERS ============
 
 export async function getUsers(): Promise<User[]> {
-  // Buscar usuários da tabela profiles (não requer admin API)
-  const { data: profiles, error } = await supabase
-    .from('profiles')
-    .select('id, email, created_at')
-    .order('created_at', { ascending: false });
+  // Buscar usuários e todas as roles em paralelo para evitar N+1
+  const [profilesResponse, userRolesResponse] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, email, created_at')
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('user_roles')
+      .select(`
+        user_id,
+        role:roles(*)
+      `)
+  ]);
 
-  if (error) throw error;
-  if (!profiles) return [];
+  if (profilesResponse.error) throw profilesResponse.error;
+  if (userRolesResponse.error) throw userRolesResponse.error;
 
-  // Para cada usuário, buscar seus papéis
-  const usersWithRoles = await Promise.all(
-    profiles.map(async (profile) => {
-      const userRoles = await getUserRoles(profile.id);
-      return {
-        id: profile.id,
-        email: profile.email || '',
-        created_at: profile.created_at,
-        roles: userRoles.map(ur => ur.role).filter(Boolean) as Role[]
-      };
-    })
-  );
+  const profiles = profilesResponse.data || [];
+  const allUserRoles = userRolesResponse.data || [];
 
-  return usersWithRoles;
+  // Agrupar roles por user_id para acesso rápido
+  const rolesMap = new Map<string, Role[]>();
+  
+  allUserRoles.forEach((ur: any) => {
+    if (ur.role && ur.user_id) {
+      const currentRoles = rolesMap.get(ur.user_id) || [];
+      currentRoles.push(ur.role);
+      rolesMap.set(ur.user_id, currentRoles);
+    }
+  });
+
+  // Mapear perfis combinando com roles
+  return profiles.map(profile => ({
+    id: profile.id,
+    email: profile.email || '',
+    created_at: profile.created_at,
+    roles: rolesMap.get(profile.id) || []
+  }));
 }
 
 export async function getUserWithRoles(userId: string): Promise<User | null> {

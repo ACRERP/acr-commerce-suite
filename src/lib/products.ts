@@ -48,7 +48,7 @@ export interface UpdateProductData extends Partial<CreateProductData> {
 export async function getProducts() {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, sale_price:price')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -59,7 +59,7 @@ export async function getProducts() {
 export async function getProductById(id: number) {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, sale_price:price')
     .eq('id', id)
     .single();
 
@@ -69,9 +69,19 @@ export async function getProductById(id: number) {
 
 // Create new product
 export async function createProduct(product: CreateProductData) {
+  // Map frontend fields to DB columns
+  const dbPayload = {
+    ...product,
+    price: product.sale_price, // Map sale_price to price
+    sale_price: undefined,     // Remove sale_price from payload
+  };
+  
+  // Remove undefined keys
+  Object.keys(dbPayload).forEach(key => dbPayload[key as keyof typeof dbPayload] === undefined && delete dbPayload[key as keyof typeof dbPayload]);
+
   const { data, error } = await supabase
     .from('products')
-    .insert(product)
+    .insert(dbPayload)
     .select()
     .single();
 
@@ -83,9 +93,19 @@ export async function createProduct(product: CreateProductData) {
 export async function updateProduct(product: UpdateProductData) {
   const { id, ...updateData } = product;
   
+  // Map frontend fields to DB columns
+  const dbPayload = {
+    ...updateData,
+    price: updateData.sale_price, // Map sale_price to price
+    sale_price: undefined,        // Remove sale_price from payload
+  };
+
+  // Remove undefined keys
+  Object.keys(dbPayload).forEach(key => dbPayload[key as keyof typeof dbPayload] === undefined && delete dbPayload[key as keyof typeof dbPayload]);
+  
   const { data, error } = await supabase
     .from('products')
-    .update(updateData)
+    .update(dbPayload)
     .eq('id', id)
     .select()
     .single();

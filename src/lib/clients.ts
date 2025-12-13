@@ -7,6 +7,14 @@ export interface Client {
   phone?: string;
   address?: string;
   cpf_cnpj?: string;
+  email?: string;
+  city?: string;
+  state?: string;
+  whatsapp?: string;
+  status?: string;
+  total_purchases?: number;
+  total_spent?: number;
+  last_purchase_date?: string;
   created_at: string;
   updated_at: string;
 }

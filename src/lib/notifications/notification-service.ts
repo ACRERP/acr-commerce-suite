@@ -101,16 +101,20 @@ export class NotificationService {
   private async checkLowStock(): Promise<any[]> {
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, stock_quantity, min_stock')
-      .lt('stock_quantity', supabase.raw('min_stock'))
-      .limit(10);
+      .select('id, name, stock_quantity, minimum_stock_level')
+      .limit(50); // Fetch more to filter locally
 
     if (error) {
       console.error('Erro ao verificar estoque:', error);
       return [];
     }
 
-    return data || [];
+    // Filtra localmente onde estoque < minimo
+    // Considera 0 como minimo se minimum_stock_level for null
+    return (data || []).filter(p => {
+        const min = p.minimum_stock_level || 0;
+        return (p.stock_quantity || 0) < min;
+    }).slice(0, 10);
   }
 
   /**

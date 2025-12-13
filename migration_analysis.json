@@ -1,0 +1,257 @@
+{
+  "Clientes": {
+    "headers": [
+      "Nome",
+      "CNPJ_CPF",
+      "Telefone",
+      "EnderecoPrincipal",
+      "LimiteCredito",
+      "TipoCliente"
+    ],
+    "rowCount": 3,
+    "sample": [
+      [
+        "Loja Alfa",
+        "12.345.678/0001-99",
+        "(11)99999-1111",
+        "Rua A, 100",
+        2000,
+        "Revenda"
+      ],
+      [
+        "Oficina Beta",
+        "23.456.789/0001-88",
+        "(11)98888-2222",
+        "Av. B, 200",
+        1500,
+        "Oficina"
+      ],
+      [
+        "Auto Peças Gama",
+        "34.567.890/0001-77",
+        "(11)97777-3333",
+        "Rua C, 300",
+        2500,
+        "Revenda"
+      ]
+    ]
+  },
+  "Motoboys": {
+    "headers": [
+      "Nome",
+      "Telefone",
+      "CNH",
+      "Regiao",
+      "Desempenho",
+      "Recusas",
+      "Status"
+    ],
+    "rowCount": 3,
+    "sample": [
+      [
+        "João",
+        "(11)98888-7777",
+        "cnh_joao.jpg",
+        "Zona Norte",
+        90,
+        1,
+        "Ativo"
+      ],
+      [
+        "Carlos",
+        "(11)97777-8888",
+        "cnh_carlos.jpg",
+        "Zona Sul",
+        85,
+        3,
+        "Ativo"
+      ],
+      [
+        "Pedro",
+        "(11)96666-9999",
+        "cnh_pedro.jpg",
+        "Zona Leste",
+        92,
+        0,
+        "Inativo"
+      ]
+    ]
+  },
+  "CatálogoProdutos": {
+    "headers": [
+      "Nome do Produto",
+      "Preço",
+      "Marca",
+      "Código",
+      "Descrição",
+      "Categoria",
+      "Estoque",
+      "Imagem"
+    ],
+    "rowCount": 991,
+    "sample": [
+      [
+        "Tela Redmi Mi 8 Lite Com Aro",
+        "120.00",
+        "Samsung",
+        "XIACA32",
+        "Tela AMOLED original 6.4”",
+        "Telas",
+        50,
+        "tela_a20.jpg"
+      ],
+      [
+        "Tela Orig Samsung M21/ M21s M215 Sem Aro",
+        "125.00",
+        "Apple",
+        "NWSam2649",
+        "Bateria original 3110mAh",
+        "Baterias",
+        30,
+        "bateria_iphone11.jpg"
+      ],
+      [
+        "Tela Redmi 8  Com Aro",
+        "110.00",
+        "Motorola",
+        "XIACA45",
+        "Capa silicone preta",
+        "Acessórios",
+        100,
+        "capa_g60.jpg"
+      ]
+    ]
+  },
+  "Pedidos": {
+    "headers": [
+      "Cliente",
+      "Status",
+      "Total",
+      "DataPedido",
+      "Observacoes"
+    ],
+    "rowCount": 2,
+    "sample": [
+      [
+        "Loja Alfa",
+        "Aguardando envio",
+        240,
+        "2025-10-18",
+        "Urgente"
+      ],
+      [
+        "Oficina Beta",
+        "Entregue",
+        180,
+        "2025-10-17"
+      ]
+    ]
+  },
+  "ItensPedido": {
+    "headers": [
+      "Pedido",
+      "Produto",
+      "Quantidade",
+      "PrecoUnitario",
+      "Subtotal"
+    ],
+    "rowCount": 2,
+    "sample": [
+      [
+        "Pedido 1",
+        "Tela Samsung A20",
+        2,
+        120,
+        240
+      ],
+      [
+        "Pedido 2",
+        "Bateria iPhone 11",
+        1,
+        180,
+        180
+      ]
+    ]
+  },
+  "Entregas": {
+    "headers": [
+      "Cliente",
+      "Motoboy",
+      "Pedido",
+      "ValorEntrega",
+      "DistanciaKM",
+      "Status",
+      "FotoRetirada",
+      "FotoEntrega",
+      "NomeRecebedor",
+      "EnderecoEntrega",
+      "DataHora",
+      "LinkMapa"
+    ],
+    "rowCount": 2,
+    "sample": [
+      [
+        "Loja Alfa",
+        "João",
+        "Pedido 1",
+        25.5,
+        5.2,
+        "Aguardando",
+        "retirada.jpg",
+        null,
+        null,
+        "Rua A, 100",
+        "2025-10-18 10:30",
+        "https://maps.google.com"
+      ],
+      [
+        "Oficina Beta",
+        "Carlos",
+        "Pedido 2",
+        20,
+        4.5,
+        "Entregue",
+        "retirada2.jpg",
+        "entrega2.jpg",
+        "Marcos",
+        "Av. B, 200",
+        "2025-10-17 15:20",
+        "https://maps.google.com"
+      ]
+    ]
+  },
+  "Promoções": {
+    "headers": [
+      "Titulo",
+      "Descricao",
+      "MetaEntregas",
+      "Recompensa",
+      "Ativa"
+    ],
+    "rowCount": 1,
+    "sample": [
+      [
+        "Semana da Velocidade",
+        "Entregue 20 pedidos e ganhe R$50",
+        20,
+        "R$50",
+        true
+      ]
+    ]
+  },
+  "TermosPrivacidade": {
+    "headers": [
+      "Titulo",
+      "Texto",
+      "Versao"
+    ],
+    "rowCount": 1,
+    "sample": [
+      [
+        "Política de Privacidade",
+        "Suas informações são utilizadas apenas para fins operacionais.",
+        1
+      ]
+    ]
+  }
+}

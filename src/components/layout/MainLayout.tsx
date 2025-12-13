@@ -34,7 +34,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       {/* Main Content */}
       <div className={cn(
         "transition-all duration-300",
-        sidebarCollapsed ? "pl-16" : "pl-64"
+        sidebarCollapsed ? "pl-20" : "pl-72"
       )}>
         {/* Top Header - Estilo ACR */}
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border shadow-sm">

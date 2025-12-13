@@ -11,13 +11,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Progress } from '@/components/ui/progress';
-import { 
-  CalendarIcon, 
-  Plus, 
-  RefreshCw, 
-  Trophy, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  CalendarIcon,
+  Plus,
+  RefreshCw,
+  Trophy,
+  TrendingUp,
+  TrendingDown,
   Minus,
   Users,
   DollarSign,
@@ -32,9 +32,9 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { 
-  useSellerPerformance, 
-  useSalesCommissionRules, 
+import {
+  useSellerPerformance,
+  useSalesCommissionRules,
   useSalesLeaderboard,
   useSalesReportsSummary,
   formatCurrency,
@@ -61,29 +61,29 @@ export function SalesReports() {
     priority: '1',
   });
 
-  const { 
-    performance, 
-    calculatePerformance, 
-    isCalculating 
+  const {
+    performance,
+    calculatePerformance,
+    isCalculating
   } = useSellerPerformance(selectedSeller || undefined, startDate, endDate);
-  
-  const { 
-    rules, 
-    createRule, 
-    isCreating 
+
+  const {
+    rules,
+    createRule,
+    isCreating
   } = useSalesCommissionRules();
-  
-  const { 
-    leaderboard, 
-    updateLeaderboard, 
-    isUpdating 
+
+  const {
+    leaderboard,
+    updateLeaderboard,
+    isUpdating
   } = useSalesLeaderboard(selectedPeriod, startDate, endDate);
-  
+
   const { summary } = useSalesReportsSummary(selectedSeller || undefined, startDate, endDate);
 
   const handleCalculatePerformance = async () => {
     if (!selectedSeller || !startDate || !endDate) return;
-    
+
     try {
       await calculatePerformance({
         sellerId: selectedSeller,
@@ -97,7 +97,7 @@ export function SalesReports() {
 
   const handleUpdateLeaderboard = async () => {
     if (!startDate || !endDate) return;
-    
+
     try {
       await updateLeaderboard({
         periodType: selectedPeriod,
@@ -111,7 +111,7 @@ export function SalesReports() {
 
   const handleCreateCommissionRule = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       await createRule({
         name: commissionForm.name,
@@ -122,7 +122,7 @@ export function SalesReports() {
         max_sales_amount: commissionForm.max_sales_amount ? parseFloat(commissionForm.max_sales_amount) : undefined,
         priority: parseInt(commissionForm.priority),
       });
-      
+
       setIsCommissionDialogOpen(false);
       setCommissionForm({
         name: '',
@@ -193,7 +193,7 @@ export function SalesReports() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label>Data Inicial</Label>
               <Popover>
@@ -217,7 +217,7 @@ export function SalesReports() {
                   <Calendar
                     mode="single"
                     selected={startDate ? new Date(startDate) : undefined}
-                    onSelect={(date) => 
+                    onSelect={(date) =>
                       setStartDate(date ? date.toISOString().split('T')[0] : '')
                     }
                     initialFocus
@@ -225,7 +225,7 @@ export function SalesReports() {
                 </PopoverContent>
               </Popover>
             </div>
-            
+
             <div className="grid gap-2">
               <Label>Data Final</Label>
               <Popover>
@@ -249,7 +249,7 @@ export function SalesReports() {
                   <Calendar
                     mode="single"
                     selected={endDate ? new Date(endDate) : undefined}
-                    onSelect={(date) => 
+                    onSelect={(date) =>
                       setEndDate(date ? date.toISOString().split('T')[0] : '')
                     }
                     initialFocus
@@ -257,17 +257,17 @@ export function SalesReports() {
                 </PopoverContent>
               </Popover>
             </div>
-            
+
             <div className="grid gap-2">
               <Label>Vendedor</Label>
-              <Select value={selectedSeller} onValueChange={setSelectedSeller}>
+              <Select value={selectedSeller || "all"} onValueChange={(v) => setSelectedSeller(v === "all" ? "" : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   {Array.from(new Set(performance.map(p => p.seller))).map(seller => (
-                    <SelectItem key={seller?.id} value={seller?.id || ''}>
+                    <SelectItem key={seller?.id} value={seller?.id || 'unknown'}>
                       {seller?.name}
                     </SelectItem>
                   ))}
@@ -292,7 +292,7 @@ export function SalesReports() {
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
@@ -301,7 +301,7 @@ export function SalesReports() {
               <div className="text-2xl font-bold">{formatCurrency(summary.averageTicket)}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Comissões</CardTitle>
@@ -310,7 +310,7 @@ export function SalesReports() {
               <div className="text-2xl font-bold">{formatCurrency(summary.totalCommission)}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Vendedores</CardTitle>
@@ -398,7 +398,7 @@ export function SalesReports() {
                             <p className="text-sm text-muted-foreground">{perf.total_orders} vendas</p>
                           </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
                             <span className="font-medium">Ticket Médio:</span> {formatCurrency(perf.average_ticket)}
@@ -413,7 +413,7 @@ export function SalesReports() {
                             <span className="font-medium">Itens Vendidos:</span> {perf.total_items}
                           </div>
                         </div>
-                        
+
                         {perf.target_amount && (
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
@@ -516,7 +516,7 @@ export function SalesReports() {
                   required
                 />
               </div>
-              
+
               <div className="grid gap-2">
                 <Label htmlFor="description">Descrição</Label>
                 <Textarea
@@ -526,13 +526,13 @@ export function SalesReports() {
                   placeholder="Descrição da regra"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="commission_type">Tipo</Label>
                   <Select
                     value={commissionForm.commission_type}
-                    onValueChange={(value: 'percentage' | 'fixed' | 'tiered') => 
+                    onValueChange={(value: 'percentage' | 'fixed' | 'tiered') =>
                       setCommissionForm({ ...commissionForm, commission_type: value })
                     }
                   >
@@ -546,7 +546,7 @@ export function SalesReports() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="grid gap-2">
                   <Label htmlFor="commission_value">Valor</Label>
                   <Input
@@ -560,7 +560,7 @@ export function SalesReports() {
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="min_sales_amount">Venda Mínima</Label>
@@ -573,7 +573,7 @@ export function SalesReports() {
                     placeholder="0.00"
                   />
                 </div>
-                
+
                 <div className="grid gap-2">
                   <Label htmlFor="max_sales_amount">Venda Máxima</Label>
                   <Input
@@ -586,7 +586,7 @@ export function SalesReports() {
                   />
                 </div>
               </div>
-              
+
               <div className="grid gap-2">
                 <Label htmlFor="priority">Prioridade</Label>
                 <Select

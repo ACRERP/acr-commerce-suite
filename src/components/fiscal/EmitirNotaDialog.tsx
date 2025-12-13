@@ -26,8 +26,8 @@ import { Loader2, FileText, Receipt, CheckCircle, AlertCircle, Printer, Send } f
 interface EmitirNotaDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    saleId: string;
-    saleTotal: number;
+    saleId?: string;
+    saleTotal?: number;
     onSuccess?: (result: { chaveAcesso: string; qrCode: string }) => void;
 }
 
@@ -43,6 +43,7 @@ export function EmitirNotaDialog({
     const { toast } = useToast();
     const [tipoNota, setTipoNota] = useState<TipoNota>('nenhuma');
     const [cpfCnpj, setCpfCnpj] = useState('');
+    const [manualSaleId, setManualSaleId] = useState('');
     const [emitindo, setEmitindo] = useState(false);
     const [notaEmitida, setNotaEmitida] = useState<{
         chaveAcesso: string;
@@ -53,8 +54,14 @@ export function EmitirNotaDialog({
     // Mutation para emitir nota
     const emitirMutation = useMutation({
         mutationFn: async () => {
+            const finalSaleId = saleId || manualSaleId;
+
+            if (!finalSaleId) {
+                throw new Error('ID da venda é obrigatório');
+            }
+
             if (tipoNota === 'nfce') {
-                return await nfceService.emitirNFCe(saleId, cpfCnpj || undefined);
+                return await nfceService.emitirNFCe(finalSaleId, cpfCnpj || undefined);
             }
             // TODO: Implementar NF-e
             throw new Error('NF-e ainda não implementada');
@@ -93,6 +100,17 @@ export function EmitirNotaDialog({
             onOpenChange(false);
             return;
         }
+
+        if (!saleId && !manualSaleId) {
+            toast({
+                title: 'ID da Venda obrigatório',
+                description: 'Por favor, informe o ID da venda.',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Validar CPF/CNPJ se fornecido
 
         // Validar CPF/CNPJ se fornecido
         if (cpfCnpj) {
@@ -174,12 +192,29 @@ export function EmitirNotaDialog({
                 <DialogHeader>
                     <DialogTitle>Emitir Nota Fiscal</DialogTitle>
                     <DialogDescription>
-                        Venda finalizada: {formatCurrency(saleTotal)}
+                        {saleTotal !== undefined
+                            ? `Venda finalizada: ${formatCurrency(saleTotal)}`
+                            : 'Informe os dados da venda para emitir a nota'}
                     </DialogDescription>
                 </DialogHeader>
 
                 {!notaEmitida ? (
                     <div className="space-y-6 py-4">
+                        {!saleId && (
+                            <div className="space-y-2">
+                                <Label htmlFor="sale_id">ID da Venda (UUID)</Label>
+                                <Input
+                                    id="sale_id"
+                                    placeholder="Ex: 550e8400-e29b-41d4-a716-446655440000"
+                                    value={manualSaleId}
+                                    onChange={(e) => setManualSaleId(e.target.value)}
+                                />
+                                <p className="text-sm text-muted-foreground">
+                                    Esta chave deve corresponder a uma venda existente no sistema.
+                                </p>
+                            </div>
+                        )}
+
                         <div className="space-y-4">
                             <Label>Tipo de Nota Fiscal</Label>
                             <RadioGroup value={tipoNota} onValueChange={(v) => setTipoNota(v as TipoNota)}>

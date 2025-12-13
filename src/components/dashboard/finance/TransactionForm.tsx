@@ -18,20 +18,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { CreateTransactionData } from '@/lib/finance';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CreateTransactionData, getFinancialCategories } from '@/lib/finance';
+import { CalendarIcon, Loader2, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils'; // Assuming you have a utils file
-import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
 
 const transactionSchema = z.object({
     description: z.string().min(1, 'Descrição é obrigatória'),
     amount: z.string().min(1, 'Valor é obrigatório'),
     type: z.enum(['income', 'expense']),
-    category: z.string().optional(),
+    category_id: z.string().optional(),
     date: z.date({
         required_error: "Data é obrigatória.",
     }),
@@ -55,11 +55,26 @@ export function TransactionForm({ defaultType = 'income', onSubmit, onCancel, is
             description: '',
             amount: '',
             type: defaultType,
-            category: '',
+            category_id: '',
             date: new Date(),
             status: 'completed',
             payment_method: 'pix'
         },
+    });
+
+    const { data: categories } = useQuery({
+        queryKey: ['financial_categories'],
+        queryFn: getFinancialCategories
+    });
+
+    const type = form.watch('type');
+
+    // Filter categories. The type in DB is 'revenue' or 'expense'. 
+    // Typescript says 'income' | 'expense'.
+    // Mapping: income -> revenue, expense -> expense.
+    const filteredCategories = categories?.filter((c: any) => {
+        const dbType = type === 'income' ? 'revenue' : 'expense';
+        return c.type === dbType;
     });
 
     const handleSubmit = (data: TransactionFormData) => {
@@ -67,57 +82,36 @@ export function TransactionForm({ defaultType = 'income', onSubmit, onCancel, is
             ...data,
             amount: parseFloat(data.amount),
             date: data.date.toISOString(),
+            category_id: data.category_id || undefined
         });
     };
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
 
+                {/* Type Selection as Tabs/Cards */}
                 <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                        control={form.control}
-                        name="type"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Tipo</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecione o tipo" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="income">Entrada (Receita)</SelectItem>
-                                        <SelectItem value="expense">Saída (Despesa)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
+                    <div
+                        onClick={() => form.setValue('type', 'income')}
+                        className={cn(
+                            "cursor-pointer border rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all",
+                            type === 'income' ? "bg-success-50 border-success-500 text-success-700" : "bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50"
                         )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Status</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Status" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="completed">Concluído (Pago/Recebido)</SelectItem>
-                                        <SelectItem value="pending">Pendente (A Pagar/Receber)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
+                    >
+                        <ArrowUpCircle className={cn("w-6 h-6", type === 'income' ? "text-success-600" : "text-neutral-400")} />
+                        <span className="font-bold text-sm">Receita</span>
+                    </div>
+                    <div
+                        onClick={() => form.setValue('type', 'expense')}
+                        className={cn(
+                            "cursor-pointer border rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all",
+                            type === 'expense' ? "bg-danger-50 border-danger-500 text-danger-700" : "bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50"
                         )}
-                    />
+                    >
+                        <ArrowDownCircle className={cn("w-6 h-6", type === 'expense' ? "text-danger-600" : "text-neutral-400")} />
+                        <span className="font-bold text-sm">Despesa</span>
+                    </div>
                 </div>
 
                 <FormField
@@ -125,9 +119,9 @@ export function TransactionForm({ defaultType = 'income', onSubmit, onCancel, is
                     name="description"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Descrição</FormLabel>
+                            <FormLabel className="text-xs font-bold uppercase text-neutral-500">Descrição</FormLabel>
                             <FormControl>
-                                <Input placeholder="Ex: Venda Balcão, Pagamento Luz..." {...field} />
+                                <Input placeholder="Ex: Venda Balcão..." {...field} className="bg-neutral-50" />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -140,9 +134,9 @@ export function TransactionForm({ defaultType = 'income', onSubmit, onCancel, is
                         name="amount"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Valor (R$)</FormLabel>
+                                <FormLabel className="text-xs font-bold uppercase text-neutral-500">Valor (R$)</FormLabel>
                                 <FormControl>
-                                    <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                                    <Input type="number" step="0.01" placeholder="0.00" {...field} className="bg-neutral-50" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -154,21 +148,21 @@ export function TransactionForm({ defaultType = 'income', onSubmit, onCancel, is
                         name="date"
                         render={({ field }) => (
                             <FormItem className="flex flex-col">
-                                <FormLabel className="mb-1">Data</FormLabel>
+                                <FormLabel className="text-xs font-bold uppercase text-neutral-500 mb-1.5">Data</FormLabel>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <FormControl>
                                             <Button
                                                 variant={"outline"}
                                                 className={cn(
-                                                    "w-full pl-3 text-left font-normal",
+                                                    "w-full pl-3 text-left font-normal bg-neutral-50",
                                                     !field.value && "text-muted-foreground"
                                                 )}
                                             >
                                                 {field.value ? (
-                                                    format(field.value, "PPP", { locale: ptBR })
+                                                    format(field.value, "dd/MM/yyyy")
                                                 ) : (
-                                                    <span>Selecione uma data</span>
+                                                    <span>Selecione</span>
                                                 )}
                                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                             </Button>
@@ -193,24 +187,20 @@ export function TransactionForm({ defaultType = 'income', onSubmit, onCancel, is
                 <div className="grid grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
-                        name="category"
+                        name="category_id"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Categoria</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormLabel className="text-xs font-bold uppercase text-neutral-500">Categoria</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="bg-neutral-50">
                                             <SelectValue placeholder="Selecione..." />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="vendas">Vendas</SelectItem>
-                                        <SelectItem value="servicos">Serviços</SelectItem>
-                                        <SelectItem value="fornecedores">Fornecedores</SelectItem>
-                                        <SelectItem value="aluguel">Aluguel/Imóvel</SelectItem>
-                                        <SelectItem value="pessoal">Pessoal/Salários</SelectItem>
-                                        <SelectItem value="impostos">Impostos</SelectItem>
-                                        <SelectItem value="outros">Outros</SelectItem>
+                                        {filteredCategories?.map((cat: any) => (
+                                            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -223,10 +213,10 @@ export function TransactionForm({ defaultType = 'income', onSubmit, onCancel, is
                         name="payment_method"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Forma de Pagto</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormLabel className="text-xs font-bold uppercase text-neutral-500">Pagamento</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="bg-neutral-50">
                                             <SelectValue placeholder="Selecione..." />
                                         </SelectTrigger>
                                     </FormControl>
@@ -244,16 +234,38 @@ export function TransactionForm({ defaultType = 'income', onSubmit, onCancel, is
                         )}
                     />
                 </div>
+                <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="text-xs font-bold uppercase text-neutral-500">Status</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-neutral-50">
+                                        <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="completed">Concluído (Pago/Recebido)</SelectItem>
+                                    <SelectItem value="pending">Pendente (A Pagar/Receber)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
-                <div className="flex justify-end gap-2 pt-4">
-                    <Button type="button" variant="outline" onClick={onCancel}>
+                <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+                    <Button type="button" variant="outline" onClick={onCancel} className="h-10 px-6">
                         Cancelar
                     </Button>
                     <Button type="submit" disabled={isLoading} className={cn(
-                        form.watch('type') === 'income' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+                        "h-10 px-8 hover-lift shadow-lg",
+                        type === 'income' ? 'bg-success-600 hover:bg-success-700 shadow-success-500/20' : 'bg-danger-600 hover:bg-danger-700 shadow-danger-500/20'
                     )}>
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {form.watch('type') === 'income' ? 'Receber' : 'Pagar'}
+                        {type === 'income' ? 'Confirmar Receita' : 'Confirmar Despesa'}
                     </Button>
                 </div>
             </form>

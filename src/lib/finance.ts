@@ -5,7 +5,8 @@ export interface Transaction {
   description: string;
   amount: number;
   type: 'income' | 'expense';
-  category?: string;
+  category_id?: string;
+  category_name?: string; // Mapped from join
   status: 'pending' | 'completed' | 'cancelled';
   date: string;
   due_date?: string;
@@ -18,7 +19,7 @@ export interface CreateTransactionData {
   description: string;
   amount: number;
   type: 'income' | 'expense';
-  category?: string;
+  category_id?: string;
   status?: 'pending' | 'completed' | 'cancelled';
   date: string;
   due_date?: string;
@@ -36,19 +37,23 @@ export interface TransactionSummary {
 // Get all transactions (with basic filtering optional later)
 export async function getTransactions() {
   const { data, error } = await supabase
-    .from('transactions')
-    .select('*')
+    .from('financial_transactions')
+    .select('*, category:financial_categories(name)')
     .order('date', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data as Transaction[];
+  
+  return data.map((tx: any) => ({
+    ...tx,
+    category_name: tx.category?.name
+  })) as Transaction[];
 }
 
 // Get summary stats
 export async function getFinancialSummary(): Promise<TransactionSummary> {
   const { data, error } = await supabase
-    .from('transactions')
+    .from('financial_transactions')
     .select('amount, type, status');
 
   if (error) throw error;
@@ -82,7 +87,7 @@ export async function getFinancialSummary(): Promise<TransactionSummary> {
 
 export async function createTransaction(transaction: CreateTransactionData) {
   const { data, error } = await supabase
-    .from('transactions')
+    .from('financial_transactions')
     .insert(transaction)
     .select()
     .single();
@@ -96,7 +101,7 @@ export async function updateTransaction(
   transaction: Partial<CreateTransactionData>
 ) {
   const { data, error } = await supabase
-    .from('transactions')
+    .from('financial_transactions')
     .update(transaction)
     .eq('id', id)
     .select()
@@ -108,10 +113,21 @@ export async function updateTransaction(
 
 export async function deleteTransaction(id: number) {
   const { error } = await supabase
-    .from('transactions')
+    .from('financial_transactions')
     .delete()
     .eq('id', id);
 
   if (error) throw error;
+}
+
+export async function getFinancialCategories() {
+  const { data, error } = await supabase
+    .from('financial_categories')
+    .select('*')
+    .eq('is_active', true)
+    .order('name');
+
+  if (error) throw error;
+  return data;
 }
 
