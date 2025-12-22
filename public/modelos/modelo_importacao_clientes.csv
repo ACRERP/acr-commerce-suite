@@ -1,0 +1,4 @@
+Nome,Tipo,CPF_CNPJ,Email,Telefone,WhatsApp,Endereço,Cidade,Estado,CEP
+João Silva,pf,123.456.789-00,joao@email.com,(11) 98888-7777,(11) 98888-7777,Rua das Flores 123,São Paulo,SP,01234-567
+Empresa ABC,pj,12.345.678/0001-99,contato@empresa.com,(11) 3333-4444,(11) 97777-6666,Av Central 500,Curitiba,PR,80000-000
+Maria Oliveira,pf,987.654.321-11,maria@email.com,(21) 99999-8888,,Rua do Porto 45,Rio de Janeiro,RJ,20000-000
