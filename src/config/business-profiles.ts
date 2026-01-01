@@ -37,7 +37,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=1200',
         systemCategory: 'retail',
         features: ['visual_catalog', 'color_variation', 'stock_alerts'],
-        modules: ['pdv', 'inventory', 'clients', 'finance', 'marketing'],
+        modules: ['pdv', 'inventory', 'clients', 'finance', 'marketing', 'crm', 'reports'],
         theme: {
             primary: '#ec4899',
             secondary: '#fbcfe8',
@@ -59,7 +59,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?q=80&w=1200',
         systemCategory: 'service',
         features: ['automotive_os', 'vehicle_history', 'parts_control', 'scheduling'],
-        modules: ['service_orders', 'inventory', 'clients', 'finance', 'scheduling'],
+        modules: ['service_orders', 'inventory', 'clients', 'finance', 'scheduling', 'pdv', 'crm', 'reports'],
         theme: {
             primary: '#ef4444',
             secondary: '#fee2e2',
@@ -81,7 +81,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?q=80&w=1200',
         systemCategory: 'service',
         features: ['electronics_os', 'imei_tracking', 'diagnostic_checklist', 'warranties'],
-        modules: ['service_orders', 'inventory', 'clients', 'finance'],
+        modules: ['service_orders', 'inventory', 'clients', 'finance', 'pdv', 'crm', 'reports'],
         theme: {
             primary: '#3b82f6',
             secondary: '#dbeafe',
@@ -103,7 +103,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=1200',
         systemCategory: 'retail',
         features: ['variants_grid', 'collections', 'promotions', 'crm'],
-        modules: ['pdv', 'inventory', 'clients', 'crm', 'finance'],
+        modules: ['pdv', 'inventory', 'clients', 'crm', 'finance', 'marketing', 'purchases', 'reports'],
         theme: {
             primary: '#8b5cf6',
             secondary: '#ede9fe',
@@ -125,7 +125,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1605218427360-bc327b5e8dd4?q=80&w=1200',
         systemCategory: 'service',
         features: ['automotive_os', 'quick_service', 'tire_stock', 'scheduling'],
-        modules: ['service_orders', 'inventory', 'clients', 'finance', 'scheduling'],
+        modules: ['service_orders', 'inventory', 'clients', 'finance', 'scheduling', 'pdv', 'reports'],
         theme: {
             primary: '#f97316',
             secondary: '#ffedd5',
@@ -147,7 +147,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200',
         systemCategory: 'corporate',
         features: ['crm', 'kanban_crm', 'reports_advanced', 'project_management'],
-        modules: ['clients', 'crm', 'finance', 'reports'],
+        modules: ['clients', 'crm', 'finance', 'reports', 'inventory'],
         theme: {
             primary: '#64748b',
             secondary: '#f1f5f9',
@@ -169,7 +169,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1200',
         systemCategory: 'corporate',
         features: ['crm', 'kanban_crm', 'property_gallery', 'proposals', 'client_matching'],
-        modules: ['clients', 'crm', 'finance', 'projects'],
+        modules: ['clients', 'crm', 'finance', 'projects', 'inventory'],
         theme: {
             primary: '#059669',
             secondary: '#d1fae5',
@@ -191,7 +191,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=1200',
         systemCategory: 'food',
         features: ['daily_production', 'quick_pdv', 'recipes'],
-        modules: ['pdv', 'inventory', 'finance', 'production'],
+        modules: ['pdv', 'inventory', 'finance', 'production', 'clients', 'crm', 'delivery', 'reports'],
         theme: {
             primary: '#d97706',
             secondary: '#fef3c7',
@@ -213,7 +213,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1200',
         systemCategory: 'food',
         features: ['digital_menu', 'table_management', 'delivery_integration'],
-        modules: ['pdv', 'delivery', 'kitchen', 'finance'],
+        modules: ['pdv', 'delivery', 'kitchen', 'finance', 'inventory', 'clients', 'crm', 'reports'],
         theme: {
             primary: '#be123c',
             secondary: '#ffe4e6',
@@ -257,7 +257,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?q=80&w=1200',
         systemCategory: 'health',
         features: ['pet_profile', 'vaccine_schedule', 'grooming_schedule', 'clinical_history'],
-        modules: ['clients', 'service_orders', 'inventory', 'finance', 'scheduling'],
+        modules: ['clients', 'service_orders', 'inventory', 'finance', 'scheduling', 'pdv', 'crm', 'reports'],
         theme: {
             primary: '#f59e0b',
             secondary: '#fef3c7',
@@ -279,7 +279,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1200',
         systemCategory: 'service',
         features: ['commission_calc', 'smart_schedule', 'loyalty_program'],
-        modules: ['clients', 'finance', 'team', 'scheduling'],
+        modules: ['clients', 'finance', 'team', 'scheduling', 'pdv', 'inventory', 'marketing', 'crm', 'reports'],
         theme: {
             primary: '#db2777',
             secondary: '#fce7f3',
@@ -301,7 +301,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1631217868269-df49c5f418d1?q=80&w=1200',
         systemCategory: 'health',
         features: ['electronic_records', 'telemedicine', 'insurance_billing', 'medical_schedule'],
-        modules: ['clients', 'finance', 'scheduling'],
+        modules: ['clients', 'finance', 'scheduling', 'inventory', 'crm', 'reports'],
         theme: {
             primary: '#0d9488',
             secondary: '#ccfbf1',
@@ -323,7 +323,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?q=80&w=1200',
         systemCategory: 'retail',
         features: ['volume_sales', 'delivery_logistics', 'heavy_stock', 'quotes'],
-        modules: ['pdv', 'inventory', 'clients', 'finance', 'delivery'],
+        modules: ['pdv', 'inventory', 'clients', 'finance', 'delivery', 'crm', 'service_orders', 'reports'],
         theme: {
             primary: '#ea580c',
             secondary: '#ffedd5',
@@ -345,7 +345,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200',
         systemCategory: 'corporate',
         features: ['enrollment', 'recurring_billing', 'class_schedule'],
-        modules: ['clients', 'finance', 'academic'],
+        modules: ['clients', 'finance', 'academic', 'inventory', 'crm', 'reports'],
         theme: {
             primary: '#4f46e5',
             secondary: '#e0e7ff',
@@ -367,7 +367,7 @@ export const businessProfiles: BusinessProfile[] = [
         imageUrl: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?q=80&w=1200',
         systemCategory: 'service',
         features: ['generic_os', 'service_orders', 'mobile_tools'],
-        modules: ['service_orders', 'clients', 'finance'],
+        modules: ['service_orders', 'clients', 'finance', 'inventory', 'scheduling', 'crm', 'reports', 'pdv'],
         theme: {
             primary: '#6366f1',
             secondary: '#e0e7ff',

@@ -39,6 +39,7 @@ export interface CreateSaleData {
   payment_method: PaymentMethod;
   status?: SaleStatus;
   items: Omit<SaleItem, 'id' | 'sale_id' | 'product'>[];
+  organization_id?: string;
 }
 
 export interface UpdateSaleData extends Partial<Omit<CreateSaleData, 'items'>> {
@@ -46,11 +47,17 @@ export interface UpdateSaleData extends Partial<Omit<CreateSaleData, 'items'>> {
 }
 
 // Get all sales with items and client info
-export async function getSales() {
-  const { data, error } = await supabase
+export async function getSales(organizationId?: string) {
+  let query = supabase
     .from('sales')
     .select('*')
     .order('created_at', { ascending: false });
+
+  if (organizationId) {
+    query = query.eq('organization_id', organizationId);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw error;
   return data as Sale[];
@@ -76,7 +83,8 @@ export async function createSale(sale: CreateSaleData) {
       client_id: sale.client_id,
       total_amount: sale.total_amount,
       payment_method: sale.payment_method,
-      status: sale.status || 'concluida'
+      status: sale.status || 'concluida',
+      organization_id: sale.organization_id // Updated to pass org ID
     },
     sale_items: sale.items
   });
@@ -111,25 +119,37 @@ export async function deleteSale(id: number) {
 }
 
 // Get sales by date range
-export async function getSalesByDateRange(startDate: string, endDate: string) {
-  const { data, error } = await supabase
+export async function getSalesByDateRange(startDate: string, endDate: string, organizationId?: string) {
+  let query = supabase
     .from('sales')
     .select('*')
     .gte('created_at', startDate)
     .lte('created_at', endDate)
     .order('created_at', { ascending: false });
 
+  if (organizationId) {
+    query = query.eq('organization_id', organizationId);
+  }
+
+  const { data, error } = await query;
+
   if (error) throw error;
   return data as Sale[];
 }
 
 // Get sales by status
-export async function getSalesByStatus(status: SaleStatus) {
-  const { data, error } = await supabase
+export async function getSalesByStatus(status: SaleStatus, organizationId?: string) {
+  let query = supabase
     .from('sales')
     .select('*')
     .eq('status', status)
     .order('created_at', { ascending: false });
+
+  if (organizationId) {
+    query = query.eq('organization_id', organizationId);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw error;
   return data as Sale[];

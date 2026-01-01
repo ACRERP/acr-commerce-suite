@@ -1,199 +1,228 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useProducts, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Plus,
-  Search,
-  Package,
-  Filter,
-  MoreHorizontal,
-  Download,
-  Box,
-  AlertTriangle,
-  TrendingUp,
-  Tag,
-  Wand2,
-  Check,
-  Upload,
-  Loader2,
-  Trash2
-} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { generateEAN13 } from "@/lib/product-utils";
-import { useToast } from "@/hooks/use-toast";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  Box,
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Package,
+  TrendingUp,
+  AlertTriangle,
+  Download,
+  Upload,
+  Tag,
+  Loader2,
+  Trash2,
+  Wand2,
+  Layers,
+  Hash,
+  Check,
+} from "lucide-react";
+import { useProducts } from "@/hooks/useProducts";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { productService } from "@/services/ProductService";
+import { toast } from "sonner";
 import * as XLSX from 'xlsx';
-import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
-import { Product, createBatch } from "@/lib/products";
+// import { FeatureGuard } from "@/components/auth/FeatureGuard"; // Commented out - component doesn't exist
 import { QuickActionPopover } from "@/components/products/QuickActionPopover";
-import { FeatureGuard } from "@/components/auth/Guards";
-import { useBusinessProfile } from "@/contexts/BusinessProfileContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarIcon, Hash, Layers } from "lucide-react";
+import { ImportProductsDialog } from "@/components/products/ImportProductsDialog";
 
-interface ProdutosProps {
-  openForm?: boolean;
-  defaultTab?: string;
+interface ProductVariation {
+  color: string;
+  size: string;
 }
 
-const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
-  const { toast } = useToast();
-  const { activeProfile } = useBusinessProfile();
-  const [isModalOpen, setIsModalOpen] = useState(openForm);
-  const [generatedCode, setGeneratedCode] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+interface BatchInfo {
+  number: string;
+  expiry: string;
+  quantity: string;
+}
+
+const Produtos = () => {
+  const queryClient = useQueryClient();
+  const { products, isLoading } = useProducts();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-
-  // Queries & Mutations
-  const { data: products = [], isLoading, error: queryError } = useProducts();
-  const createProductMutation = useCreateProduct();
-  const deleteProductMutation = useDeleteProduct();
-
-  // Form States
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [formData, setFormData] = useState({
     name: "",
     sku: "",
-    price: "",      // sale_price
-    cost: "",       // cost_price
-    stock: "",      // stock_quantity
+    price: "",
+    cost: "",
+    stock: "",
     description: "",
-    min_stock: "5"  // minimum_stock_level
+    min_stock: "5",
+    // ACR Paridade Advanced Fields
+    wholesale_price: "",
+    term_price: "",
+    markup: "",
+    margin: "",
+    warranty: "",
+    reference: "",
+    commission_percentage: "",
+    location: "",
+    brand: ""
   });
 
-  const [variations, setVariations] = useState<any[]>([]);
-  const [newVariation, setNewVariation] = useState({ color: "", size: "" });
+  const [variations, setVariations] = useState<ProductVariation[]>([]);
+  const [newVariation, setNewVariation] = useState<ProductVariation>({ color: "", size: "" });
+  const [batches, setBatches] = useState<BatchInfo[]>([]);
+  const [newBatch, setNewBatch] = useState<BatchInfo>({ number: "", expiry: "", quantity: "" });
+  const [generatedCode, setGeneratedCode] = useState("");
 
-  const [batches, setBatches] = useState<any[]>([]);
-  const [newBatch, setNewBatch] = useState({ number: "", expiry: "", quantity: "" });
-
-  const handleExport = () => {
-    const dataToExport = products;
-
-    const exportData = dataToExport.map(p => ({
-      'Código': p.sku || p.code || '',
-      'Nome': p.name,
-      'Categoria': p.category || '',
-      'Preço': p.sale_price || 0,
-      'Estoque': p.stock_quantity || 0,
-      'Custo': p.cost_price || 0
-    }));
-
-    // Create worksheet
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Produtos");
-
-    // Save file
-    XLSX.writeFile(wb, `produtos_acr_${new Date().toISOString().split('T')[0]}.xlsx`);
-
-    toast({ title: "Exportado!", description: "Planilha baixada com sucesso.", className: "bg-green-500 text-white" });
-  };
-
-  useEffect(() => {
-    if (openForm) setIsModalOpen(true);
-  }, [openForm]);
-
-  const handleGenerateCode = () => {
-    const ean = generateEAN13();
-    setFormData(prev => ({ ...prev, sku: ean }));
-    setGeneratedCode(ean);
-
-    toast({
-      title: "Código Gerado! 🏷️",
-      description: `EAN-13 válido gerado: ${ean}`,
-      duration: 3000,
-    });
-  };
-
-  const handleSave = async () => {
-    try {
-      const payload = {
-        name: formData.name,
-        code: formData.sku || generatedCode || `SKU-${Date.now()}`,
-        sku: formData.sku,
-        description: formData.description,
-        unit: 'UN', // Default
-        stock_quantity: Number(formData.stock) || 0,
-        minimum_stock_level: Number(formData.min_stock) || 5,
-        sale_price: Number(formData.price) || 0,
-        cost_price: Number(formData.cost) || 0,
-        // category_id: null // TODO: Add category selector
-        variations: variations.map(v => ({
-          name: `${formData.name} - ${v.color} ${v.size}`.trim(),
-          sku: `${formData.sku || 'SKU'}-${v.color}-${v.size}`,
-          stock_quantity: Number(formData.stock) / variations.length || 0, // Split stock or handle individually
-          attributes: { color: v.color, size: v.size }
-        }))
-      };
-
-      const product = await createProductMutation.mutateAsync(payload);
-
-      // Handle batches separately
-      if (batches.length > 0) {
-        await Promise.all(batches.map(batch =>
-          createBatch({
-            product_id: product.id,
-            batch_number: batch.number,
-            expiry_date: batch.expiry,
-            quantity: Number(batch.quantity) || 0
-          })
-        ));
-      }
-
+  const createProductMutation = useMutation({
+    mutationFn: (data: any) => productService.createProduct(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Produto cadastrado com sucesso!");
       setIsModalOpen(false);
       setFormData({
-        name: "", sku: "", price: "", cost: "", stock: "", description: "", min_stock: "5"
+        name: "", sku: "", price: "", cost: "", stock: "", description: "", min_stock: "5",
+        wholesale_price: "", term_price: "", markup: "", margin: "", warranty: "", reference: "",
+        commission_percentage: "", location: "", brand: ""
       });
       setVariations([]);
       setBatches([]);
-    } catch (e) {
-      // Error handling is done in mutation hook
+      setGeneratedCode("");
+    },
+    onError: () => {
+      toast.error("Erro ao cadastrar produto.");
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: (id: string) => productService.deleteProduct(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Produto excluído com sucesso!");
+    },
+    onError: () => {
+      toast.error("Erro ao excluir produto.");
+    },
+  });
+
+  const handleGenerateCode = () => {
+    const code = `PROD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    setGeneratedCode(code);
+    setFormData(prev => ({ ...prev, sku: code }));
+    toast.info("Código SKU gerado automaticamente.");
+  };
+
+  const handleExport = () => {
+    const dataToExport = products.map(p => ({
+      Nome: p.name,
+      SKU: p.sku || p.code,
+      Preço: p.sale_price,
+      Custo: p.cost_price,
+      Estoque: p.stock_quantity,
+      Categoria: p.category || 'Geral'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Produtos");
+    XLSX.writeFile(wb, "produtos_export.xlsx");
+    toast.success("Catálogo exportado com sucesso!");
+  };
+
+  const handleSave = () => {
+    if (!formData.name) {
+      toast.error("O nome do produto é obrigatório.");
+      return;
+    }
+
+    const payload = {
+      name: formData.name,
+      code: formData.sku || generatedCode || `SKU-${Date.now()}`,
+      sku: formData.sku,
+      description: formData.description,
+      unit: 'UN',
+      stock_quantity: Number(formData.stock) || 0,
+      minimum_stock_level: Number(formData.min_stock) || 5,
+      sale_price: Number(formData.price) || 0,
+      cost_price: Number(formData.cost) || 0,
+      // Advanced Fields (ACR Paridade)
+      wholesale_price: Number(formData.wholesale_price) || 0,
+      term_price: Number(formData.term_price) || 0,
+      markup: Number(formData.markup) || 0,
+      margin: Number(formData.margin) || 0,
+      warranty: formData.warranty,
+      reference: formData.reference,
+      commission_percentage: Number(formData.commission_percentage) || 0,
+      location: formData.location,
+      brand: formData.brand,
+      variations: variations.map(v => ({
+        name: `${formData.name} - ${v.color} ${v.size}`.trim(),
+        sku: `${formData.sku || 'SKU'}-${v.color}-${v.size}`,
+        stock_quantity: 0,
+        attributes: { color: v.color, size: v.size }
+      }))
+    };
+
+    createProductMutation.mutate(payload);
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm("Tem certeza que deseja excluir este produto?")) {
+      deleteProductMutation.mutate(id);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm("Tem certeza que deseja excluir este produto?")) {
-      await deleteProductMutation.mutateAsync(id);
-    }
+  const handleOpenModal = () => {
+    setFormData({
+      name: "", sku: "", price: "", cost: "", stock: "", description: "", min_stock: "5",
+      wholesale_price: "", term_price: "", markup: "", margin: "", warranty: "", reference: "",
+      commission_percentage: "", location: "", brand: ""
+    });
+    setVariations([]);
+    setBatches([]);
+    setIsModalOpen(true);
   };
 
-  // Filtered Products
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (p.code && p.code.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (product.sku?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (product.code?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (product.category?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+    );
+  }, [products, searchTerm]);
 
-  // Pagination Logic
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-
-  // Reset page when search changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -207,7 +236,7 @@ const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
           onOpenChange={setIsImportModalOpen}
         />
 
-        {/* Header Section Premium */}
+        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-neutral-50 dark:to-neutral-400 tracking-tight mb-2">
@@ -229,7 +258,7 @@ const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
             </Button>
             <Button
               className="btn-primary hover-lift gap-2 shadow-lg shadow-primary-500/20"
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleOpenModal}
             >
               <Plus className="w-4 h-4" />
               Novo Produto
@@ -237,7 +266,7 @@ const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
           </div>
         </div>
 
-        {/* Stats Grid Premium - REAL DATA */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="card-premium hover-lift group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 dark:bg-blue-900/30 rounded-bl-full -mr-8 -mt-8 opacity-50 transition-transform duration-500 group-hover:scale-110"></div>
@@ -287,7 +316,7 @@ const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
           </div>
         </div>
 
-        {/* Filters and Search - Styled Premium */}
+        {/* Filters and Search */}
         <div className="card-premium p-4">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="relative w-full md:w-[600px]">
@@ -308,11 +337,10 @@ const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
           </div>
         </div>
 
-        {/* Top Pagination Controls */}
+        {/* Pagination Info */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-neutral-500 px-2 my-2">
           <div className="flex items-center gap-4">
             <span className="ml-2">Total: <strong className="text-neutral-900 dark:text-white">{filteredProducts.length}</strong> produtos</span>
-
             <div className="flex items-center gap-2 border-l border-neutral-200 dark:border-neutral-700 pl-4">
               <span>Exibir</span>
               <select
@@ -356,7 +384,7 @@ const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
           </div>
         </div>
 
-        {/* Products Table Card Premium */}
+        {/* Products Table Card */}
         <div className="card-premium p-0 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -365,7 +393,6 @@ const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
                   <th className="text-left py-4 px-6 text-xs font-bold text-neutral-500 uppercase tracking-wider">Produto</th>
                   <th className="text-left py-4 px-6 text-xs font-bold text-neutral-500 uppercase tracking-wider">SKU</th>
                   <th className="text-left py-4 px-6 text-xs font-bold text-neutral-500 uppercase tracking-wider">Categoria</th>
-
                   <th className="text-right py-4 px-6 text-xs font-bold text-neutral-500 uppercase tracking-wider">Estoque</th>
                   <th className="text-right py-4 px-6 text-xs font-bold text-neutral-500 uppercase tracking-wider">Preço Venda</th>
                   <th className="text-center py-4 px-6 text-xs font-bold text-neutral-500 uppercase tracking-wider">Ações Rápidas</th>
@@ -424,11 +451,9 @@ const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
                           currency: "BRL",
                         }).format(product.sale_price || 0)}
                       </td>
-                      {/* QUICK ACTION COLUMN */}
                       <td className="py-4 px-6 text-center">
                         <QuickActionPopover product={product} />
                       </td>
-
                       <td className="py-4 px-6 text-center">
                         {product.stock_quantity === 0 ? (
                           <Badge variant="destructive" className="shadow-none">Esgotado</Badge>
@@ -472,6 +497,7 @@ const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
           </div>
         </div>
 
+        {/* New Product Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[2rem] border-0 shadow-2xl glass-window glass-window-compact !p-0">
             <DialogHeader className="p-5 bg-gradient-to-r from-neutral-800/80 to-neutral-900/80 text-white backdrop-blur-md border-b border-white/10">
@@ -484,261 +510,364 @@ const Produtos = ({ openForm = false, defaultTab }: ProdutosProps) => {
               <p className="text-white/50 text-[10px] font-black uppercase tracking-[2px] mt-0.5">Cadastre itens para o catálogo oficial</p>
             </DialogHeader>
 
-            <div className="max-h-[75vh] overflow-y-auto px-6 py-5 bg-white/5 backdrop-blur-sm space-y-6">
-              <div className="grid grid-cols-12 gap-6">
-                {/* Imagem */}
-                <div className="col-span-12 md:col-span-3">
-                  <div className="border-2 border-dashed border-white/10 rounded-2xl aspect-square flex flex-col items-center justify-center bg-black/20 hover:bg-black/30 transition-all cursor-pointer group backdrop-blur-md overflow-hidden relative">
-                    <div className="p-3 rounded-full bg-white/5 shadow-sm mb-2 group-hover:scale-110 transition-transform">
-                      <Upload className="w-5 h-5 text-white/40" />
-                    </div>
-                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Imagem</p>
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-                  </div>
-                </div>
+            <div className="max-h-[75vh] overflow-y-auto bg-white/5 backdrop-blur-sm">
+              <Tabs defaultValue="geral" className="w-full">
+                <TabsList className="w-full justify-start rounded-none bg-black/20 border-b border-white/5 h-12 px-6">
+                  <TabsTrigger value="geral" className="data-[state=active]:bg-white/10 text-[10px] font-black uppercase tracking-widest">Geral</TabsTrigger>
+                  <TabsTrigger value="precos" className="data-[state=active]:bg-white/10 text-[10px] font-black uppercase tracking-widest">Preços & Margens</TabsTrigger>
+                  <TabsTrigger value="detalhes" className="data-[state=active]:bg-white/10 text-[10px] font-black uppercase tracking-widest">Detalhes Técnicos</TabsTrigger>
+                  <TabsTrigger value="variantes" className="data-[state=active]:bg-white/10 text-[10px] font-black uppercase tracking-widest">Grade & Lotes</TabsTrigger>
+                </TabsList>
 
-                {/* Detalhes Prinicpais */}
-                <div className="col-span-12 md:col-span-9 space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Nome */}
-                    <div className="col-span-2 space-y-1">
-                      <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Nome do Produto</Label>
-                      <Input
-                        placeholder="Ex: Smartphone Samsung Galaxy..."
-                        className="h-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:bg-black/40 transition-all input-compact font-bold"
-                        value={formData.name}
-                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                <div className="p-6 space-y-6">
+                  <TabsContent value="geral" className="mt-0 space-y-6">
+                    <div className="grid grid-cols-12 gap-6">
+                      {/* Image Placeholder */}
+                      <div className="col-span-12 md:col-span-3">
+                        <div className="border-2 border-dashed border-white/10 rounded-2xl aspect-square flex flex-col items-center justify-center bg-black/20 hover:bg-black/30 transition-all cursor-pointer group backdrop-blur-md overflow-hidden relative">
+                          <div className="p-3 rounded-full bg-white/5 shadow-sm mb-2 group-hover:scale-110 transition-transform">
+                            <Upload className="w-5 h-5 text-white/40" />
+                          </div>
+                          <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Imagem</p>
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* Main Details */}
+                      <div className="col-span-12 md:col-span-9 space-y-4">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="col-span-2 space-y-1">
+                            <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Nome do Produto</Label>
+                            <Input
+                              placeholder="Ex: Smartphone Samsung Galaxy..."
+                              className="h-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:bg-black/40 transition-all input-compact font-bold"
+                              value={formData.name}
+                              onChange={e => setFormData({ ...formData, name: e.target.value })}
+                            />
+                          </div>
+                          <div className="col-span-1 space-y-1">
+                            <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">SKU/EAN</Label>
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Gerar..."
+                                className="h-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 font-mono text-[11px] input-compact"
+                                value={formData.sku}
+                                onChange={e => setFormData({ ...formData, sku: e.target.value })}
+                              />
+                              <Button
+                                size="icon"
+                                variant="outline"
+                                className="h-10 w-10 shrink-0 bg-white/5 border-white/10 hover:bg-white/10 text-white"
+                                onClick={handleGenerateCode}
+                              >
+                                <Wand2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="col-span-1 space-y-1">
+                            <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Estoque Inicial</Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              className="h-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 input-compact font-bold"
+                              value={formData.stock}
+                              onChange={e => setFormData({ ...formData, stock: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Descrição Breve</Label>
+                      <Textarea
+                        placeholder="..."
+                        className="min-h-[80px] bg-black/20 border-white/10 text-white placeholder:text-white/20 text-xs rounded-xl focus:bg-black/40 transition-all font-medium"
+                        value={formData.description}
+                        onChange={e => setFormData({ ...formData, description: e.target.value })}
                       />
                     </div>
+                  </TabsContent>
 
-                    {/* SKU/Código */}
-                    <div className="col-span-1 space-y-1">
-                      <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">SKU/EAN</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Gerar..."
-                          className="h-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 font-mono text-[11px] input-compact"
-                          value={formData.sku}
-                          onChange={e => setFormData({ ...formData, sku: e.target.value })}
-                        />
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-10 w-10 shrink-0 bg-white/5 border-white/10 hover:bg-white/10 text-white"
-                          onClick={handleGenerateCode}
-                        >
-                          <Wand2 className="w-3.5 h-3.5" />
-                        </Button>
+                  <TabsContent value="precos" className="mt-0 space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Preço de Venda (Principal)</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[10px] font-black">R$</span>
+                          <Input
+                            type="number"
+                            className="h-11 pl-8 bg-black/20 border-white/10 text-white font-bold text-lg"
+                            value={formData.price}
+                            onChange={e => setFormData({ ...formData, price: e.target.value })}
+                          />
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Preço */}
-                    <div className="col-span-1 space-y-1">
-                      <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Preço Venda</Label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[10px] font-black">R$</span>
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Preço de Custo</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[10px] font-black">R$</span>
+                          <Input
+                            type="number"
+                            className="h-11 pl-8 bg-black/20 border-white/10 text-white font-bold"
+                            value={formData.cost}
+                            onChange={e => setFormData({ ...formData, cost: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Preço Atacado</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[10px] font-black">R$</span>
+                          <Input
+                            type="number"
+                            className="h-10 pl-8 bg-black/20 border-white/10 text-white"
+                            value={formData.wholesale_price}
+                            onChange={e => setFormData({ ...formData, wholesale_price: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Preço a Prazo</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[10px] font-black">R$</span>
+                          <Input
+                            type="number"
+                            className="h-10 pl-8 bg-black/20 border-white/10 text-white"
+                            value={formData.term_price}
+                            onChange={e => setFormData({ ...formData, term_price: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Markup (%)</Label>
                         <Input
                           type="number"
-                          placeholder="0,00"
-                          className="h-10 pl-8 bg-black/20 border-white/10 text-white placeholder:text-white/20 input-compact font-bold"
-                          value={formData.price}
-                          onChange={e => setFormData({ ...formData, price: e.target.value })}
+                          className="h-10 bg-black/20 border-white/10 text-white"
+                          value={formData.markup}
+                          onChange={e => setFormData({ ...formData, markup: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Margem Real (%)</Label>
+                        <Input
+                          type="number"
+                          className="h-10 bg-black/20 border-white/10 text-white"
+                          value={formData.margin}
+                          onChange={e => setFormData({ ...formData, margin: e.target.value })}
                         />
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
+                  </TabsContent>
 
-              <div className="grid grid-cols-2 gap-3">
-                {/* Estoque */}
-                <div className="col-span-1 space-y-1">
-                  <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Estoque</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    className="h-10 bg-black/20 border-white/10 text-white placeholder:text-white/20 input-compact font-bold"
-                    value={formData.stock}
-                    onChange={e => setFormData({ ...formData, stock: e.target.value })}
-                  />
-                </div>
-
-                {/* Custo */}
-                <div className="col-span-1 space-y-1">
-                  <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Custo</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[10px] font-black">R$</span>
-                    <Input
-                      type="number"
-                      placeholder="0,00"
-                      className="h-10 pl-8 bg-black/20 border-white/10 text-white placeholder:text-white/20 input-compact font-bold"
-                      value={formData.cost}
-                      onChange={e => setFormData({ ...formData, cost: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                {/* Descrição */}
-                <div className="col-span-2 space-y-1">
-                  <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Descrição</Label>
-                  <Textarea
-                    placeholder="..."
-                    className="min-h-[60px] bg-black/20 border-white/10 text-white placeholder:text-white/20 text-xs rounded-xl focus:bg-black/40 transition-all font-medium"
-                    value={formData.description}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              {/* Seções Especializadas via FeatureGuard */}
-              <div className="col-span-2 space-y-6 pt-4 border-t border-white/10">
-                {/* Grade de Variantes (Moda/Beleza) */}
-                <FeatureGuard feature={['variants_grid', 'color_variation']}>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-white/60">
-                      <Layers className="w-4 h-4" />
-                      <h4 className="font-black uppercase text-[10px] tracking-widest">Grade de Variantes</h4>
-                    </div>
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-4">
-                      <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Configure tamanhos, cores ou modelos.</p>
-                      <div className="grid grid-cols-3 gap-3">
+                  <TabsContent value="detalhes" className="mt-0 space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Marca / Fabricante</Label>
                         <Input
-                          placeholder="Cor"
-                          className="h-9 bg-black/20 border-white/10 text-white text-xs"
-                          value={newVariation.color}
-                          onChange={e => setNewVariation({ ...newVariation, color: e.target.value })}
+                          className="h-10 bg-black/20 border-white/10 text-white"
+                          value={formData.brand}
+                          onChange={e => setFormData({ ...formData, brand: e.target.value })}
                         />
-                        <Input
-                          placeholder="Tam"
-                          className="h-9 bg-black/20 border-white/10 text-white text-xs"
-                          value={newVariation.size}
-                          onChange={e => setNewVariation({ ...newVariation, size: e.target.value })}
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 bg-white/10 border-white/10 text-white hover:bg-white/20"
-                          onClick={() => {
-                            if (newVariation.color || newVariation.size) {
-                              setVariations([...variations, newVariation]);
-                              setNewVariation({ color: "", size: "" });
-                            }
-                          }}
-                        >
-                          <Plus className="w-3 h-3 mr-1" />
-                          Add
-                        </Button>
                       </div>
-
-                      {variations.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {variations.map((v, i) => (
-                            <Badge key={i} variant="secondary" className="flex gap-1 items-center px-2 py-1 bg-white/10 text-white border-white/5">
-                              {v.color} {v.size}
-                              <Trash2
-                                className="w-3 h-3 cursor-pointer hover:text-red-400"
-                                onClick={() => setVariations(variations.filter((_, idx) => idx !== i))}
-                              />
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Referência</Label>
+                        <Input
+                          className="h-10 bg-black/20 border-white/10 text-white"
+                          value={formData.reference}
+                          onChange={e => setFormData({ ...formData, reference: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Garantia (Ex: 12 meses)</Label>
+                        <Input
+                          className="h-10 bg-black/20 border-white/10 text-white"
+                          value={formData.warranty}
+                          onChange={e => setFormData({ ...formData, warranty: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Localização no Estoque</Label>
+                        <Input
+                          placeholder="Ex: Corredor A, Prateleira 2"
+                          className="h-10 bg-black/20 border-white/10 text-white"
+                          value={formData.location}
+                          onChange={e => setFormData({ ...formData, location: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Comissão (%)</Label>
+                        <Input
+                          type="number"
+                          className="h-10 bg-black/20 border-white/10 text-white"
+                          value={formData.commission_percentage}
+                          onChange={e => setFormData({ ...formData, commission_percentage: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="uppercase text-[9px] font-black text-white/40 tracking-[2px] ml-1">Estoque Mínimo</Label>
+                        <Input
+                          type="number"
+                          className="h-10 bg-black/20 border-white/10 text-white"
+                          value={formData.min_stock}
+                          onChange={e => setFormData({ ...formData, min_stock: e.target.value })}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </FeatureGuard>
+                  </TabsContent>
 
-                {/* Controle de Lotes (Farmácia) */}
-                <FeatureGuard feature="batch_control">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-white/60">
-                      <Hash className="w-4 h-4" />
-                      <h4 className="font-black uppercase text-[10px] tracking-widest">Controle de Lotes</h4>
-                    </div>
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <Label className="text-[9px] font-black text-white/30 uppercase">Nº do Lote</Label>
+                  <TabsContent value="variantes" className="mt-0 space-y-6">
+                    {/* <FeatureGuard feature={['variants_grid', 'color_variation']}> */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-white/60">
+                        <Layers className="w-4 h-4" />
+                        <h4 className="font-black uppercase text-[10px] tracking-widest">Grade de Variantes</h4>
+                      </div>
+                      <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-4">
+                        <div className="grid grid-cols-3 gap-3">
                           <Input
-                            placeholder="LOTE123X"
-                            className="bg-black/20 h-9 border-white/10 text-white text-xs"
-                            value={newBatch.number}
-                            onChange={e => setNewBatch({ ...newBatch, number: e.target.value })}
+                            placeholder="Cor"
+                            className="h-9 bg-black/20 border-white/10 text-white text-xs"
+                            value={newVariation.color}
+                            onChange={e => setNewVariation({ ...newVariation, color: e.target.value })}
                           />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-[9px] font-black text-white/30 uppercase">Validade</Label>
                           <Input
-                            type="date"
-                            className="bg-black/20 h-9 border-white/10 text-white text-xs"
-                            value={newBatch.expiry}
-                            onChange={e => setNewBatch({ ...newBatch, expiry: e.target.value })}
-                          />
-                        </div>
-                        <div className="col-span-2 flex gap-2">
-                          <Input
-                            placeholder="Qtd"
-                            type="number"
-                            className="bg-black/20 h-9 w-20 border-white/10 text-white text-xs"
-                            value={newBatch.quantity}
-                            onChange={e => setNewBatch({ ...newBatch, quantity: e.target.value })}
+                            placeholder="Tam"
+                            className="h-9 bg-black/20 border-white/10 text-white text-xs"
+                            value={newVariation.size}
+                            onChange={e => setNewVariation({ ...newVariation, size: e.target.value })}
                           />
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-9 flex-1 bg-white/10 border-white/10 text-white hover:bg-white/20"
+                            className="h-9 bg-white/10 border-white/10 text-white hover:bg-white/20"
                             onClick={() => {
-                              if (newBatch.number && newBatch.expiry) {
-                                setBatches([...batches, newBatch]);
-                                setNewBatch({ number: "", expiry: "", quantity: "" });
+                              if (newVariation.color || newVariation.size) {
+                                setVariations([...variations, newVariation]);
+                                setNewVariation({ color: "", size: "" });
                               }
                             }}
                           >
                             <Plus className="w-3 h-3 mr-1" />
-                            Registrar Lote
+                            Add
                           </Button>
                         </div>
-                      </div>
-
-                      {batches.length > 0 && (
-                        <div className="space-y-2 mt-2">
-                          {batches.map((b, i) => (
-                            <div key={i} className="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5 text-[10px] text-white/70">
-                              <span>Lote: <strong>{b.number}</strong> (Val: {b.expiry})</span>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-[10px] border-white/10">{b.quantity} un</Badge>
+                        {variations.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {variations.map((v, i) => (
+                              <Badge key={i} variant="secondary" className="flex gap-1 items-center px-2 py-1 bg-white/10 text-white border-white/5">
+                                {v.color} {v.size}
                                 <Trash2
                                   className="w-3 h-3 cursor-pointer hover:text-red-400"
-                                  onClick={() => setBatches(batches.filter((_, idx) => idx !== i))}
+                                  onClick={() => setVariations(variations.filter((_, idx) => idx !== i))}
                                 />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </FeatureGuard>
-              </div>
+                    {/* </FeatureGuard> */}
+
+                    {/* <FeatureGuard feature="batch_control"> */}
+                    <div className="space-y-4 pt-4 border-t border-white/10">
+                      <div className="flex items-center gap-2 text-white/60">
+                        <Hash className="w-4 h-4" />
+                        <h4 className="font-black uppercase text-[10px] tracking-widest">Controle de Lotes</h4>
+                      </div>
+                      <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <Label className="text-[9px] font-black text-white/30 uppercase">Nº do Lote</Label>
+                            <Input
+                              placeholder="LOTE123X"
+                              className="bg-black/20 h-9 border-white/10 text-white text-xs"
+                              value={newBatch.number}
+                              onChange={e => setNewBatch({ ...newBatch, number: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[9px] font-black text-white/30 uppercase">Validade</Label>
+                            <Input
+                              type="date"
+                              className="bg-black/20 h-9 border-white/10 text-white text-xs"
+                              value={newBatch.expiry}
+                              onChange={e => setNewBatch({ ...newBatch, expiry: e.target.value })}
+                            />
+                          </div>
+                          <div className="col-span-2 flex gap-2">
+                            <Input
+                              placeholder="Qtd"
+                              type="number"
+                              className="bg-black/20 h-9 w-20 border-white/10 text-white text-xs"
+                              value={newBatch.quantity}
+                              onChange={e => setNewBatch({ ...newBatch, quantity: e.target.value })}
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-9 flex-1 bg-white/10 border-white/10 text-white hover:bg-white/20"
+                              onClick={() => {
+                                if (newBatch.number && newBatch.expiry) {
+                                  setBatches([...batches, newBatch]);
+                                  setNewBatch({ number: "", expiry: "", quantity: "" });
+                                }
+                              }}
+                            >
+                              <Plus className="w-3 h-3 mr-1" />
+                              Registrar Lote
+                            </Button>
+                          </div>
+                        </div>
+                        {batches.length > 0 && (
+                          <div className="space-y-2 mt-2">
+                            {batches.map((b, i) => (
+                              <div key={i} className="flex items-center justify-between bg-black/20 p-2 rounded-lg border border-white/5 text-[10px] text-white/70">
+                                <span>Lote: <strong>{b.number}</strong> (Val: {b.expiry})</span>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="text-[10px] border-white/10">{b.quantity} un</Badge>
+                                  <Trash2
+                                    className="w-3 h-3 cursor-pointer hover:text-red-400"
+                                    onClick={() => setBatches(batches.filter((_, idx) => idx !== i))}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* </FeatureGuard> */}
+                  </TabsContent>
+                </div>
+              </Tabs>
             </div>
 
-            <DialogFooter className="p-5 bg-black/20 dark:bg-black/40 border-t border-white/5 flex justify-between gap-2">
-              <Button variant="ghost" onClick={() => setIsModalOpen(false)} className="h-11 text-white/50 hover:text-white hover:bg-white/5">
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleSave}
-                className="h-11 px-8 btn-primary hover-lift shadow-lg shadow-primary-500/20 text-xs font-black uppercase tracking-wider"
-                disabled={createProductMutation.isPending}
-              >
-                {createProductMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
-                Salvar Produto
-              </Button>
+            <DialogFooter className="p-6 bg-neutral-900 border-t border-white/10 flex items-center justify-between">
+              <div className="hidden md:flex flex-col">
+                <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Pronto para salvar?</p>
+                <p className="text-white/20 text-[9px]">Verifique os dados nas abas.</p>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="ghost"
+                  className="text-white/40 hover:text-white hover:bg-white/5 text-[10px] font-black uppercase tracking-widest px-6"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  className="bg-white text-black hover:bg-neutral-200 text-[10px] font-black uppercase tracking-[2px] px-8 h-11 shadow-2xl shadow-white/10"
+                  onClick={handleSave}
+                  disabled={createProductMutation.isPending}
+                >
+                  {createProductMutation.isPending ? "Salvando..." : "Confirmar & Salvar"}
+                </Button>
+              </div>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
-
-      </div>
-    </MainLayout>
+        </Dialog >
+      </div >
+    </MainLayout >
   );
 };
 

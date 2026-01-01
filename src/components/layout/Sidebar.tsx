@@ -34,6 +34,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useBusinessProfile } from "@/contexts/BusinessProfileContext";
 import { LucideIcon } from "lucide-react";
 import { useUISettings, SidebarTheme } from "@/contexts/UISettingsContext";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { OrganizationSwitcher } from "./OrganizationSwitcher";
 
 interface SidebarItem {
     id: string;
@@ -259,20 +261,28 @@ const THEME_STYLES: Record<SidebarTheme, ThemeConfig> = {
 export function Sidebar() {
     const location = useLocation();
     const { profile, signOut } = useAuth();
-    const { activeProfile } = useBusinessProfile();
+    const { activeProfile, extraModules } = useBusinessProfile();
     const { sidebarCollapsed, setSidebarCollapsed, sidebarTheme, logoUrl } = useUISettings();
+    const { hasPermission } = useRolePermissions();
     const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
-    // Filtragem dinâmica baseada no perfil ativo
+    // Filtragem dinâmica: Permissão do Usuário (Cargo) + Pacote da Empresa (Perfil + Extras)
     const filteredCategories = sidebarCategories.map(cat => ({
         ...cat,
         items: cat.items.filter(item => {
-            // Se o item não tem moduleId, ele é universal (ex: relatórios básicos se existissem)
-            if (!item.moduleId) return true;
-            // Verifica se o módulo está presente no perfil ativo
-            return activeProfile?.modules?.includes(item.moduleId);
+            // 1. Verifica se o usuário tem permissão para acessar (RBAC)
+            const userHasPermission = hasPermission(item.moduleId);
+
+            // 2. Verifica se a empresa tem o módulo contratado (Perfil Ativo ou Módulo Extra)
+            // Se não houver moduleId definido, assume que é livre (ex: Dashboard)
+            const companyHasModule = !item.moduleId ||
+                activeProfile?.modules?.includes(item.moduleId) ||
+                extraModules?.includes(item.moduleId);
+
+            return userHasPermission && companyHasModule;
         })
     })).filter(cat => cat.items.length > 0);
+
 
     // Determine values based on theme
     const isDarkTheme = ['navy', 'dark', 'onyx', 'glass', 'glass-vibrant', 'abstract-dark', 'cyberpunk', 'forest', 'ocean'].includes(sidebarTheme);
@@ -304,30 +314,34 @@ export function Sidebar() {
                 sidebarCollapsed ? "w-20" : "w-72"
             )}
         >
-            {/* Logo Section */}
-            <div className={`h-16 flex items-center px-6 border-b ${borderClass} ${logoBgClass} backdrop-blur-sm`}>
-                <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="relative flex-shrink-0 w-8 h-8 flex items-center justify-center">
-                        <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full animate-pulse"></div>
+            {/* Logo Section - Estilo ACR Asas Neon */}
+            <div className={`h-20 flex items-center px-6 border-b ${borderClass} ${logoBgClass} relative overflow-hidden backdrop-blur-md`}>
+                {/* Background Glow Effect */}
+                <div className="absolute -left-10 top-0 w-32 h-full bg-primary/5 blur-[40px] rounded-full pointer-events-none"></div>
+
+                <div className="flex items-center gap-3 overflow-hidden relative z-10 w-full">
+                    <div className="relative flex-shrink-0 w-10 h-10 flex items-center justify-center group/logo">
+                        {/* Neon Aura */}
+                        <div className="absolute inset-0 bg-brand/30 blur-xl rounded-full animate-pulse group-hover/logo:bg-brand/50 transition-all duration-500"></div>
                         <img
-                            key={logoUrl || 'default-logo'}
-                            src={logoUrl || "/logo.png"}
-                            alt="Logo"
-                            className="w-8 h-8 object-contain relative z-10"
+                            key={logoUrl || 'acr-wings-logo'}
+                            src={logoUrl || "/logo-wings.png"}
+                            alt="Logo Wings"
+                            className="w-10 h-10 object-contain relative z-10 drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] transition-transform duration-500 group-hover/logo:scale-110"
                             onError={(e) => {
-                                e.currentTarget.src = "";
-                                e.currentTarget.parentElement!.innerHTML = '<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-bold text-white">A</div>';
+                                e.currentTarget.src = "/logo.png";
                             }}
                         />
                     </div>
 
                     <div className={cn(
-                        "flex flex-col transition-opacity duration-300",
-                        sidebarCollapsed ? "opacity-0 w-0" : "opacity-100 min-w-[150px]"
+                        "flex flex-col transition-all duration-500 transform",
+                        sidebarCollapsed ? "opacity-0 -translate-x-10 w-0" : "opacity-100 translate-x-0 min-w-[150px]"
                     )}>
-                        <h1 className={cn("font-bold tracking-tight leading-none text-lg", textClass)}>
-                            ACR <span className="text-primary">ERP</span>
+                        <h1 className={cn("font-extrabold tracking-tighter leading-none text-xl", isDarkTheme ? "text-white" : "text-slate-900")}>
+                            ACR <span className="text-brand italic">STORE</span>
                         </h1>
+                        <p className="text-[10px] font-bold text-brand/70 tracking-[0.2em] mt-1 uppercase">Sistemas Elite</p>
                     </div>
                 </div>
             </div>
@@ -342,11 +356,18 @@ export function Sidebar() {
 
             {/* Quick Actions / Dashboard */}
             <div className="p-4 space-y-1">
+                {/* Organization Switcher */}
+                {!sidebarCollapsed && (
+                    <div className="mb-4">
+                        <OrganizationSwitcher />
+                    </div>
+                )}
+
                 <Link to="/dashboard">
                     <div className={cn(
                         "group flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 cursor-pointer mb-1",
                         isActive("/dashboard")
-                            ? "bg-primary text-primary-foreground shadow-[0_0_20px_-5px_hsl(var(--primary)/0.5)]"
+                            ? "bg-brand text-brand-foreground shadow-[0_0_20px_-5px_hsl(var(--brand-primary)/0.5)]"
                             : `${textClass} ${hoverBgClass} ${hoverTextClass}`
                     )}>
                         <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
@@ -406,11 +427,11 @@ export function Sidebar() {
                                                 : `${textClass} ${hoverBgClass} ${hoverTextClass}`
                                         )}>
                                             {/* Active Indicator Line */}
-                                            {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full shadow-[0_0_10px_hsl(var(--primary))]"></div>}
+                                            {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand rounded-r-full shadow-[0_0_10px_hsl(var(--brand-primary))]"></div>}
 
                                             <item.icon className={cn(
                                                 "w-5 h-5 flex-shrink-0 transition-colors",
-                                                active ? "text-primary" : `${sidebarTheme === 'cyberpunk' ? 'text-[#39ff14]/50' : 'text-slate-500'} group-hover:text-primary`
+                                                active ? "text-brand" : `${sidebarTheme === 'cyberpunk' ? 'text-[#39ff14]/50' : 'text-slate-500'} group-hover:text-brand`
                                             )} />
 
                                             {!sidebarCollapsed && (

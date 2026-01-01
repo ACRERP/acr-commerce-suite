@@ -418,7 +418,7 @@ const CRM = () => {
                                             <div key={client.client_id} className="flex items-center justify-between p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors group">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${segment?.color || 'bg-neutral-100 text-neutral-600'}`}>
-                                                        {client.name.charAt(0)}
+                                                        {(client.name || 'C').charAt(0)}
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-sm text-neutral-900 dark:text-white">{client.name}</p>

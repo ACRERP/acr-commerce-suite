@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
-  CreditCard, 
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  CreditCard,
   Smartphone,
   Users,
   ShoppingCart,
@@ -19,7 +19,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 
-// Interface de Frente de Caixa inspirada no SMB v4.0a
+// Interface de Frente de Caixa inspirada no ACR Commerce v4.0
 export function CashRegister() {
   const [isOpened, setIsOpened] = useState(false)
   const [openingBalance, setOpeningBalance] = useState(0)
@@ -90,9 +90,8 @@ export function CashRegister() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Badge variant="secondary" className={`${
-                isOpened ? 'bg-green-500' : 'bg-red-500'
-              } text-white`}>
+              <Badge variant="secondary" className={`${isOpened ? 'bg-green-500' : 'bg-red-500'
+                } text-white`}>
                 {isOpened ? 'Caixa Aberto' : 'Caixa Fechado'}
               </Badge>
               <Badge variant="secondary" className="bg-white/20 text-white">
@@ -121,7 +120,7 @@ export function CashRegister() {
                   />
                 </div>
               </div>
-              <Button 
+              <Button
                 className="bg-acr-blue hover:bg-acr-blue/90"
                 onClick={openCashRegister}
                 disabled={openingBalance <= 0}
@@ -149,7 +148,7 @@ export function CashRegister() {
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Suprimento
                 </Button>
-                <Button 
+                <Button
                   variant="destructive"
                   onClick={closeCashRegister}
                 >
@@ -197,9 +196,8 @@ export function CashRegister() {
                   <span>Saldo Real:</span>
                   <span className="text-acr-blue">R$ {cashSummary.actualBalance.toFixed(2)}</span>
                 </div>
-                <div className={`flex justify-between font-bold ${
-                  cashSummary.difference >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
+                <div className={`flex justify-between font-bold ${cashSummary.difference >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
                   <span>Diferença:</span>
                   <span>{cashSummary.difference >= 0 ? '+' : ''}R$ {cashSummary.difference.toFixed(2)}</span>
                 </div>
@@ -290,9 +288,8 @@ export function CashRegister() {
                         <p className="text-sm font-medium">{movement.description}</p>
                         <p className="text-xs text-muted-foreground">{movement.user} • {movement.time}</p>
                       </div>
-                      <div className={`font-bold ${
-                        movement.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
+                      <div className={`font-bold ${movement.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                        }`}>
                         {movement.amount >= 0 ? '+' : ''}R$ {Math.abs(movement.amount).toFixed(2)}
                       </div>
                     </div>

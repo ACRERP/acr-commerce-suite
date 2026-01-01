@@ -109,6 +109,29 @@ class GastronomyService {
             .update({ status: 'available', current_order_id: null })
             .eq('id', tableId);
     }
+
+    async getKDSOrders(): Promise<RestaurantOrder[]> {
+        const { data, error } = await supabase
+            .from('restaurant_orders')
+            .select('*, items:restaurant_order_items(*)')
+            .in('status', ['open', 'preparing', 'ready'])
+            .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        return data || [];
+    }
+
+    subscribeToKDS(onUpdate: () => void) {
+        const channel = supabase
+            .channel('kds-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'restaurant_orders' }, onUpdate)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'restaurant_order_items' }, onUpdate)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }
 }
 
 export const gastronomyService = new GastronomyService();

@@ -60,8 +60,14 @@ export default function PurchasesPage() {
     return (
         <MainLayout>
             <div className="flex gap-6 h-full p-6">
-                {/* 1. Filters */}
-                <PurchaseFilters />
+                <div className="flex flex-col gap-4">
+                    <div className="flex justify-between items-center">
+                        <PurchaseFilters />
+                        <Button variant="outline" onClick={() => window.location.href = '/compras/fornecedores'}>
+                            Gerenciar Fornecedores
+                        </Button>
+                    </div>
+                </div>
 
                 {/* 2. List */}
                 <div className="flex-1 flex flex-col gap-4 min-w-0 h-full overflow-hidden">

@@ -1,0 +1,2 @@
+﻿codigo_barras,descricao,unid,preco_compra,margem_lucro,preco_venda,preco_venda_2,estoque,estoque_minimo,grupo,fornecedor,marca,comissao,data_validade,observacoes,controle_estoque
+1,TESTE,UN,10,45.2,14.52,18.16815,-2,0,Geral,Fornecedor Padrão,0,10,,,0

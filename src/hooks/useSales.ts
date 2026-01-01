@@ -26,10 +26,10 @@ export const salesKeys = {
 };
 
 // Get all sales
-export function useSales() {
+export function useSales(organizationId?: string) {
   return useQuery({
-    queryKey: salesKeys.lists(),
-    queryFn: getSales,
+    queryKey: [...salesKeys.lists(), { organizationId }],
+    queryFn: () => getSales(organizationId),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
@@ -45,20 +45,20 @@ export function useSale(id: number) {
 }
 
 // Get sales by date range
-export function useSalesByDateRange(startDate: string, endDate: string) {
+export function useSalesByDateRange(startDate: string, endDate: string, organizationId?: string) {
   return useQuery({
-    queryKey: salesKeys.dateRange(startDate, endDate),
-    queryFn: () => getSalesByDateRange(startDate, endDate),
+    queryKey: [...salesKeys.dateRange(startDate, endDate), { organizationId }],
+    queryFn: () => getSalesByDateRange(startDate, endDate, organizationId),
     enabled: !!(startDate && endDate),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
 // Get sales by status
-export function useSalesByStatus(status: SaleStatus) {
+export function useSalesByStatus(status: SaleStatus, organizationId?: string) {
   return useQuery({
-    queryKey: salesKeys.status(status),
-    queryFn: () => getSalesByStatus(status),
+    queryKey: [...salesKeys.status(status), { organizationId }],
+    queryFn: () => getSalesByStatus(status, organizationId),
     enabled: !!status,
     staleTime: 3 * 60 * 1000, // 3 minutes
   });

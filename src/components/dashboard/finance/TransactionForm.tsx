@@ -18,7 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { CreateTransactionData, getFinancialCategories } from '@/lib/finance';
+import { CreateFinancialTransactionData as CreateTransactionData, getFinancialCategories } from '@/lib/financial';
 import { CalendarIcon, Loader2, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -82,8 +82,9 @@ export function TransactionForm({ defaultType = 'income', onSubmit, onCancel, is
             ...data,
             amount: parseFloat(data.amount),
             date: data.date.toISOString(),
+            due_date: data.date.toISOString(),
             category_id: data.category_id || undefined
-        });
+        } as any);
     };
 
     return (

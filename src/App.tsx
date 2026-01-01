@@ -12,6 +12,7 @@ import { startAlertProcessing } from "@/lib/alerts/alert-service";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { QuotePrintable } from "@/components/dashboard/sales/QuotePrintable";
 import { BusinessProfileProvider } from "@/contexts/BusinessProfileContext";
+import { OrganizationProvider } from "@/contexts/OrganizationContext";
 import { ModuleGuard } from "@/components/auth/Guards";
 import { LicenseGuard } from "@/components/licensing/LicenseGuard";
 
@@ -23,6 +24,7 @@ const RelatoriosCaixaPage = lazy(() => import("./pages/Dashboard/RelatoriosCaixa
 const AuditLogsPage = lazy(() => import("./pages/Dashboard/AuditLogsPage").then(module => ({ default: module.AuditLogsPage })));
 const SalesPage = lazy(() => import("./pages/Vendas"));
 const PurchasesPage = lazy(() => import("./pages/Dashboard/PurchasesPage"));
+const FornecedoresPage = lazy(() => import("./pages/Compras/FornecedoresPage").then(module => ({ default: module.FornecedoresPage })));
 const PDVMarketPage = lazy(() => import("./pages/Dashboard/PDVMarketPage").then(module => ({ default: module.PDVMarketPage })));
 // Apontando para os arquivos refatorados com Design System Premium
 const ProductsPage = lazy(() => import("./pages/Produtos"));
@@ -52,11 +54,13 @@ const ProductionPage = lazy(() => import("./pages/ProductionPage"));
 const TeamManagementPage = lazy(() => import("./pages/TeamManagementPage"));
 const CompliancePage = lazy(() => import("./pages/CompliancePage"));
 const AcademicPage = lazy(() => import("./pages/AcademicPage"));
-const SurgindoLogin = lazy(() => import("./pages/SurgindoLogin"));
 const FleetPage = lazy(() => import("./pages/FleetPage"));
 const MarketingPage = lazy(() => import("./pages/MarketingPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const LicenseActivation = lazy(() => import("./pages/LicenseActivation"));
+const TutorialsPage = lazy(() => import("./pages/TutorialsPage"));
+const KnowledgeBasePage = lazy(() => import("./pages/KnowledgeBasePage"));
+const WelcomePage = lazy(() => import("./pages/WelcomePage"));
 
 const queryClient = new QueryClient();
 
@@ -72,15 +76,17 @@ const App = () => {
       <AuthProvider>
         <UISettingsProvider>
           <BusinessProfileProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <GlobalError>
-                <BrowserRouter>
-                  <AppRoutes />
-                </BrowserRouter>
-              </GlobalError>
-            </TooltipProvider>
+            <OrganizationProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <GlobalError>
+                  <BrowserRouter>
+                    <AppRoutes />
+                  </BrowserRouter>
+                </GlobalError>
+              </TooltipProvider>
+            </OrganizationProvider>
           </BusinessProfileProvider>
         </UISettingsProvider>
       </AuthProvider>
@@ -93,14 +99,14 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
-        {/* Main Entry Point - Onboarding Flow */}
-        <Route path="/" element={<UnifiedOnboarding />} />
+        {/* Main Entry Point - Welcome Page (DEMO or License) */}
+        <Route path="/" element={<WelcomePage />} />
+        <Route path="/onboarding" element={<UnifiedOnboarding />} />
         <Route path="/start" element={<UnifiedOnboarding />} />
 
         {/* Autenticação */}
         <Route path="/provisioning" element={<ProvisioningPage />} />
         <Route path="/recovery" element={<PasswordRecoveryPage />} />
-        <Route path="/login" element={<SurgindoLogin />} />
         <Route path="/activate" element={<LicenseActivation />} />
 
         <Route element={<ProtectedRoute><LicenseGuard><Outlet /></LicenseGuard></ProtectedRoute>}>
@@ -127,6 +133,7 @@ const AppRoutes = () => {
           {/* Gestão */}
           <Route path="/estoque" element={<ModuleGuard module="inventory"><Estoque /></ModuleGuard>} />
           <Route path="/compras" element={<ModuleGuard module="purchases"><PurchasesPage /></ModuleGuard>} />
+          <Route path="/compras/fornecedores" element={<ModuleGuard module="purchases"><FornecedoresPage /></ModuleGuard>} />
           <Route path="/financeiro" element={<ModuleGuard module="finance"><Financeiro /></ModuleGuard>} />
           <Route path="/crm" element={<ModuleGuard module="crm"><CRM /></ModuleGuard>} />
           <Route path="/delivery" element={<ModuleGuard module="delivery"><Delivery /></ModuleGuard>} />
@@ -152,6 +159,10 @@ const AppRoutes = () => {
           <Route path="/frota" element={<ModuleGuard module="fleet"><FleetPage /></ModuleGuard>} />
           <Route path="/marketing" element={<ModuleGuard module="marketing"><MarketingPage /></ModuleGuard>} />
           <Route path="/configuracoes/audit-logs" element={<AuditLogsPage />} />
+
+          {/* Ajuda e Suporte */}
+          <Route path="/tutorials" element={<TutorialsPage />} />
+          <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
         </Route>
 
         {/* 404 */}

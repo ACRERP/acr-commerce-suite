@@ -296,7 +296,7 @@ export default function OSPage() {
                     <div className="lg:col-span-2">
                         <RevenueByTechnicianChart
                             data={productivity?.map((p: any) => ({
-                                name: p.nome.split('@')[0], // Shorten name
+                                name: (p.nome || 'Técnico').split('@')[0], // Shorten name
                                 value: p.faturamento_total || 0,
                                 count: p.os_concluidas || 0
                             })) || []}
@@ -567,10 +567,10 @@ export default function OSPage() {
                                     <div key={tech.tecnico_id} className={`flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors ${index !== productivity.length - 1 ? 'border-b border-neutral-100 dark:border-neutral-800' : ''}`}>
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center font-bold text-neutral-600 dark:text-neutral-300">
-                                                {tech.nome.charAt(0).toUpperCase()}
+                                                {(tech.nome || 'T').charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-sm text-neutral-900 dark:text-white">{tech.nome.split('@')[0]}</p>
+                                                <p className="font-bold text-sm text-neutral-900 dark:text-white">{(tech.nome || 'Técnico').split('@')[0]}</p>
                                                 <div className="flex items-center gap-2 text-xs text-neutral-500">
                                                     <Badge variant="secondary" className="h-5 px-1.5 bg-green-100 text-green-700 border-0">{tech.os_concluidas} Concluídas</Badge>
                                                     <span>•</span>

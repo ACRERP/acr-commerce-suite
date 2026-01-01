@@ -16,10 +16,12 @@ import {
 import { QuoteList } from "@/components/dashboard/sales/QuoteList";
 import { QuoteBuilder } from "@/components/dashboard/sales/QuoteBuilder";
 import { Quote } from "@/hooks/useQuotes";
+import { useLicenseLimits } from "@/hooks/useLicenseLimits";
+import { useToast } from "@/hooks/use-toast";
 
 // Status Configuration (matching OrdensServico style)
 const statusConfig = {
-  concluida: { label: 'Concluída', color: 'green', bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' },
+  concluida: { label: 'Concluída', color: 'blue', bg: 'bg-primary-50', text: 'text-primary-700', border: 'border-primary-100' },
   pendente: { label: 'Pendente', color: 'amber', bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200' },
   cancelada: { label: 'Cancelada', color: 'rose', bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-200' },
 };
@@ -33,6 +35,21 @@ const Vendas = () => {
 
   const { data: sales, isLoading: loadingSales } = useSales();
   const { data: quotes } = useQuotes();
+  const { checkLimit } = useLicenseLimits();
+  const { toast } = useToast();
+
+  const handleOpenPDV = async () => {
+    const { canCreate, max } = await checkLimit('sales');
+    if (!canCreate) {
+      toast({
+        title: "Limite de Vendas Atingido! 💰",
+        description: `No modo DEMO o limite é de ${max} vendas. Adquira a licença completa para continuar vendendo sem limites.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    setIsPDVOpen(true);
+  };
 
   // Calculate Stats
   const stats = useMemo(() => {
@@ -101,7 +118,7 @@ const Vendas = () => {
             </Button>
             <Button
               className="btn-primary hover-lift gap-2 shadow-lg shadow-primary-500/20 px-6"
-              onClick={() => setIsPDVOpen(true)}
+              onClick={handleOpenPDV}
             >
               <Plus className="w-4 h-4" />
               Nova Venda
@@ -112,7 +129,7 @@ const Vendas = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-down">
           {/* Total Today */}
-          <div className="card-premium hover-lift group border-none shadow-lg shadow-emerald-500/5 bg-gradient-to-br from-white to-emerald-50/30 dark:from-neutral-900 dark:to-emerald-900/10">
+          <div className="card-premium hover-lift group border-none shadow-lg shadow-primary-500/5 bg-gradient-to-br from-white to-primary-50/30 dark:from-neutral-900 dark:to-primary-900/10">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-1">Vendas Hoje</p>
@@ -120,11 +137,11 @@ const Vendas = () => {
                   {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(stats.totalToday)}
                 </h3>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase">{stats.countToday} pedidos</span>
+                  <span className="flex h-2 w-2 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(37,99,235,0.6)]" />
+                  <span className="text-xs font-bold text-primary-600 dark:text-primary-400 uppercase">{stats.countToday} pedidos</span>
                 </div>
               </div>
-              <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-600 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="p-4 rounded-2xl bg-primary-500/10 text-primary-600 group-hover:scale-110 group-hover:bg-primary-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <DollarSign className="w-6 h-6" />
               </div>
             </div>
@@ -166,7 +183,7 @@ const Vendas = () => {
           {/* Quick Action / PDV Status */}
           <div
             className="card-premium hover-lift group border-none shadow-lg shadow-orange-500/5 bg-gradient-to-br from-white to-orange-50/30 dark:from-neutral-900 dark:to-orange-900/10 cursor-pointer"
-            onClick={() => setIsPDVOpen(true)}
+            onClick={handleOpenPDV}
           >
             <div className="flex items-center justify-between h-full">
               <div>

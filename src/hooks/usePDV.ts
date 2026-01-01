@@ -10,15 +10,20 @@ import { deliveryService } from '@/lib/delivery/delivery-service';
 // CASH REGISTER HOOKS
 // =====================================================
 
-export function useOpenCashRegister() {
+export function useOpenCashRegister(organizationId?: string) {
   return useQuery({
-    queryKey: ['openCashRegister'],
+    queryKey: ['openCashRegister', { organizationId }],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('cash_registers')
         .select('*')
-        .eq('status', 'open')
-        .single();
+        .eq('status', 'open');
+        
+      if (organizationId) {
+        query = query.eq('organization_id', organizationId);
+      }
+      
+      const { data, error } = await query.maybeSingle();
       
       if (error && error.code !== 'PGRST116') throw error;
       return data as CashRegister | null;
@@ -32,7 +37,7 @@ export function useOpenCash() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ openingBalance, notes }: { openingBalance: number; notes?: string }) => {
+    mutationFn: async ({ openingBalance, notes, organizationId }: { openingBalance: number; notes?: string; organizationId?: string }) => {
       if (!user) throw new Error('Usuário não autenticado');
 
       const { data, error } = await supabase
@@ -43,6 +48,7 @@ export function useOpenCash() {
           opening_balance: openingBalance,
           status: 'open',
           notes,
+          organization_id: organizationId,
         })
         .select()
         .single();
@@ -58,6 +64,7 @@ export function useOpenCash() {
         amount: openingBalance,
         description: 'Abertura de caixa',
         operator_id: user.id,
+        organization_id: organizationId,
       });
 
       return data;
@@ -86,7 +93,6 @@ export function useCloseCash() {
       closingBalance: number; 
       notes?: string;
     }) => {
-      // Calculate expected balance
       const { data: movements } = await supabase
         .from('cash_movements')
         .select('movement_type, amount, payment_method')
@@ -148,6 +154,8 @@ export function useCreateSale() {
       cashRegisterId,
       notes,
       deliveryData,
+      organizationId,
+      sellerId,
     }: {
       items: CartItem[];
       payments: SalePayment[];
@@ -158,6 +166,8 @@ export function useCreateSale() {
       cashRegisterId?: number;
       notes?: string;
       deliveryData?: any;
+      organizationId?: string;
+      sellerId?: string;
     }) => {
       if (!user) throw new Error('Usuário não autenticado');
 
@@ -165,30 +175,30 @@ export function useCreateSale() {
       const total = subtotal - discountValue + deliveryFee;
       const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
 
-      // Create sale
       const { data: sale, error: saleError } = await supabase
         .from('sales')
         .insert({
           cash_register_id: cashRegisterId,
           client_id: clientId,
           operator_id: user.id,
+          seller_id: sellerId,
           subtotal,
           discount_value: discountValue,
           delivery_fee: deliveryFee,
           total_amount: total,
-          total: total, // Legacy trigger needs this
+          total: total,
           status: 'concluida',
           sale_type: saleType,
           payment_method: payments[0]?.payment_method || 'dinheiro',
           payment_status: totalPaid >= total ? 'paid' : 'partial',
           notes,
+          organization_id: organizationId,
         })
         .select()
         .single();
 
       if (saleError) throw saleError;
 
-      // Create sale items
       const itemsToInsert = items.map(item => ({
         sale_id: sale.id,
         product_id: item.product_id,
@@ -205,7 +215,11 @@ export function useCreateSale() {
 
       if (itemsError) throw itemsError;
 
-      // Create payments
+      
+      // Stock update is now handled by database Trigger (tr_sale_item_stock) on sale_items table
+      // This ensures consistency and creates a traceable inventory_movement record.
+
+
       const paymentsToInsert = payments.map(p => ({
         sale_id: sale.id,
         payment_method: p.payment_method,
@@ -222,7 +236,6 @@ export function useCreateSale() {
 
       if (paymentsError) throw paymentsError;
 
-      // Create delivery record if applicable
       if (saleType === 'delivery' && deliveryData) {
         await deliveryService.createDelivery({
           sale_id: sale.id,
@@ -267,6 +280,11 @@ export function useCart() {
   const [clientName, setClientName] = useState<string>('Consumidor');
   const [discountValue, setDiscountValue] = useState(0);
   const [deliveryFee, setDeliveryFee] = useState(0);
+  const [sellerId, setSellerId] = useState<string | undefined>();
+  const [sellerName, setSellerName] = useState<string | undefined>();
+  const [payments, setPayments] = useState<SalePayment[]>([]);
+  const [saleType, setSaleType] = useState<'counter' | 'delivery'>('counter');
+  const [notes, setNotes] = useState<string>('');
 
   const addItem = useCallback((product: {
     id: number;
@@ -350,11 +368,21 @@ export function useCart() {
     setClientName('Consumidor');
     setDiscountValue(0);
     setDeliveryFee(0);
+    setSellerId(undefined);
+    setSellerName(undefined);
+    setPayments([]);
+    setSaleType('counter');
+    setNotes('');
   }, []);
 
   const setClient = useCallback((id: number | undefined, name: string) => {
     setClientId(id);
     setClientName(name);
+  }, []);
+
+  const setSeller = useCallback((id: string | undefined, name: string | undefined) => {
+    setSellerId(id);
+    setSellerName(name);
   }, []);
 
   const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
@@ -367,6 +395,11 @@ export function useCart() {
     clientName,
     discountValue,
     deliveryFee,
+    sellerId,
+    sellerName,
+    payments,
+    saleType,
+    notes,
     subtotal,
     total,
     itemCount,
@@ -378,6 +411,10 @@ export function useCart() {
     setDiscountValue,
     setDeliveryFee,
     setClient,
+    setSeller,
+    setPayments,
+    setSaleType,
+    setNotes,
     clearCart,
   };
 }
@@ -397,11 +434,13 @@ export function useWithdrawal() {
       amount, 
       description,
       category = 'sangria',
+      organizationId,
     }: { 
       registerId: number; 
       amount: number; 
       description?: string;
       category?: 'sangria' | 'despesa' | 'troco_externo';
+      organizationId?: string;
     }) => {
       if (!user) throw new Error('Usuário não autenticado');
 
@@ -415,6 +454,7 @@ export function useWithdrawal() {
           amount,
           description,
           operator_id: user.id,
+          organization_id: organizationId,
         })
         .select()
         .single();
@@ -443,11 +483,13 @@ export function useSupply() {
       amount, 
       description,
       category = 'reforco',
+      organizationId,
     }: { 
       registerId: number; 
       amount: number; 
       description?: string;
       category?: 'reforco' | 'troco_inicial' | 'abertura';
+      organizationId?: string;
     }) => {
       if (!user) throw new Error('Usuário não autenticado');
 
@@ -461,6 +503,7 @@ export function useSupply() {
           amount,
           description,
           operator_id: user.id,
+          organization_id: organizationId,
         })
         .select()
         .single();
@@ -531,6 +574,35 @@ export function useCancelSale() {
 
   return useMutation({
     mutationFn: async ({ saleId, reason }: { saleId: number; reason: string }) => {
+      const { data: saleItems, error: itemsError } = await supabase
+        .from('sale_items')
+        .select('product_id, quantity')
+        .eq('sale_id', saleId);
+
+      if (itemsError) throw itemsError;
+
+      // Stock reversal is now handled by database Trigger on sale_items DELETE/UPDATE
+      // or we can implement a specific 'cancel_sale' function in DB.
+      // For now, if we change status to 'cancelled', we might need a specific trigger for status change
+      // OR we just rely on the fact that existing code doesn't delete items on cancel usually.
+      
+      // ACTUALLY: The previous code didn't delete items, just updated status.
+      // IF we want automatic stock return on cancel, we need to handle the STATUS change in a trigger OR manually create an 'in' movement here.
+      
+      // Let's implement the 'in' movement manually here since we are NOT deleting items, just changing status.
+      if (saleItems) {
+         const { error: moveError } = await supabase.from('inventory_movements').insert(
+             saleItems.map(item => ({
+                 product_id: item.product_id,
+                 type: 'in',
+                 quantity: item.quantity,
+                 reason: `Cancelamento Venda #${saleId}`,
+                 document_ref: `SALE-CANCEL-${saleId}`
+             }))
+         );
+         if (moveError) console.warn('Erro ao restaurar estoque (movimento):', moveError);
+      }
+
       const { error } = await supabase
         .from('sales')
         .update({ 
@@ -543,13 +615,15 @@ export function useCancelSale() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
-      // Invalidate cash register metrics as well since sales affect balance? 
-      // Actually sales usually affect 'expected_balance' calculation which is dynamic, so invalidating sales is key.
-      queryClient.invalidateQueries({ queryKey: ['cashMovements'] }); // If sales create cash movements (they generally don't in this system, they are sales), but good to keep fresh.
-      toast({ title: 'Venda Cancelada', description: 'A venda foi cancelada com sucesso.' });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['cashMovements'] });
+      toast({ 
+        title: 'Venda Cancelada', 
+        description: 'A venda foi estornada e os itens voltaram ao estoque com sucesso.' 
+      });
     },
     onError: (error: Error) => {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erro ao Estornar', description: error.message, variant: 'destructive' });
     },
   });
 }
@@ -560,23 +634,18 @@ export function useResetAllData() {
 
   return useMutation({
     mutationFn: async () => {
-      // 1. Delete payments (dependent)
       const { error: err1 } = await supabase.from('sale_payments').delete().neq('id', 0);
       if (err1) throw err1;
 
-      // 2. Delete items (dependent)
       const { error: err2 } = await supabase.from('sale_items').delete().neq('id', 0);
       if (err2) throw err2;
 
-      // 3. Delete sales
       const { error: err3 } = await supabase.from('sales').delete().neq('id', 0);
       if (err3) throw err3;
 
-      // 4. Delete cash movements (optional)
       const { error: err4 } = await supabase.from('cash_movements').delete().neq('id', 0);
       if (err4) throw err4;
 
-      // 5. Reset cash registers
       const { error: err5 } = await supabase
         .from('cash_registers')
         .update({ status: 'closed', opening_balance: 0, closing_balance: 0, difference: 0, expected_balance: 0, current_balance: 0 })
@@ -596,7 +665,7 @@ export function useResetAllData() {
   });
 }
 
-export function usePDV() {
+export function usePDV(organizationId?: string) {
   const cartValues = useCart();
   const { mutate: createSale, isPending: isCheckingOut } = useCreateSale();
 
@@ -627,13 +696,9 @@ export function usePDV() {
           clientId: data.clientId,
           discountValue: data.discount,
           deliveryFee: data.deliveryFee,
-          saleType: 'counter', 
-          // Note: createSaleMutation might need cashRegisterId. 
-          // If default implementation was missing it, that's another bug.
-          // But assuming it relies on user context or assumes open register? 
-          // useCreateSale signature (line 147) takes cashRegisterId. 
-          // We need to look if checkout gets it.
-          // For now, I update the signature and callback passing.
+          saleType: 'counter',
+          organizationId,
+          sellerId: cartValues.sellerId,
       }, {
           onSuccess: (data) => {
               cartValues.clearCart();
@@ -651,5 +716,3 @@ export function usePDV() {
     isCheckingOut,
   };
 }
-
-

@@ -27,24 +27,27 @@ export const productKeys = {
 };
 
 // Get all products (paginated)
-export function usePaginatedProducts({ page = 1, limit = 10, search = '' }: { page?: number; limit?: number; search?: string } = {}) {
+export function usePaginatedProducts({ page = 1, limit = 10, search = '', organizationId }: { page?: number; limit?: number; search?: string; organizationId?: string } = {}) {
   return useQuery({
-    queryKey: productKeys.list(JSON.stringify({ page, limit, search })),
-    queryFn: () => getProducts({ page, limit, search }),
+    queryKey: productKeys.list(JSON.stringify({ page, limit, search, organizationId })),
+    queryFn: () => getProducts({ page, limit, search, organizationId }),
     staleTime: 5 * 60 * 1000, // 5 minutes
-    placeholderData: (previousData) => previousData, // Keep previous data while fetching new page
+    placeholderData: (previousData) => previousData,
+    enabled: !!organizationId, // Prevent fetch without org
   });
 }
 
 // Legacy hook for backward compatibility (returns simple array)
-export function useProducts() {
+export function useProducts(organizationId?: string) {
   return useQuery({
-    queryKey: productKeys.lists(),
+    queryKey: [...productKeys.lists(), { organizationId }],
     queryFn: async () => {
-      const { data } = await getProducts({ all: true });
+      if (!organizationId) return []; // Double safety
+      const { data } = await getProducts({ all: true, organizationId });
       return data;
     },
     staleTime: 5 * 60 * 1000,
+    enabled: !!organizationId,
   });
 }
 
@@ -59,31 +62,32 @@ export function useProduct(id: number) {
 }
 
 // Search products
-export function useProductSearch(query: string) {
+export function useProductSearch(query: string, organizationId?: string) {
   return useQuery({
-    queryKey: productKeys.search(query),
-    queryFn: () => searchProducts(query),
-    enabled: query.length > 0,
+    queryKey: [...productKeys.search(query), { organizationId }],
+    queryFn: () => searchProducts(query, organizationId),
+    enabled: query.length > 0 && !!organizationId,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
 
 // Get products by category
-export function useProductsByCategory(category: string) {
+export function useProductsByCategory(category: string, organizationId?: string) {
   return useQuery({
-    queryKey: productKeys.category(category),
-    queryFn: () => getProductsByCategory(category),
-    enabled: !!category,
+    queryKey: [...productKeys.category(category), { organizationId }],
+    queryFn: () => getProductsByCategory(category, organizationId),
+    enabled: !!category && !!organizationId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
 // Get low stock products
-export function useLowStockProducts() {
+export function useLowStockProducts(organizationId?: string) {
   return useQuery({
-    queryKey: productKeys.lowStock(),
-    queryFn: getLowStockProducts,
+    queryKey: [...productKeys.lowStock(), { organizationId }],
+    queryFn: () => getLowStockProducts(organizationId),
     staleTime: 1 * 60 * 1000, // 1 minute
+    enabled: !!organizationId,
   });
 }
 
@@ -93,7 +97,7 @@ export function useCreateProduct() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (product: CreateProductData) => createProduct(product),
+    mutationFn: ({ productData, organizationId }: { productData: CreateProductData, organizationId?: string }) => createProduct(productData, organizationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       toast({

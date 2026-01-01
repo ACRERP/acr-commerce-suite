@@ -31,13 +31,17 @@ import {
   Play,
   CheckCircle2,
   AlertTriangle,
-  Speaker
+  Speaker,
+  Store
 } from "lucide-react";
 import { notificationManager } from '@/lib/notifications/notification-manager';
 import { UserManagement } from '@/components/config/UserManagement';
 import { DeliveryConfig } from '@/components/dashboard/settings/DeliveryConfig';
 import { AppearanceConfig } from '@/components/dashboard/settings/AppearanceConfig';
+import { BusinessProfileConfig } from '@/components/dashboard/settings/BusinessProfileConfig';
 import { SystemMaintenance } from '@/components/dashboard/settings/SystemMaintenance';
+import { SellerManagement } from '@/components/config/SellerManagement';
+import { PermissionManagement } from '@/components/config/PermissionManagement';
 
 export default function Configuracoes() {
   const { toast } = useToast();
@@ -146,7 +150,7 @@ export default function Configuracoes() {
     toast({
       title: 'Teste de Som',
       description: `Reproduzindo som: ${soundName}`,
-      icon: <Volume2 className="w-4 h-4 text-primary-500" />
+      // icon property removed as it's not supported in standard Toast type
     });
   };
 
@@ -169,10 +173,13 @@ export default function Configuracoes() {
           <div className="overflow-x-auto pb-2">
             <TabsList className="bg-white dark:bg-neutral-800 p-1.5 h-auto rounded-xl border border-neutral-200 dark:border-neutral-700 inline-flex min-w-full md:min-w-0 md:w-auto shadow-sm">
               {[
+                { value: "perfil", label: "Perfil de Negócio", icon: Store, color: "text-primary-500" },
                 { value: "empresa", label: "Empresa", icon: Building },
                 { value: "whatsapp", label: "WhatsApp", icon: MessageSquare },
                 { value: "notificacoes", label: "Notificações", icon: Bell },
                 { value: "usuarios", label: "Usuários", icon: Users },
+                { value: "vendedores", label: "Vendedores", icon: UserPlus, color: "text-blue-500" },
+                { value: "permissoes", label: "Permissões", icon: Shield, color: "text-amber-500" },
                 { value: "delivery", label: "Taxas de Entrega", icon: Truck },
                 { value: "aparencia", label: "Aparência", icon: Palette },
                 { value: "sistema", label: "Sistema", icon: AlertTriangle, color: "text-red-500" },
@@ -188,6 +195,11 @@ export default function Configuracoes() {
               ))}
             </TabsList>
           </div>
+
+          {/* Tab: Perfil de Negócio */}
+          <TabsContent value="perfil" className="animate-fade-in-up">
+            <BusinessProfileConfig />
+          </TabsContent>
 
           {/* Tab: Empresa */}
           <TabsContent value="empresa" className="animate-fade-in-up">
@@ -487,6 +499,16 @@ export default function Configuracoes() {
           {/* Tab: Usuários */}
           <TabsContent value="usuarios" className="animate-fade-in-up">
             <UserManagement />
+          </TabsContent>
+
+          {/* Tab: Vendedores */}
+          <TabsContent value="vendedores" className="animate-fade-in-up">
+            <SellerManagement />
+          </TabsContent>
+
+          {/* Tab: Permissões */}
+          <TabsContent value="permissoes" className="animate-fade-in-up">
+            <PermissionManagement />
           </TabsContent>
 
           <TabsContent value="delivery" className="animate-fade-in-up">

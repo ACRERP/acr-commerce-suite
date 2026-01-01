@@ -1,0 +1,41 @@
+============================================================
+RESUMO DA EXTRAÇÃO - cVendaOS_v2.accdb
+============================================================
+
+Total de Tabelas: 6
+Total de Registros: 48
+
+============================================================
+TABELAS POR TAMANHO:
+============================================================
+
+tblDespesaAno
+  Registros: 32
+  Colunas: 1
+  Campos: AnoAtual
+
+tblDespesaMes
+  Registros: 12
+  Colunas: 2
+  Campos: NrMes, NomeMes
+
+Tbl_UsuarioLogado
+  Registros: 1
+  Colunas: 3
+  Campos: UsuarioLogado, UsuarioLogadoID, caminhoBackup
+
+tabImpressoraNaoFiscal
+  Registros: 1
+  Colunas: 5
+  Campos: nomeImpressora, impressoraCupom, textoFinalCupom, tituloComprovanteVenda, dadosClienteCupom
+
+tblCaminhoBe
+  Registros: 1
+  Colunas: 4
+  Campos: Path_0, NomeBE, senha, FormPrincipal
+
+tbl_ImagemFundo
+  Registros: 1
+  Colunas: 2
+  Campos: IdFundo, LocalFoto
+

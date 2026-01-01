@@ -35,11 +35,11 @@ export function ProtectedRoute({
 
   // Check authentication - use session instead of user for more reliability
   if (requireAuth && !session) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   // CHECK PROFILE-BASED MODULE ACCESS
-  const isExcludedPath = ['/', '/dashboard', '/overview', '/configuracoes', '/login', '/provisioning', '/start', '/recovery'].some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
+  const isExcludedPath = ['/', '/dashboard', '/overview', '/configuracoes', '/provisioning', '/start', '/recovery', '/activate', '/onboarding'].some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
 
   if (activeProfile && !isExcludedPath) {
     const currentPath = location.pathname;

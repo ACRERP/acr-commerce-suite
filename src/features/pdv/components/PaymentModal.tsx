@@ -6,7 +6,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CreditCard, Banknote, QrCode, Wallet, Truck } from 'lucide-react';
+import { CreditCard, Banknote, QrCode, Wallet, Truck, Trash2, Plus, Check } from 'lucide-react';
 import { formatCurrency } from '@/lib/pdv';
 import { PaymentMethod, SalePayment } from '../types';
 import { useToast } from '@/hooks/use-toast';
@@ -87,11 +87,7 @@ export function PaymentModal({
     };
 
     const handleConfirm = () => {
-        console.log("🔘 Confirm Clicked! Remaining:", remaining);
-
-        // Relaxed tolerance to 0.05 to avoid floating point issues
         if (remaining > 0.05) {
-            console.warn("❌ Payment incomplete. Remaining:", remaining);
             toast({
                 title: "Pagamento incompleto",
                 description: `Faltam ${formatCurrency(remaining)}`,
@@ -109,178 +105,172 @@ export function PaymentModal({
             return;
         }
 
-        console.log("✅ Calling onConfirm with payments:", payments);
         onConfirm(payments, isDelivery ? deliveryInfo : undefined);
     };
 
     const paymentMethods = [
-        { id: 'cash', label: 'Dinheiro', icon: Banknote },
-        { id: 'credit', label: 'Crédito', icon: CreditCard },
-        { id: 'debit', label: 'Débito', icon: Wallet },
-        { id: 'pix', label: 'PIX', icon: QrCode },
+        { id: 'cash', label: 'Dinheiro', icon: Banknote, color: 'bg-green-500' },
+        { id: 'credit', label: 'Crédito', icon: CreditCard, color: 'bg-blue-500' },
+        { id: 'debit', label: 'Débito', icon: Wallet, color: 'bg-purple-500' },
+        { id: 'pix', label: 'PIX', icon: QrCode, color: 'bg-teal-500' },
     ];
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Pagamento</DialogTitle>
+            <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-3xl border-0 shadow-2xl glass-window">
+                <DialogHeader className="p-6 bg-neutral-900 text-white border-b border-white/10">
+                    <DialogTitle className="flex items-center gap-2 text-xl font-black uppercase tracking-tighter">
+                        <Wallet className="h-6 w-6 text-primary" />
+                        Finalizar Venda
+                    </DialogTitle>
                 </DialogHeader>
 
-                <div className="grid gap-4 py-4">
-                    {/* Total Display */}
-                    <div className="flex justify-between items-end border-b pb-4">
-                        <div className="text-sm text-gray-500">Total a pagar</div>
-                        <div className="text-3xl font-bold text-primary">
-                            {formatCurrency(total)}
-                        </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+                    {/* Coluna Esquerda: Entrada de Dados */}
+                    <div className="p-6 space-y-6 bg-white">
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-end">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Total da Venda</Label>
+                                <span className="text-2xl font-black text-neutral-900">{formatCurrency(total)}</span>
+                            </div>
 
-                    {/* Pending Amount */}
-                    <div className="bg-gray-50 p-3 rounded-md flex justify-between items-center">
-                        <span className="text-sm font-medium">Restante</span>
-                        <span className={`font-bold ${remaining > 0 ? 'text-red-500' : 'text-green-500'}`}>
-                            {formatCurrency(Math.max(0, remaining))}
-                        </span>
-                    </div>
-
-                    {/* Troco Display */}
-                    {payments.some(p => p.change_amount && p.change_amount > 0) && (
-                        <div className="bg-green-50 p-3 rounded-md flex justify-between items-center border border-green-200">
-                            <span className="text-sm font-medium text-green-700">Troco a Devolver</span>
-                            <span className="font-bold text-green-700">
-                                {formatCurrency(payments.reduce((acc, p) => acc + (p.change_amount || 0), 0))}
-                            </span>
-                        </div>
-                    )}
-
-                    {/* Method Selection */}
-                    <div className="grid grid-cols-2 gap-2">
-                        {paymentMethods.map((m) => (
-                            <Button
-                                key={m.id}
-                                variant={selectedMethod === m.id ? 'default' : 'outline'}
-                                className="justify-start gap-2"
-                                onClick={() => {
-                                    setSelectedMethod(m.id as PaymentMethod);
-                                    // Auto-focus input?
-                                }}
-                            >
-                                <m.icon className="h-4 w-4" />
-                                {m.label}
-                            </Button>
-                        ))}
-                    </div>
-
-                    {/* Amount Input */}
-                    <div className="flex gap-2 items-end">
-                        <div className="flex-1">
-                            <Label>Valor do Pagamento</Label>
-                            <Input
-                                type="number"
-                                step="0.01"
-                                value={currentAmount}
-                                onChange={e => setCurrentAmount(e.target.value)}
-                                className="text-lg font-bold"
-                                onKeyDown={e => {
-                                    if (e.key === 'Enter') handleAddPayment();
-                                }}
-                                autoFocus
-                            />
-                        </div>
-                        <Button onClick={handleAddPayment} disabled={remaining <= 0}>
-                            Adicionar
-                        </Button>
-                    </div>
-
-                    {/* Delivery Details */}
-                    {isDelivery && (
-                        <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-3 animate-in slide-in-from-top-2">
-                            <h3 className="text-sm font-bold text-blue-700 flex items-center gap-2 uppercase tracking-wider">
-                                <Truck className="h-4 w-4" /> Dados de Entrega
-                            </h3>
-                            <div className="grid gap-2">
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Nome do Cliente</Label>
-                                    <Input
-                                        placeholder="Ex: Alisson Cruz"
-                                        value={deliveryInfo.customer_name}
-                                        onChange={e => setDeliveryInfo({ ...deliveryInfo, customer_name: e.target.value })}
-                                        className="h-9 bg-white"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Telefone / WhatsApp</Label>
-                                    <Input
-                                        placeholder="(00) 00000-0000"
-                                        value={deliveryInfo.customer_phone}
-                                        onChange={e => setDeliveryInfo({ ...deliveryInfo, customer_phone: e.target.value })}
-                                        className="h-9 bg-white"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Endereço Completo</Label>
-                                    <Input
-                                        placeholder="Rua, Número, Bairro, Cidade..."
-                                        value={deliveryInfo.address}
-                                        onChange={e => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })}
-                                        className="h-9 bg-white"
-                                    />
-                                </div>
+                            <div className={`p-4 rounded-2xl flex justify-between items-center transition-all ${remaining > 0 ? 'bg-red-50 border border-red-100' : 'bg-green-50 border border-green-100'}`}>
+                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Saldo Restante</span>
+                                <span className={`text-xl font-black ${remaining > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                    {formatCurrency(Math.max(0, remaining))}
+                                </span>
                             </div>
                         </div>
-                    )}
 
-                    {/* Payments List */}
-                    {payments.length > 0 && (
-                        <div className="space-y-2 mt-2">
-                            <Label>Pagamentos Registrados</Label>
-                            <div className="border rounded-md divide-y">
-                                {payments.map((p, idx) => (
-                                    <div key={idx} className="flex justify-between p-2 text-sm">
-                                        <div className="flex flex-col">
-                                            <span className="capitalize font-medium">{p.payment_method}</span>
-                                            {p.change_amount && p.change_amount > 0 && (
-                                                <span className="text-xs text-green-600">
-                                                    (Recebido: {formatCurrency(p.received_amount || 0)} | Troco: {formatCurrency(p.change_amount)})
-                                                </span>
-                                            )}
+                        <div className="space-y-3">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Forma de Pagamento</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {paymentMethods.map((m) => (
+                                    <Button
+                                        key={m.id}
+                                        variant={selectedMethod === m.id ? 'default' : 'outline'}
+                                        className={`h-12 justify-start gap-3 rounded-xl border-neutral-200 transition-all ${selectedMethod === m.id ? 'ring-2 ring-primary ring-offset-2' : 'hover:bg-neutral-50'}`}
+                                        onClick={() => setSelectedMethod(m.id as PaymentMethod)}
+                                    >
+                                        <div className={`p-1.5 rounded-lg ${selectedMethod === m.id ? 'bg-white/20' : m.color + '/10'}`}>
+                                            <m.icon className={`h-4 w-4 ${selectedMethod === m.id ? 'text-white' : 'text-' + m.color.split('-')[1] + '-600'}`} />
                                         </div>
-                                        <div className="flex gap-2 items-center">
-                                            <span className="font-bold">{formatCurrency(p.amount)}</span>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                                                onClick={() => {
-                                                    const newPayments = [...payments];
-                                                    newPayments.splice(idx, 1);
-                                                    setPayments(newPayments);
-                                                    setCurrentAmount((p.amount + remaining).toFixed(2));
-                                                }}
-                                            >
-                                                &times;
-                                            </Button>
-                                        </div>
-                                    </div>
+                                        <span className="font-bold text-xs">{m.label}</span>
+                                    </Button>
                                 ))}
                             </div>
                         </div>
-                    )}
+
+                        <div className="space-y-3 pt-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Valor Recebido</Label>
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-neutral-400">R$</span>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={currentAmount}
+                                        onChange={e => setCurrentAmount(e.target.value)}
+                                        className="h-14 pl-12 text-xl font-black rounded-2xl border-neutral-200 focus:ring-primary focus:border-primary"
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter') handleAddPayment();
+                                        }}
+                                        autoFocus
+                                    />
+                                </div>
+                                <Button
+                                    onClick={handleAddPayment}
+                                    disabled={remaining <= 0}
+                                    className="h-14 w-14 rounded-2xl bg-neutral-900 hover:bg-black text-white"
+                                >
+                                    <Plus className="h-6 w-6" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Coluna Direita: Resumo e Pagamentos */}
+                    <div className="p-6 bg-neutral-50 border-l border-neutral-100 flex flex-col gap-6">
+                        <div className="flex-1 space-y-4">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Pagamentos Adicionados</Label>
+
+                            <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                                {payments.length === 0 ? (
+                                    <div className="h-32 rounded-2xl border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center text-neutral-400 gap-2">
+                                        <CreditCard className="h-8 w-8 opacity-20" />
+                                        <span className="text-xs font-medium">Nenhum pagamento</span>
+                                    </div>
+                                ) : (
+                                    payments.map((p, idx) => (
+                                        <div key={idx} className="bg-white p-3 rounded-xl border border-neutral-200 shadow-sm flex justify-between items-center animate-in slide-in-from-right-2">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-lg bg-neutral-100 flex items-center justify-center">
+                                                    {(() => {
+                                                        const m = paymentMethods.find(method => method.id === p.payment_method);
+                                                        const Icon = m?.icon || Banknote;
+                                                        return <Icon className="h-4 w-4 text-neutral-600" />;
+                                                    })()}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400">{p.payment_method}</span>
+                                                    <span className="text-sm font-black">{formatCurrency(p.amount)}</span>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 w-8 p-0 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50"
+                                                onClick={() => {
+                                                    const newPayments = [...payments];
+                                                    const removed = newPayments.splice(idx, 1)[0];
+                                                    setPayments(newPayments);
+                                                    setCurrentAmount((removed.amount + remaining).toFixed(2));
+                                                }}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Troco em destaque */}
+                        {payments.some(p => p.change_amount && p.change_amount > 0) && (
+                            <div className="p-4 rounded-2xl bg-black text-white border border-white/10 shadow-xl flex flex-col gap-1 items-center justify-center animate-in zoom-in-95">
+                                <span className="text-[10px] font-black uppercase tracking-[3px] text-white/40">Troco a Devolver</span>
+                                <span className="text-3xl font-black text-primary">
+                                    {formatCurrency(payments.reduce((acc, p) => acc + (p.change_amount || 0), 0))}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Botão Finalizar */}
+                        <Button
+                            onClick={handleConfirm}
+                            disabled={isLoading || remaining > 0.05}
+                            className="h-16 rounded-2xl bg-primary hover:bg-primary-600 text-white font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/20 transition-all flex items-center justify-center gap-2"
+                        >
+                            {remaining <= 0.05 ? <Check className="h-6 w-6" /> : null}
+                            {isLoading ? "Processando..." : remaining > 0.05 ? "Aguardando Pagto" : "Finalizar Venda"}
+                        </Button>
+                    </div>
                 </div>
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
-                        Cancelar
-                    </Button>
-                    <Button
-                        onClick={handleConfirm}
-                        disabled={isLoading || remaining > 0.01}
-                        className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
-                    >
-                        Finalizar Venda (Enter)
-                    </Button>
-                </DialogFooter>
+                {isDelivery && (
+                    <div className="bg-blue-600 p-4 flex items-center justify-between text-white">
+                        <div className="flex items-center gap-3">
+                            <Truck className="h-5 w-5" />
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Modo Delivery Ativo</span>
+                                <span className="text-sm font-bold truncate max-w-[200px]">{deliveryInfo.customer_name || 'Cliente não identificado'}</span>
+                            </div>
+                        </div>
+                        <Button variant="outline" className="h-8 rounded-lg border-white/20 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest text-white/40">
+                            Editar Dados
+                        </Button>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );

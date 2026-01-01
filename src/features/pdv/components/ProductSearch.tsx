@@ -8,6 +8,7 @@ import { formatCurrency } from '@/lib/pdv';
 
 interface ProductSearchProps {
     onFocus?: () => void;
+    focusTrigger?: number;
 }
 
 // Simple beep sound setup
@@ -31,7 +32,7 @@ const playBeep = () => {
     }
 };
 
-export function ProductSearch({ onFocus }: ProductSearchProps) {
+export function ProductSearch({ onFocus, focusTrigger }: ProductSearchProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const { data: products = [] } = useProducts();
@@ -43,17 +44,16 @@ export function ProductSearch({ onFocus }: ProductSearchProps) {
             if (inputRef.current) inputRef.current.focus();
         };
 
+        // Focus once on mount
         focusInput();
-        const interval = setInterval(focusInput, 2000); // Keep bringing focus back if lost (kiosk mode style)
-
-        // Cleanup
-        return () => clearInterval(interval);
     }, []);
 
     // Also trigger on props change
     useEffect(() => {
-        if (onFocus && inputRef.current) inputRef.current.focus();
-    }, [onFocus]);
+        if ((onFocus || focusTrigger !== undefined) && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [onFocus, focusTrigger]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -106,7 +106,7 @@ export function ProductSearch({ onFocus }: ProductSearchProps) {
                 <Input
                     ref={inputRef}
                     placeholder="Bipe o produto ou digite..."
-                    className="pl-14 h-16 text-2xl font-bold bg-white shadow-lg border-gray-200 focus:ring-4 focus:ring-primary/20 transition-all rounded-xl"
+                    className="pl-14 h-16 text-2xl font-bold bg-white text-neutral-900 shadow-lg border-gray-200 focus:ring-4 focus:ring-primary/20 transition-all rounded-xl placeholder:text-neutral-400"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyDown={handleKeyDown}

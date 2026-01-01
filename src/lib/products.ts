@@ -17,6 +17,15 @@ export interface Product {
   cost_price?: number;
   profit_margin?: number;
   profit_amount?: number;
+  // Advanced Fields (ACR Paridade)
+  wholesale_price?: number;
+  term_price?: number;
+  markup?: number;
+  margin?: number;
+  warranty?: string;
+  reference?: string;
+  commission_percentage?: number;
+  location?: string;
   image_url?: string;
   variations?: ProductVariation[];
   created_at: string;
@@ -37,6 +46,15 @@ export interface CreateProductData {
   minimum_stock_level: number;
   sale_price: number;
   cost_price?: number;
+  // Advanced Fields (ACR Paridade)
+  wholesale_price?: number;
+  term_price?: number;
+  markup?: number;
+  margin?: number;
+  warranty?: string;
+  reference?: string;
+  commission_percentage?: number;
+  location?: string;
   image_url?: string;
 }
 
@@ -49,12 +67,14 @@ export async function getProducts({
   page = 1, 
   limit = 10, 
   search = '', 
-  all = false 
+  all = false,
+  organizationId
 }: { 
   page?: number; 
   limit?: number; 
   search?: string; 
-  all?: boolean 
+  all?: boolean;
+  organizationId?: string;
 } = {}) {
   const from = (page - 1) * limit;
   const to = from + limit - 1;
@@ -62,6 +82,10 @@ export async function getProducts({
   let query = supabase
     .from('products')
     .select('*, sale_price:price', { count: 'exact' });
+
+  if (organizationId) {
+    query = query.eq('organization_id', organizationId);
+  }
 
   if (search) {
     query = query.or(`name.ilike.%${search}%,code.ilike.%${search}%,brand.ilike.%${search}%`);
@@ -98,14 +122,21 @@ export async function getProductById(id: number) {
 }
 
 // Create new product
-export async function createProduct(product: CreateProductData & { variations?: Partial<CreateVariationData>[] }) {
+export async function createProduct(product: CreateProductData & { variations?: Partial<CreateVariationData>[] }, organizationId?: string) {
   const { variations, ...productData } = product;
+  
+  // Validate Organization
+  if (!organizationId) {
+     // Optional: throw error or allow for legacy/admin flows
+     // console.warn("Creating product without organization_id");
+  }
 
   // Map frontend fields to DB columns
   const dbPayload = {
     ...productData,
     price: productData.sale_price, // Map sale_price to price
     sale_price: undefined,     // Remove sale_price from payload
+    organization_id: organizationId // Add Org ID
   };
   
   // Remove undefined keys
@@ -123,7 +154,9 @@ export async function createProduct(product: CreateProductData & { variations?: 
   if (variations && variations.length > 0) {
     const variationsToInsert = variations.map(v => ({
       ...v,
-      product_id: newProduct.id
+      product_id: newProduct.id,
+      // Variations usually inherit org implicitly via relation, but if table has it:
+      // organization_id: organizationId 
     }));
     
     const { error: varError } = await supabase
@@ -189,36 +222,54 @@ export async function deleteProduct(id: number) {
 }
 
 // Search products
-export async function searchProducts(query: string) {
-  const { data, error } = await supabase
+export async function searchProducts(query: string, organizationId?: string) {
+  let dbQuery = supabase
     .from('products')
     .select('*, sale_price:price')
     .or(`name.ilike.%${query}%,code.ilike.%${query}%,brand.ilike.%${query}%`)
     .order('name');
+
+  if (organizationId) {
+    dbQuery = dbQuery.eq('organization_id', organizationId);
+  }
+
+  const { data, error } = await dbQuery;
 
   if (error) throw error;
   return data as Product[];
 }
 
 // Get products by category
-export async function getProductsByCategory(category: string) {
-  const { data, error } = await supabase
+export async function getProductsByCategory(category: string, organizationId?: string) {
+  let dbQuery = supabase
     .from('products')
     .select('*, sale_price:price')
     .eq('category', category)
     .order('name');
+
+  if (organizationId) {
+    dbQuery = dbQuery.eq('organization_id', organizationId);
+  }
+
+  const { data, error } = await dbQuery;
 
   if (error) throw error;
   return data as Product[];
 }
 
 // Get low stock products
-export async function getLowStockProducts() {
+export async function getLowStockProducts(organizationId?: string) {
   // First get all products, then filter client-side
-  const { data, error } = await supabase
+  let query = supabase
     .from('products')
     .select('*, sale_price:price')
     .order('stock_quantity', { ascending: true });
+
+  if (organizationId) {
+    query = query.eq('organization_id', organizationId);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw error;
   

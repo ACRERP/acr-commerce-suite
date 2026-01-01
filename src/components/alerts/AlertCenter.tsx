@@ -15,6 +15,7 @@ import {
     TrendingUp
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabaseClient';
 
 export function AlertCenter() {
     const [isOpen, setIsOpen] = useState(false);
@@ -27,11 +28,47 @@ export function AlertCenter() {
         refetchInterval: 30000, // Atualizar a cada 30s
     });
 
+    // Real-time subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('alerts-changes')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'alerts' },
+                (payload) => {
+                    // Tocar som se a mensagem for para o usuário atual ou global
+                    queryClient.invalidateQueries({ queryKey: ['alerts'] });
+
+                    // Tentar tocar som
+                    try {
+                        const audio = new Audio('/notification.mp3');
+                        audio.volume = 0.5;
+                        audio.play().catch(e => console.log('Audio autoplay blocked or file missing'));
+
+                        toast('Nova notificação', {
+                            description: payload.new.titulo || 'Você tem um novo alerta',
+                            action: {
+                                label: 'Ver',
+                                onClick: () => setIsOpen(true)
+                            }
+                        });
+                    } catch (e) {
+                        // Ignore audio errors
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [queryClient]);
+
     // Buscar estatísticas
     const { data: stats } = useQuery({
         queryKey: ['alerts', 'stats'],
         queryFn: () => alertService.getStats(),
-        refetchInterval: 60000, // Atualizar a cada 1min
+        refetchInterval: 60000,
     });
 
     // Marcar como lido
@@ -174,7 +211,7 @@ export function AlertCenter() {
                                                             {alert.mensagem}
                                                         </p>
                                                         <div className="flex items-center gap-2 mt-2">
-                                                            <Badge variant="secondary" size="sm">
+                                                            <Badge variant="secondary">
                                                                 {alert.modulo}
                                                             </Badge>
                                                             <span className="text-xs text-gray-500">

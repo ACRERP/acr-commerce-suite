@@ -2,11 +2,15 @@ import { Keyboard } from 'lucide-react';
 
 export function SaleShortcuts() {
     const shortcuts = [
-        { key: 'F2', label: 'Buscar Produto' },
+        { key: 'F2', label: 'Produtos' },
+        { key: 'F3', label: 'Vendedor' },
         { key: 'F4', label: 'Desconto' },
         { key: 'F5', label: 'Pagamento' },
         { key: 'F6', label: 'Delivery' },
         { key: 'F7', label: 'Cliente' },
+        { key: 'F8', label: 'Vendas' },
+        { key: 'F10', label: 'Operações' },
+        { key: 'F11', label: 'Fechar' },
         { key: 'ESC', label: 'Cancelar' },
     ];
 

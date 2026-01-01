@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,13 +17,16 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ShoppingCart, Users, Search, Package, CreditCard, Sparkles, X, ArrowLeft } from "lucide-react";
+import { Plus, ShoppingCart, Users, Search, Package, X, ArrowLeft } from "lucide-react";
 import { celebrateCompleteSale } from "@/lib/celebrations";
 import { Badge } from "@/components/ui/badge";
 import { useProducts } from "@/hooks/useProducts";
 import { useClients } from "@/hooks/useClients";
 import { useCreateSale } from "@/hooks/useSales";
 import { Product } from "@/lib/products";
+import { useLicenseLimits } from "@/hooks/useLicenseLimits";
+import { CreateProductDialog } from "@/components/products/CreateProductDialog";
+import { useOrganization } from "@/contexts/OrganizationContext";
 
 type CartItem = {
     product: Product;
@@ -36,14 +39,32 @@ interface SalesPDVProps {
 
 export const SalesPDV = ({ onBack }: SalesPDVProps) => {
     const { toast } = useToast();
+    const { currentOrganization } = useOrganization();
     const [selectedCustomerId, setSelectedCustomerId] = useState<string | undefined>();
     const [productSearch, setProductSearch] = useState("");
     const [cart, setCart] = useState<CartItem[]>([]);
     const [paymentMethod, setPaymentMethod] = useState<string>("dinheiro");
+    const { checkLimit } = useLicenseLimits();
+    const [isCreateProductOpen, setIsCreateProductOpen] = useState(false);
 
     const { data: products = [], isLoading: loadingProducts } = useProducts();
     const { data: customers = [], isLoading: loadingCustomers } = useClients();
     const createSaleMutation = useCreateSale();
+
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    // Keyboard Shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "F2") {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
+    }, []);
 
     const filteredProducts = useMemo(
         () =>
@@ -110,18 +131,30 @@ export const SalesPDV = ({ onBack }: SalesPDVProps) => {
             return;
         }
 
-        const saleData = {
-            client_id: Number(selectedCustomerId),
-            total_amount: cartTotal,
-            payment_method: paymentMethod as any,
-            items: cart.map(item => ({
-                product_id: Number(item.product.id),
-                quantity: item.quantity,
-                price: item.product.sale_price
-            }))
-        };
-
         try {
+            // Verificar limite antes de salvar
+            const { canCreate, max } = await checkLimit('sales');
+            if (!canCreate) {
+                toast({
+                    title: "Limite Atingido! 💰",
+                    description: `No modo DEMO o limite é de ${max} vendas. Adquira a licença completa para continuar.`,
+                    variant: "destructive"
+                });
+                return;
+            }
+
+            const saleData = {
+                client_id: Number(selectedCustomerId),
+                total_amount: cartTotal,
+                payment_method: paymentMethod as any,
+                organization_id: currentOrganization?.id,
+                items: cart.map(item => ({
+                    product_id: Number(item.product.id),
+                    quantity: item.quantity,
+                    price: item.product.sale_price
+                }))
+            };
+
             await createSaleMutation.mutateAsync(saleData);
 
             celebrateCompleteSale(cartTotal);
@@ -224,14 +257,23 @@ export const SalesPDV = ({ onBack }: SalesPDVProps) => {
                                 </h3>
                             </div>
 
-                            <div className="flex-1 md:max-w-md relative group">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-primary-500 transition-colors" />
-                                <Input
-                                    placeholder="Pesquisar por Código, Nome ou SKU..."
-                                    value={productSearch}
-                                    onChange={(e) => setProductSearch(e.target.value)}
-                                    className="pl-12 h-14 bg-white/50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700/50 rounded-2xl focus:bg-white dark:focus:bg-neutral-800 shadow-sm transition-all text-lg font-medium ring-0 focus-visible:ring-2 focus-visible:ring-primary-500/20"
-                                />
+                            <div className="flex-1 md:max-w-md flex gap-2">
+                                <div className="relative group flex-1">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-primary-500 transition-colors" />
+                                    <Input
+                                        ref={searchInputRef}
+                                        placeholder="Pesquisar por Código, Nome ou SKU... (F2)"
+                                        value={productSearch}
+                                        onChange={(e) => setProductSearch(e.target.value)}
+                                        className="pl-12 h-14 bg-white/50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700/50 rounded-2xl focus:bg-white dark:focus:bg-neutral-800 shadow-sm transition-all text-lg font-medium ring-0 focus-visible:ring-2 focus-visible:ring-primary-500/20"
+                                    />
+                                </div>
+                                <Button
+                                    className="h-14 w-14 shrink-0 rounded-2xl bg-primary-500 hover:bg-primary-600 shadow-lg shadow-primary-500/20 text-white"
+                                    onClick={() => setIsCreateProductOpen(true)}
+                                >
+                                    <Plus className="w-6 h-6" />
+                                </Button>
                             </div>
                         </div>
 
@@ -349,6 +391,10 @@ export const SalesPDV = ({ onBack }: SalesPDVProps) => {
                     </div>
                 </div>
             </div>
+            <CreateProductDialog
+                open={isCreateProductOpen}
+                onOpenChange={setIsCreateProductOpen}
+            />
         </div>
     );
 };

@@ -23,10 +23,10 @@ export const clientKeys = {
 };
 
 // Get all clients
-export function useClients() {
+export function useClients(organizationId?: string) {
   return useQuery({
-    queryKey: clientKeys.lists(),
-    queryFn: getClients,
+    queryKey: [...clientKeys.lists(), { organizationId }],
+    queryFn: () => getClients(organizationId),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
@@ -42,10 +42,10 @@ export function useClient(id: number) {
 }
 
 // Search clients
-export function useClientSearch(query: string) {
+export function useClientSearch(query: string, organizationId?: string) {
   return useQuery({
-    queryKey: clientKeys.search(query),
-    queryFn: () => searchClients(query),
+    queryKey: [...clientKeys.search(query), { organizationId }],
+    queryFn: () => searchClients(query, organizationId),
     enabled: query.length > 0,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
@@ -57,7 +57,7 @@ export function useCreateClient() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (client: CreateClientData) => createClient(client),
+    mutationFn: ({ client, organizationId }: { client: CreateClientData, organizationId?: string }) => createClient(client, organizationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: clientKeys.lists() });
       toast({
@@ -85,7 +85,7 @@ export function useUpdateClient() {
     mutationFn: (client: UpdateClientData) => updateClient(client),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: clientKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: clientKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: clientKeys.detail(data.client.id) });
       toast({
         title: 'Sucesso',
         description: 'Cliente atualizado com sucesso.',

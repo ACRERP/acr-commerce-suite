@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,6 +10,8 @@ import { businessProfiles } from '@/config/business-profiles';
 import { ArrowRight, ArrowLeft, Check, Loader2, Eye, EyeOff, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProfileShowcase } from '@/components/onboarding/ProfileShowcase';
 import { cn } from '@/lib/utils';
+import { SampleDataSeeder } from '@/lib/seeding/SampleDataSeeder';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Quiz categories with specific profiles and cover images
 const quizCategories = [
@@ -98,6 +100,9 @@ type Step = 'category' | 'profile' | 'signup';
 
 export default function UnifiedOnboarding() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const isDemo = searchParams.get('demo') === 'true';
+    const { user } = useAuth();
     const { setProfile } = useBusinessProfile();
 
     const [step, setStep] = useState<Step>('category');
@@ -109,10 +114,17 @@ export default function UnifiedOnboarding() {
     // Signup form state
     const [formData, setFormData] = useState({
         companyName: '',
-        email: '',
+        email: isDemo ? 'demo@acr.com' : '',
         password: '',
         confirmPassword: ''
     });
+
+    useEffect(() => {
+        if (isDemo) {
+            setFormData(prev => ({ ...prev, email: `demo_${Math.random().toString(36).substring(7)}@acrerp.com` }));
+        }
+    }, [isDemo]);
+
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [loadSampleData, setLoadSampleData] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
@@ -120,11 +132,6 @@ export default function UnifiedOnboarding() {
     const [error, setError] = useState('');
 
     // Determine background image and color logic
-    // Initial state: Captivating abstract/city background
-    // Selected/Hovered state: Profile specific background
-    // Determine background image and color logic
-    // Initial state: Captivating abstract/city background
-    // Selected/Hovered state: Profile specific background
     const getBackgroundImage = () => {
         if (step === 'category') {
             return quizCategories[activeCategoryIndex].bgImage; // Dynamic carousel background
@@ -180,26 +187,27 @@ export default function UnifiedOnboarding() {
         e.preventDefault();
         setError('');
 
-        // Validation
         if (!formData.companyName.trim()) {
             setError('Nome da empresa é obrigatório');
             return;
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.email)) {
-            setError('Por favor, insira um email válido');
-            return;
-        }
+        if (!isDemo) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                setError('Por favor, insira um email válido');
+                return;
+            }
 
-        if (formData.password.length < 8) {
-            setError('Senha deve ter no mínimo 8 caracteres');
-            return;
-        }
+            if (formData.password.length < 8) {
+                setError('Senha deve ter no mínimo 8 caracteres');
+                return;
+            }
 
-        if (formData.password !== formData.confirmPassword) {
-            setError('As senhas não coincidem');
-            return;
+            if (formData.password !== formData.confirmPassword) {
+                setError('As senhas não coincidem');
+                return;
+            }
         }
 
         if (!agreedToTerms) {
@@ -210,64 +218,63 @@ export default function UnifiedOnboarding() {
         setLoading(true);
 
         try {
-            // Create auth user
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.password,
-                options: {
-                    data: {
-                        company_name: formData.companyName,
-                        business_profile_id: selectedProfileId
+            let userId = user?.id;
+
+            if (!isDemo) {
+                // Create auth user (Normal Flow)
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: formData.email,
+                    password: formData.password,
+                    options: {
+                        data: {
+                            company_name: formData.companyName,
+                            business_profile_id: selectedProfileId
+                        }
                     }
-                }
-            });
+                });
 
-            if (authError) {
-                if (authError.message.includes('invalid')) {
-                    throw new Error('Email inválido. Use um email válido (ex: seunome@gmail.com)');
-                } else if (authError.message.includes('already registered')) {
-                    throw new Error('Este email já está cadastrado. Tente fazer login.');
-                } else {
-                    throw authError;
-                }
+                if (authError) throw authError;
+                if (!authData.user) throw new Error('Falha ao criar usuário');
+                userId = authData.user.id;
+            } else {
+                // Demo mode user is already signed in anonymously
+                if (!userId) throw new Error('Usuário anônimo não encontrado');
             }
-
-            if (!authData.user) throw new Error('Falha ao criar usuário');
 
             // Update profile with trial info
             const trialEndsAt = new Date();
             trialEndsAt.setDate(trialEndsAt.getDate() + 15);
 
-            await supabase
+            const { error: profileError } = await supabase
                 .from('profiles')
                 .update({
                     is_trial: true,
                     trial_starts_at: new Date().toISOString(),
                     trial_ends_at: trialEndsAt.toISOString(),
                     company_name: formData.companyName,
-                    business_profile_id: selectedProfileId
+                    business_profile_id: selectedProfileId,
+                    locked_profile_id: selectedProfileId, // LOCK CHOICE: User cannot switch profiles after this
+                    plan_tier: 'starter' // Default tier
                 })
-                .eq('id', authData.user.id);
+                .eq('id', userId);
+
+            if (profileError) throw profileError;
+
+            // Seed sample data if requested
+            if (loadSampleData && selectedProfileId) {
+                console.log('Seeding sample data for profile:', selectedProfileId);
+                await SampleDataSeeder.seed(selectedProfileId, userId);
+            }
 
             // Save state for recovery
             localStorage.setItem('acr_last_signup_email', formData.email);
             localStorage.setItem('acr_last_selected_profile', selectedProfileId);
             localStorage.setItem('acr_load_sample_data', loadSampleData ? 'true' : 'false');
 
-            console.log('Signup successful, navigating to provisioning/dashboard');
+            console.log('Onboarding successful, navigating to dashboard');
 
-            // Navigate to provisioning or dashboard
-            if (authData.session) {
-                navigate('/dashboard');
-            } else {
-                // If session is not established (email confirmation required), go to provisioning
-                navigate('/provisioning', {
-                    state: {
-                        email: formData.email,
-                        profileId: selectedProfileId
-                    }
-                });
-            }
+            // In Demo mode we are already logged in
+            navigate('/dashboard');
 
         } catch (err: any) {
             console.error('Signup error:', err);
@@ -597,53 +604,57 @@ export default function UnifiedOnboarding() {
                                                         />
                                                     </div>
 
-                                                    <div className="space-y-1">
-                                                        <label className="text-[9px] font-black text-white/60 uppercase ml-4 tracking-[3px]">E-mail de Acesso</label>
-                                                        <Input
-                                                            type="email"
-                                                            value={formData.email}
-                                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                            placeholder="CORPORATIVO@EXEMPLO.COM"
-                                                            className="h-12 rounded-xl bg-black/20 border-white/10 text-white placeholder:text-white/30 focus:bg-black/40 focus:border-white/30 backdrop-blur-md transition-all font-bold text-sm px-4"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <div className="grid lg:grid-cols-2 gap-3">
-                                                        <div className="space-y-1">
-                                                            <label className="text-[9px] font-black text-white/60 uppercase ml-4 tracking-[3px]">Segurança</label>
-                                                            <div className="relative">
+                                                    {!isDemo && (
+                                                        <>
+                                                            <div className="space-y-1">
+                                                                <label className="text-[9px] font-black text-white/60 uppercase ml-4 tracking-[3px]">E-mail de Acesso</label>
                                                                 <Input
-                                                                    type={showPassword ? 'text' : 'password'}
-                                                                    value={formData.password}
-                                                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                                                    placeholder="SENHA MESTRA"
+                                                                    type="email"
+                                                                    value={formData.email}
+                                                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                                    placeholder="CORPORATIVO@EXEMPLO.COM"
                                                                     className="h-12 rounded-xl bg-black/20 border-white/10 text-white placeholder:text-white/30 focus:bg-black/40 focus:border-white/30 backdrop-blur-md transition-all font-bold text-sm px-4"
                                                                     required
-                                                                    minLength={8}
                                                                 />
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => setShowPassword(!showPassword)}
-                                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
-                                                                >
-                                                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                                </button>
                                                             </div>
-                                                        </div>
 
-                                                        <div className="space-y-1">
-                                                            <label className="text-[9px] font-black text-white/60 uppercase ml-4 tracking-[3px]">Verificação</label>
-                                                            <Input
-                                                                type="password"
-                                                                value={formData.confirmPassword}
-                                                                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                                                placeholder="RE-DIGITE"
-                                                                className="h-12 rounded-xl bg-black/20 border-white/10 text-white placeholder:text-white/30 focus:bg-black/40 focus:border-white/30 backdrop-blur-md transition-all font-bold text-sm px-4"
-                                                                required
-                                                            />
-                                                        </div>
-                                                    </div>
+                                                            <div className="grid lg:grid-cols-2 gap-3">
+                                                                <div className="space-y-1">
+                                                                    <label className="text-[9px] font-black text-white/60 uppercase ml-4 tracking-[3px]">Segurança</label>
+                                                                    <div className="relative">
+                                                                        <Input
+                                                                            type={showPassword ? 'text' : 'password'}
+                                                                            value={formData.password}
+                                                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                                                            placeholder="SENHA MESTRA"
+                                                                            className="h-12 rounded-xl bg-black/20 border-white/10 text-white placeholder:text-white/30 focus:bg-black/40 focus:border-white/30 backdrop-blur-md transition-all font-bold text-sm px-4"
+                                                                            required
+                                                                            minLength={8}
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setShowPassword(!showPassword)}
+                                                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                                                                        >
+                                                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="space-y-1">
+                                                                    <label className="text-[9px] font-black text-white/60 uppercase ml-4 tracking-[3px]">Verificação</label>
+                                                                    <Input
+                                                                        type="password"
+                                                                        value={formData.confirmPassword}
+                                                                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                                                        placeholder="RE-DIGITE"
+                                                                        className="h-12 rounded-xl bg-black/20 border-white/10 text-white placeholder:text-white/30 focus:bg-black/40 focus:border-white/30 backdrop-blur-md transition-all font-bold text-sm px-4"
+                                                                        required
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 </div>
 
                                                 <div className="py-2 space-y-2">

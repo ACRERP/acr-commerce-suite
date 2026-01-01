@@ -52,11 +52,17 @@ export interface UpdateClientData extends Partial<CreateClientData> {
 }
 
 // Get all clients
-export async function getClients() {
-  const { data, error } = await supabase
+export async function getClients(organizationId?: string) {
+  let query = supabase
     .from('clients')
     .select('*')
     .order('name');
+
+  if (organizationId) {
+    query = query.eq('organization_id', organizationId);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw error;
   return data as Client[];
@@ -75,7 +81,7 @@ export async function getClientById(id: number) {
 }
 
 // Create new client with validation
-export async function createClient(client: CreateClientData): Promise<{ client: Client; validation: ClientValidationResult }> {
+export async function createClient(client: CreateClientData, organizationId?: string): Promise<{ client: Client; validation: ClientValidationResult }> {
   // Validate client data
   const validation = validateClientData(client, {
     requireCPF: false,
@@ -89,7 +95,7 @@ export async function createClient(client: CreateClientData): Promise<{ client: 
 
   // Check for duplicate CPF/CNPJ
   if (client.cpf_cnpj) {
-    const existingClients = await getClients();
+    const existingClients = await getClients(organizationId);
     const duplicateCheck = checkDuplicateClient(client.cpf_cnpj, existingClients);
     if (duplicateCheck.isDuplicate) {
       throw new Error(`Cliente com CPF/CNPJ ${client.cpf_cnpj} já existe: ${duplicateCheck.existingClient?.name}`);
@@ -99,9 +105,14 @@ export async function createClient(client: CreateClientData): Promise<{ client: 
   // Sanitize data
   const sanitizedData = sanitizeClientData(client);
 
+  const dbPayload = {
+    ...sanitizedData,
+    ...(organizationId ? { organization_id: organizationId } : {}),
+  };
+
   const { data, error } = await supabase
     .from('clients')
-    .insert(sanitizedData)
+    .insert(dbPayload)
     .select()
     .single();
 
@@ -130,10 +141,16 @@ export async function updateClient(client: UpdateClientData): Promise<{ client: 
 
   // Check for duplicate CPF/CNPJ (excluding current client)
   if (updateData.cpf_cnpj) {
-    const existingClients = await getClients();
-    const duplicateCheck = checkDuplicateClient(updateData.cpf_cnpj, existingClients, id);
-    if (duplicateCheck.isDuplicate) {
-      throw new Error(`Cliente com CPF/CNPJ ${updateData.cpf_cnpj} já existe: ${duplicateCheck.existingClient?.name}`);
+    // Note: Checking global duplicates for ID exclusion might need org context if strict uniqueness is per-org
+    const { data: existingClient } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('cpf_cnpj', updateData.cpf_cnpj)
+        .neq('id', id)
+        .maybeSingle();
+
+    if (existingClient) {
+      throw new Error(`Cliente com CPF/CNPJ ${updateData.cpf_cnpj} já existe: ${existingClient.name}`);
     }
   }
 
@@ -166,12 +183,18 @@ export async function deleteClient(id: number) {
 }
 
 // Search clients
-export async function searchClients(query: string) {
-  const { data, error } = await supabase
+export async function searchClients(query: string, organizationId?: string) {
+  let queryBuilder = supabase
     .from('clients')
     .select('*')
     .or(`name.ilike.%${query}%,phone.ilike.%${query}%,cpf_cnpj.ilike.%${query}%`)
     .order('name');
+
+  if (organizationId) {
+    queryBuilder = queryBuilder.eq('organization_id', organizationId);
+  }
+
+  const { data, error } = await queryBuilder;
 
   if (error) throw error;
   return data as Client[];

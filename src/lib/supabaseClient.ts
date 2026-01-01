@@ -68,6 +68,11 @@ export const signIn = async (email: string, password: string): Promise<AuthRespo
   return { data, error };
 };
 
+export const signInAnonymously = async (): Promise<AuthResponse> => {
+    const { data, error } = await supabase.auth.signInAnonymously();
+    return { data, error };
+};
+
 export const signInWithOAuth = async (provider: 'google' | 'apple' | 'azure'): Promise<{ error: AuthError | null }> => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider,

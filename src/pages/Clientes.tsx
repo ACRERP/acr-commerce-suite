@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Upload } from "lucide-react";
 import { BulkClientImport } from "@/components/dashboard/clients/BulkClientImport";
+import { useOrganization } from "@/contexts/OrganizationContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +46,7 @@ const getSegmentBadge = (segment: string) => {
 };
 
 const Clientes = ({ openForm = false }: { openForm?: boolean }) => {
+  const { currentOrganization } = useOrganization();
   const [isNewClientOpen, setIsNewClientOpen] = useState(openForm);
   const [isEditClientOpen, setIsEditClientOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -70,7 +72,7 @@ const Clientes = ({ openForm = false }: { openForm?: boolean }) => {
   };
 
   // Using hooks but keeping mock display if needed for layout stability during verification
-  const { data: clientsData, isLoading } = useClients();
+  const { data: clientsData, isLoading } = useClients(currentOrganization?.id);
 
   return (
     <MainLayout>
@@ -249,7 +251,7 @@ const Clientes = ({ openForm = false }: { openForm?: boolean }) => {
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-premium-800/50 flex items-center justify-center text-primary-700 dark:text-primary-400 font-bold text-sm group-hover:scale-110 transition-transform duration-300 shadow-sm border border-primary-200 dark:border-premium-700">
-                              {client.name.charAt(0).toUpperCase()}
+                              {(client.name || 'C').charAt(0).toUpperCase()}
                             </div>
                             <div>
                               <span className="font-semibold text-neutral-900 dark:text-neutral-100 block">{client.name}</span>

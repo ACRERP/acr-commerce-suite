@@ -7,13 +7,14 @@ import { SaleShortcuts } from './components/SaleShortcuts';
 import { PaymentModal } from './components/PaymentModal';
 import { CashRegisterControl } from './components/CashRegisterControl';
 import { useClients } from '@/hooks/useClients';
+import { SellerSelector } from './components/SellerSelector';
 
 import { useCreateSale, useOpenCashRegister } from '@/hooks/usePDV';
 import { gastronomyService } from '@/lib/gastronomy/table-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CreditCard, Trash2, User, ShoppingBag, Terminal, ChevronDown, Percent, Truck, MoreVertical, LogOut, RefreshCw, Settings, DollarSign, Wallet, History } from 'lucide-react';
+import { CreditCard, Trash2, User, UserPlus, ShoppingBag, Terminal, ChevronDown, Percent, Truck, MoreVertical, LogOut, RefreshCw, Settings, DollarSign, Wallet, History } from 'lucide-react';
 import { formatCurrency } from '@/lib/pdv';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,9 @@ import { SaleSuccessModal } from '@/components/pdv/SaleSuccessModal';
 import { CashOperationsModal } from './components/CashOperationsModal';
 import { CloseCashModal } from './components/CloseCashModal';
 import { RecentSalesModal } from './components/RecentSalesModal';
+import { QuickAddClientDialog } from './components/QuickAddClientDialog';
+import { CreateProductDialog } from '@/components/products/CreateProductDialog';
+import { Plus } from 'lucide-react';
 import { ReceiptData } from '@/lib/receipt';
 import {
     DropdownMenu,
@@ -54,6 +58,9 @@ export function PDVFeature() {
     const [showCashOpsModal, setShowCashOpsModal] = useState(false);
     const [showCloseCashModal, setShowCloseCashModal] = useState(false);
     const [showRecentSalesModal, setShowRecentSalesModal] = useState(false);
+    const [showQuickAddClient, setShowQuickAddClient] = useState(false);
+    const [showSellerSelector, setShowSellerSelector] = useState(false);
+    const [isCreateProductOpen, setIsCreateProductOpen] = useState(false);
     const [lastSaleReceipt, setLastSaleReceipt] = useState<ReceiptData | null>(null);
     const { toast } = useToast();
 
@@ -72,6 +79,10 @@ export function PDVFeature() {
         onDiscount: () => document.getElementById('discount-input')?.focus(),
         onDelivery: () => document.getElementById('delivery-input')?.focus(),
         onClient: () => setOpenClientCombo(true),
+        onSeller: () => setShowSellerSelector(true),
+        onCashOps: () => setShowCashOpsModal(true),
+        onCloseCash: () => setShowCloseCashModal(true),
+        onRecentSales: () => setShowRecentSalesModal(true),
         onCancel: () => {
             if (confirm("Limpar carrinho?")) cart.clearCart();
         }
@@ -96,6 +107,7 @@ export function PDVFeature() {
             })),
             payments,
             clientId: cart.clientId ? Number(cart.clientId) : undefined,
+            sellerId: cart.sellerId || undefined,
             discountValue: cart.discountValue,
             deliveryFee: cart.deliveryFee,
             cashRegisterId: cashRegister.id,
@@ -162,7 +174,7 @@ export function PDVFeature() {
                         <Terminal className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-lg font-bold tracking-tight">Frente de Caixa</h1>
+                        <h1 className="text-lg font-bold tracking-tight">Frente de Caixa (PDV)</h1>
                         <p className="text-xs text-neutral-400">Operador: {createSaleMutation.isPending ? '...' : 'Logado'}</p>
                     </div>
                     <Badge variant="outline" className="ml-4 border-green-500/50 text-green-400 bg-green-900/20">
@@ -222,7 +234,17 @@ export function PDVFeature() {
                             <Label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
                                 Produto (F2)
                             </Label>
-                            <ProductSearch onFocus={() => { }} />
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <ProductSearch focusTrigger={searchFocusTrigger} />
+                                </div>
+                                <Button
+                                    className="h-16 w-16 shrink-0 rounded-xl bg-primary-500 hover:bg-primary-600 shadow-lg shadow-primary-500/20 text-white font-bold flex flex-col items-center justify-center"
+                                    onClick={() => setIsCreateProductOpen(true)}
+                                >
+                                    <Plus className="w-6 h-6" />
+                                </Button>
+                            </div>
                         </div>
 
                         <div className="space-y-1">
@@ -244,11 +266,22 @@ export function PDVFeature() {
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-[350px] p-0" align="start">
-                                    <Command>
-                                        <CommandInput placeholder="Buscar cliente..." />
-                                        <CommandList>
+                                    <Command className="bg-white border border-neutral-200">
+                                        <CommandInput placeholder="Buscar cliente..." className="text-neutral-900 placeholder:text-neutral-400" />
+                                        <CommandList className="max-h-[300px]">
                                             <CommandEmpty>Cliente não encontrado.</CommandEmpty>
                                             <CommandGroup>
+                                                <CommandItem
+                                                    value="novo cliente cadastrar"
+                                                    onSelect={() => {
+                                                        setShowQuickAddClient(true);
+                                                        setOpenClientCombo(false);
+                                                    }}
+                                                    className="bg-primary-50 text-primary-700 font-bold mb-1"
+                                                >
+                                                    <UserPlus className="mr-2 h-4 w-4" />
+                                                    Cadastrar Novo Cliente
+                                                </CommandItem>
                                                 <CommandItem
                                                     value="consumidor"
                                                     onSelect={() => {
@@ -262,7 +295,7 @@ export function PDVFeature() {
                                                 {clients?.map((client) => (
                                                     <CommandItem
                                                         key={client.id}
-                                                        value={`${client.name} ${client.cpf_cnpj || ''}`}
+                                                        value={`${client.name} ${client.cpf_cnpj || ''} ${client.phone || ''} ${client.email || ''}`}
                                                         onSelect={() => {
                                                             cart.setClient(client.id.toString(), client.name);
                                                             setOpenClientCombo(false);
@@ -271,11 +304,10 @@ export function PDVFeature() {
                                                         <User className="mr-2 h-4 w-4 shrink-0" />
                                                         <div className="flex flex-col">
                                                             <span>{client.name}</span>
-                                                            {client.cpf_cnpj && (
-                                                                <span className="text-xs text-neutral-400">
-                                                                    {client.cpf_cnpj}
-                                                                </span>
-                                                            )}
+                                                            <div className="flex gap-2 text-xs text-neutral-400">
+                                                                {client.cpf_cnpj && <span>{client.cpf_cnpj}</span>}
+                                                                {client.phone && <span>• {client.phone}</span>}
+                                                            </div>
                                                         </div>
                                                     </CommandItem>
                                                 ))}
@@ -284,6 +316,20 @@ export function PDVFeature() {
                                     </Command>
                                 </PopoverContent>
                             </Popover>
+                        </div>
+
+                        <div className="space-y-1">
+                            <Label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                                Vendedor (F3)
+                            </Label>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start h-12 text-base gap-2"
+                                onClick={() => setShowSellerSelector(!showSellerSelector)}
+                            >
+                                <UserPlus className="h-4 w-4 text-primary" />
+                                {cart.sellerName || "Selecionar Vendedor..."}
+                            </Button>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -461,6 +507,17 @@ export function PDVFeature() {
                     />
                 </>
             )}
+
+            <CreateProductDialog
+                open={isCreateProductOpen}
+                onOpenChange={setIsCreateProductOpen}
+            />
+
+            <SellerSelector
+                open={showSellerSelector}
+                onOpenChange={setShowSellerSelector}
+                onSelect={(id, name) => cart.setSeller(id, name)}
+            />
         </div>
     );
 }

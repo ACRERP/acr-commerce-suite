@@ -375,8 +375,8 @@ export function AppearanceConfig() {
     const applyPreset = (preset: 'corporate' | 'ebony' | 'paper') => {
         if (preset === 'corporate') {
             setDarkMode(false);
-            setSelectedColor('#006CFF');
-            setPrimaryColor('#006CFF');
+            setSelectedColor('#2563eb');
+            setPrimaryColor('#2563eb');
             setSidebarTheme('corporate');
             setPageBackground('tech');
             setSelectedBackground('tech');

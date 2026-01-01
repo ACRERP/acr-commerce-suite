@@ -1,0 +1,121 @@
+============================================================
+RESUMO DA EXTRAÇÃO - SMB v4.0a
+============================================================
+
+Total de Tabelas: 22
+Total de Registros: 51
+
+============================================================
+TABELAS POR TAMANHO:
+============================================================
+
+exp_Tbl_Status
+  Registros: 8
+  Colunas: 2
+  Campos: idstatus, Status
+
+exp_Tbl_TipoProd
+  Registros: 7
+  Colunas: 2
+  Campos: idprod, Tipo_Prod
+
+exp_tbl_pgto
+  Registros: 7
+  Colunas: 4
+  Campos: idpgto, formapgto, taxacartao, FluxoCaixa
+
+Pedidos_Devolucao_teste
+  Registros: 6
+  Colunas: 16
+  Campos: SEQ_PEDIDO, Nr_Pedido, Cliente, Nome_Cliente, DATA_Dev, Dt_CompletaDev, SITUAÇÃO DO PED, data, origem, parcelas ... (+6 campos)
+
+exp_tbl_meta
+  Registros: 4
+  Colunas: 14
+  Campos: ANO, jan, fev, mar, abr, mai, jun, jul, ago, set ... (+4 campos)
+
+Tbl_Imp_capa_carne
+  Registros: 3
+  Colunas: 13
+  Campos: CodCadEmpresa, LocalPgtoCarneBoleto, TextoRespCedente, LocalFoto, Cadastro_Empresa, Tipo_Regime, Contribuinte_IPI, ficheiro, CNPJ, Cidade ... (+3 campos)
+
+A
+  Registros: 1
+  Colunas: 58
+  Campos: Código, A, NunVenda, id_nfe, Usuario, Senha, IdFuncionario, Funcionario, ID, Data1 ... (+48 campos)
+
+ConfigInicial
+  Registros: 1
+  Colunas: 6
+  Campos: ExibirMsgImp, MostraIcones, ExibirVhsys, ExibirAvisoLogin, ExibirAvisoPesqNome, ExibirAvisoTamanho
+
+Tbl_Cad_Produtos_temp
+  Registros: 1
+  Colunas: 7
+  Campos: CódigoDoProduto, Preço, ML, Preço_Venda, PRECO_APRAZO, sel, IPI
+
+Tbl_UsuarioLogado
+  Registros: 1
+  Colunas: 1
+  Campos: UsuarioLogado
+
+atualizacao
+  Registros: 1
+  Colunas: 2
+  Campos: id, versaonova
+
+cs_fluxo_caixa
+  Registros: 1
+  Colunas: 28
+  Campos: id, DATA_VENDAS, NºCOD_VENDAS, NºOS, Desc, formapgto, formapgto_2, SomaDeTaxaCartao, SomaDeTaxaCartao2, ENTRADA_NA_VENDA ... (+18 campos)
+
+exp_Tbl_Juros
+  Registros: 1
+  Colunas: 3
+  Campos: multa, taxa, multafixo
+
+exp_Tbl_config
+  Registros: 1
+  Colunas: 36
+  Campos: Id, Imp_Preco, QtdCod, alteraprecocompra, alteraprecovenda, markuppadrao, ImpCarne80, PesqVenda, maxtela, txtproblema ... (+26 campos)
+
+exp_tbl_caixa
+  Registros: 1
+  Colunas: 19
+  Campos: idCaixa, Data_caixa_abertura, Data_caixa_fechamento, Responsavel, Entradas, Saidas, Retirada, Saldo, Situacao, Obs ... (+9 campos)
+
+tabImpressoraSelecionada
+  Registros: 1
+  Colunas: 5
+  Campos: nomeImpressora, texto_impressaocupom, nomeImpressorarel, texto_impressaonota, generic
+
+tblCaminhoBe
+  Registros: 1
+  Colunas: 4
+  Campos: Path_0, NomeBE, senha, FormPrincipal
+
+tblImagensDeFundo
+  Registros: 1
+  Colunas: 4
+  Campos: ImgFundo, Idimg, NomeImg, Posição
+
+tblRegistro
+  Registros: 1
+  Colunas: 5
+  Campos: Campo1, Campo2, Campo3, Campo4, campo5
+
+tbl_AtualizaCadCliente
+  Registros: 1
+  Colunas: 7
+  Campos: CodDoCliente, GalCliente, SomaDeVALOR, SomaDeVALOR_PAGO, DEBITO, Acrescimos, SomaDescontos
+
+tbl_cad_cliente_smb_online
+  Registros: 1
+  Colunas: 24
+  Campos: nome, pessoa, cpf, cnpj, inscricao_estadual, rg, data_emissao, emissor, celular, telefone ... (+14 campos)
+
+tbl_cad_produto_export_smb_online
+  Registros: 1
+  Colunas: 16
+  Campos: codigo_barras, descricao, unid, preco_compra, margem_lucro, preco_venda, preco_venda_2, estoque, estoque_minimo, grupo ... (+6 campos)
+

@@ -5,14 +5,21 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { MainLayout } from '@/components/layout/MainLayout';
-
-const vehicles = [
-    { id: '1', plate: 'ABC-1234', model: 'Fiat Fiorino', type: 'Delivery', status: 'Em Entrega', driver: 'João Silva' },
-    { id: '2', plate: 'XYZ-5678', model: 'Honda CG 160', type: 'Motoboy', status: 'Disponível', driver: 'Maria Oliveira' },
-    { id: '3', plate: 'DEF-9012', model: 'VW Delivery', type: 'Caminhão', status: 'Manutenção', driver: 'Carlos Souza' },
-];
+import { useQuery } from '@tanstack/react-query';
+import { fleetService } from '@/lib/modules/fleet-service';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function FleetPage() {
+    const { data: vehicles, isLoading } = useQuery({
+        queryKey: ['fleet-vehicles'],
+        queryFn: fleetService.getVehicles
+    });
+
+    const { data: stats } = useQuery({
+        queryKey: ['fleet-stats'],
+        queryFn: fleetService.getStats
+    });
+
     return (
         <MainLayout>
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -34,10 +41,10 @@ export default function FleetPage() {
                 {/* Analytics Summary */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {[
-                        { label: 'Total Veículos', value: '12', icon: Car, color: 'blue' },
-                        { label: 'Em Trânsito', value: '08', icon: Truck, color: 'green' },
-                        { label: 'Manutenção', value: '02', icon: Settings, color: 'amber' },
-                        { label: 'Histórico Mensal', value: '145', icon: History, color: 'purple' },
+                        { label: 'Total Veículos', value: stats?.total || 0, icon: Car, color: 'blue' },
+                        { label: 'Em Trânsito', value: stats?.inTransit || 0, icon: Truck, color: 'green' },
+                        { label: 'Manutenção', value: stats?.maintenance || 0, icon: Settings, color: 'amber' },
+                        { label: 'Histórico Mensal', value: '-', icon: History, color: 'purple' },
                     ].map((stat, i) => (
                         <motion.div
                             key={stat.label}
@@ -80,28 +87,50 @@ export default function FleetPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                                {vehicles.map((v) => (
-                                    <tr key={v.id} className="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="font-bold text-neutral-900 dark:text-neutral-50">{v.plate}</span>
-                                                <span className="text-sm text-neutral-500">{v.model}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm font-medium">{v.type}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <Badge className={cn("rounded-full", v.status === 'Disponível' ? "bg-green-500 hover:bg-green-600 text-white border-transparent" : v.status === 'Em Entrega' ? "bg-blue-500 hover:bg-blue-600 text-white border-transparent" : "bg-red-500 hover:bg-red-600 text-white border-transparent")}>
-                                                {v.status}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm font-medium">{v.driver}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Button variant="ghost" size="sm" className="rounded-lg">Ver Detalhes</Button>
+                                {isLoading ? (
+                                    Array.from({ length: 3 }).map((_, i) => (
+                                        <tr key={i}>
+                                            <td className="px-6 py-4"><Skeleton className="h-10 w-32" /></td>
+                                            <td className="px-6 py-4"><Skeleton className="h-6 w-20" /></td>
+                                            <td className="px-6 py-4"><Skeleton className="h-6 w-24" /></td>
+                                            <td className="px-6 py-4"><Skeleton className="h-6 w-32" /></td>
+                                            <td className="px-6 py-4 ml-auto"><Skeleton className="h-8 w-8 ml-auto" /></td>
+                                        </tr>
+                                    ))
+                                ) : vehicles?.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">
+                                            Nenhum veículo cadastrado na frota.
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    vehicles?.map((v) => (
+                                        <tr key={v.id} className="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-neutral-900 dark:text-neutral-50">{v.plate}</span>
+                                                    <span className="text-sm text-neutral-500">{v.model}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm font-medium">{v.type}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Badge className={cn("rounded-full",
+                                                    v.status === 'available' ? "bg-green-500 hover:bg-green-600 text-white border-transparent" :
+                                                        v.status === 'in_transit' ? "bg-blue-500 hover:bg-blue-600 text-white border-transparent" :
+                                                            "bg-red-500 hover:bg-red-600 text-white border-transparent"
+                                                )}>
+                                                    {v.status === 'available' ? 'Disponível' : v.status === 'in_transit' ? 'Em Entrega' : 'Manutenção'}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm font-medium">{v.driver?.name || '-'}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <Button variant="ghost" size="sm" className="rounded-lg">Ver Detalhes</Button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>

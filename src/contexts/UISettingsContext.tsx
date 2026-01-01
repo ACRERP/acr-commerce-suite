@@ -109,7 +109,7 @@ const defaultSettings: UISettings = {
     sidebarCollapsed: false,
     densityMode: 'comfortable',
     sidebarTheme: 'navy',
-    primaryColor: '#006CFF',
+    primaryColor: '#2563eb',
     savedFilters: [],
     viewPreferences: {},
     loginStyle: 'glass',
@@ -194,9 +194,10 @@ export function UISettingsProvider({ children }: { children: ReactNode }) {
         const l = parseFloat(hslValue.split(' ')[2]);
         const foregroundValue = l > 60 ? '0 0% 0%' : '0 0% 100%';
 
-        root.style.setProperty('--primary', hslValue);
-        root.style.setProperty('--primary-foreground', foregroundValue);
-        root.style.setProperty('--ring', hslValue);
+        // Set BRAND colors (used only in Sidebar)
+        root.style.setProperty('--brand-primary', hslValue);
+        root.style.setProperty('--brand-primary-foreground', foregroundValue);
+        root.style.setProperty('--brand-ring', hslValue);
 
         // Apply secondary and accent
         root.style.setProperty('--secondary-hex', settings.secondaryColor);

@@ -311,7 +311,7 @@ export default function DeliveryPage() {
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-primary-100 to-primary-50 rounded-xl flex items-center justify-center text-primary-600 font-bold shadow-sm">
-                            {perf.name.charAt(0)}
+                            {(perf.name || 'E').charAt(0)}
                           </div>
                           <span className="font-semibold">{perf.name}</span>
                         </div>

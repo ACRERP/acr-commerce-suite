@@ -18,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Save, Users, CalendarIcon, Search } from "lucide-react";
+import { useOrganization } from "@/contexts/OrganizationContext";
 
 interface CreateClientDialogProps {
     open: boolean;
@@ -47,6 +48,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
         }
     });
 
+    const { currentOrganization } = useOrganization();
     const createClientMutation = useCreateClient();
     const { toast } = useToast();
     const clientType = watch('client_type');
@@ -59,13 +61,16 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
             status: 'active'
         };
 
-        createClientMutation.mutate(cleanData, {
-            onSuccess: (newClient) => {
+        createClientMutation.mutate({
+            client: cleanData,
+            organizationId: currentOrganization?.id
+        }, {
+            onSuccess: (result) => {
                 toast({ title: "Cliente cadastrado com sucesso!" });
                 onOpenChange(false);
                 reset();
                 if (onSuccess) {
-                    onSuccess(newClient);
+                    onSuccess(result.client);
                 }
             },
             onError: (error) => {
@@ -95,7 +100,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden rounded-[2rem] border-0 shadow-2xl glass-window glass-window-compact !p-0">
+            <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden rounded-[2rem] border-0 shadow-2xl glass-window glass-window-compact !p-0 !fixed z-50">
                 <DialogHeader className="p-5 bg-gradient-to-r from-neutral-800/80 to-neutral-900/80 text-white backdrop-blur-md border-b border-white/10">
                     <DialogTitle className="flex items-center gap-2 text-lg">
                         <div className="p-1.5 bg-white/10 rounded-lg backdrop-blur-sm">

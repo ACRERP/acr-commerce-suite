@@ -10,6 +10,8 @@ interface CartState {
     deliveryFee: number;
     tableOrderId: number | null;
     tableId: number | null;
+    sellerId: string | null;
+    sellerName: string | null;
     
     // Computed (helper getters)
     subtotal: () => number;
@@ -23,6 +25,7 @@ interface CartState {
     setClient: (id: string | null, name: string | null) => void;
     setDiscount: (value: number) => void;
     setDeliveryFee: (value: number) => void;
+    setSeller: (id: string | null, name: string | null) => void;
     loadFromTable: (tableId: number, orderId: number, items: CartItem[]) => void;
     clearCart: () => void;
 }
@@ -37,6 +40,8 @@ export const useCart = create<CartState>()(
             deliveryFee: 0,
             tableOrderId: null,
             tableId: null,
+            sellerId: null,
+            sellerName: null,
 
             subtotal: () => {
                 return get().items.reduce((sum, item) => sum + item.subtotal, 0);
@@ -117,6 +122,7 @@ export const useCart = create<CartState>()(
             setClient: (id, name) => set({ clientId: id, clientName: name || 'Cliente Balcão' }),
             setDiscount: (value) => set({ discountValue: value }),
             setDeliveryFee: (value) => set({ deliveryFee: value }),
+            setSeller: (id, name) => set({ sellerId: id, sellerName: name }),
             loadFromTable: (tableId, orderId, items) => {
                 set({ 
                     items, 
@@ -133,7 +139,9 @@ export const useCart = create<CartState>()(
                     discountValue: 0,
                     deliveryFee: 0,
                     tableId: null,
-                    tableOrderId: null
+                    tableOrderId: null,
+                    sellerId: null,
+                    sellerName: null
                 });
             },
         }),
@@ -144,7 +152,9 @@ export const useCart = create<CartState>()(
                 clientId: state.clientId,
                 clientName: state.clientName,
                 tableId: state.tableId,
-                tableOrderId: state.tableOrderId
+                tableOrderId: state.tableOrderId,
+                sellerId: state.sellerId,
+                sellerName: state.sellerName
             }), // persist only specific fields
         }
     )

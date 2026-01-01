@@ -14,8 +14,23 @@ import {
     MoreVertical
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import { academicService } from "@/lib/modules/academic-service";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function AcademicPage() {
+    const { data: students, isLoading } = useQuery({
+        queryKey: ['academic-students'],
+        queryFn: academicService.getRecentStudents
+    });
+
+    const { data: stats } = useQuery({
+        queryKey: ['academic-stats'],
+        queryFn: academicService.getStats
+    });
+
     return (
         <MainLayout>
             <div className="w-full max-w-[95%] mx-auto px-4 py-8 space-y-8">
@@ -41,10 +56,10 @@ export default function AcademicPage() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {[
-                        { label: 'Alunos Ativos', value: '142', icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
-                        { label: 'Turmas', value: '12', icon: BookOpen, color: 'text-indigo-600', bg: 'bg-indigo-100' },
-                        { label: 'Aulas Hoje', value: '8', icon: Calendar, color: 'text-orange-600', bg: 'bg-orange-100' },
-                        { label: 'Inadimplência', value: '4.2%', icon: TrendingUp, color: 'text-red-600', bg: 'bg-red-100' },
+                        { label: 'Alunos Ativos', value: stats?.activeStudents || 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
+                        { label: 'Turmas', value: stats?.totalClasses || 0, icon: BookOpen, color: 'text-indigo-600', bg: 'bg-indigo-100' },
+                        { label: 'Aulas Hoje', value: '-', icon: Calendar, color: 'text-orange-600', bg: 'bg-orange-100' },
+                        { label: 'Inadimplência', value: '-', icon: TrendingUp, color: 'text-red-600', bg: 'bg-red-100' },
                     ].map((stat, i) => (
                         <Card key={i} className="border-none shadow-xl hover:-translate-y-1 transition-all">
                             <CardContent className="p-6">
@@ -75,32 +90,47 @@ export default function AcademicPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {[
-                                    { name: 'Ana Silva', course: 'Inglês Iniciante', status: 'ativo', date: 'Hoje' },
-                                    { name: 'Carlos Santos', course: 'Matemática Avançada', status: 'pendente', date: 'Ontem' },
-                                    { name: 'Mariana Costa', course: 'Pintura a Óleo', status: 'ativo', date: '12/10' },
-                                ].map((student, i) => (
-                                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-neutral-100 hover:bg-neutral-50 transition-colors">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                                                {student.name[0]}
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-neutral-900">{student.name}</p>
-                                                <p className="text-xs text-neutral-500">{student.course}</p>
+                                {isLoading ? (
+                                    Array.from({ length: 3 }).map((_, i) => (
+                                        <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-neutral-100">
+                                            <div className="flex items-center gap-4">
+                                                <Skeleton className="w-10 h-10 rounded-full" />
+                                                <div className="space-y-2">
+                                                    <Skeleton className="h-4 w-32" />
+                                                    <Skeleton className="h-3 w-20" />
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <Badge variant={student.status === 'ativo' ? 'secondary' : 'outline'}>
-                                                {student.status}
-                                            </Badge>
-                                            <span className="text-xs text-neutral-400">{student.date}</span>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                <MoreVertical className="w-4 h-4" />
-                                            </Button>
-                                        </div>
+                                    ))
+                                ) : students?.length === 0 ? (
+                                    <div className="py-8 text-center text-neutral-500">
+                                        Nenhum aluno matriculado recentemente.
                                     </div>
-                                ))}
+                                ) : (
+                                    students?.map((student, i) => (
+                                        <div key={student.id} className="flex items-center justify-between p-4 rounded-xl border border-neutral-100 hover:bg-neutral-50 transition-colors">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                                                    {student.name[0]}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-neutral-900">{student.name}</p>
+                                                    <p className="text-xs text-neutral-500">{student.email}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <Badge variant={student.status === 'active' ? 'secondary' : 'outline'}>
+                                                    {student.status === 'active' ? 'Ativo' : 'Inativo'}
+                                                </Badge>
+                                                <span className="text-xs text-neutral-400">
+                                                    {format(new Date(student.created_at), 'dd/MM', { locale: ptBR })}
+                                                </span>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <MoreVertical className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )))}
                             </div>
                             <Button variant="ghost" className="w-full mt-4 text-indigo-600">Ver todos os alunos</Button>
                         </CardContent>

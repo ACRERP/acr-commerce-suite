@@ -31,10 +31,15 @@ export default function KDSPage() {
                 setIsLoading(false);
             }
         };
+
         fetchOrders();
-        // Setup polling or real-time subscription here
-        const interval = setInterval(fetchOrders, 30000);
-        return () => clearInterval(interval);
+
+        // Subscribe to real-time updates
+        const unsubscribe = gastronomyService.subscribeToKDS(() => {
+            fetchOrders();
+        });
+
+        return () => unsubscribe();
     }, []);
 
     // Placeholder data for demonstration if empty
@@ -70,7 +75,7 @@ export default function KDSPage() {
                 {/* Header KDS */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-400 dark:to-red-400 tracking-tight mb-2">
+                        <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-neutral-950 via-neutral-800 to-neutral-600 dark:from-white dark:via-neutral-200 dark:to-neutral-400 tracking-tight mb-2">
                             KDS - Cozinha
                         </h1>
                         <p className="text-lg text-neutral-600 dark:text-neutral-400 flex items-center gap-2">

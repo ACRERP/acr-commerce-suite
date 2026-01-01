@@ -13,6 +13,7 @@ import { SampleDataSeeder } from '@/lib/seeding/SampleDataSeeder';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { GuidedTour } from '@/components/dashboard/GuidedTour';
 
 export default function DashboardPage() {
     const { activeProfile } = useBusinessProfile();
@@ -61,20 +62,31 @@ export default function DashboardPage() {
         checkAndSeed();
     }, [user, activeProfile, toast, queryClient]);
 
-    // Queries Reais
+    // Queries Reais com staleTime para cache agressivo (Performance)
     const { data: salesMonth } = useQuery({
         queryKey: ['dashboard', 'sales-month'],
         queryFn: () => dashboardService.getSalesMonth(),
+        staleTime: 1000 * 60 * 5, // 5 minutos
     });
 
     const { data: salesToday } = useQuery({
         queryKey: ['dashboard', 'sales-today'],
         queryFn: () => dashboardService.getSalesToday(),
+        staleTime: 1000 * 60 * 1, // 1 minuto
     });
+
+    // Prefetching de dados secundários
+    useEffect(() => {
+        queryClient.prefetchQuery({
+            queryKey: ['dashboard', 'financial-summary'],
+            queryFn: () => dashboardService.getFinancialSummary(),
+        });
+    }, [queryClient]);
 
     const { data: stockAlerts } = useQuery({
         queryKey: ['dashboard', 'stock-alerts'],
         queryFn: () => dashboardService.getStockAlerts(),
+        staleTime: 1000 * 60 * 10,
     });
 
     const { data: clientsCount } = useQuery({
@@ -82,7 +94,8 @@ export default function DashboardPage() {
         queryFn: async () => {
             const { count } = await supabase.from('clients').select('*', { count: 'exact', head: true });
             return count || 0;
-        }
+        },
+        staleTime: 1000 * 60 * 30,
     });
 
     const { data: productsCount } = useQuery({
@@ -90,12 +103,14 @@ export default function DashboardPage() {
         queryFn: async () => {
             const { count } = await supabase.from('products').select('*', { count: 'exact', head: true });
             return count || 0;
-        }
+        },
+        staleTime: 1000 * 60 * 30,
     });
 
     const { data: salesByDay } = useQuery({
         queryKey: ['dashboard', 'sales-week'],
         queryFn: () => dashboardService.getSalesByDay(7),
+        staleTime: 1000 * 60 * 15,
     });
 
     // Mock Data Generators for Visual Fidelity (Since we don't have full expense/history data yet)
@@ -209,6 +224,7 @@ export default function DashboardPage() {
                 {/* Bottom Alerts */}
                 {modules.includes('inventory') && <LowStockAlert alerts={stockAlerts || []} />}
             </div>
+            <GuidedTour />
         </MainLayout>
     );
 }

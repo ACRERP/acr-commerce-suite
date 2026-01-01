@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { useCancelSale } from '@/hooks/usePDV';
 
 interface Sale {
   id: number;
@@ -56,35 +56,6 @@ async function fetchSalesHistory() {
   return data;
 }
 
-async function cancelSale(saleId: number) {
-  // 1. Buscar itens da venda para estornar estoque
-  const { data: saleItems, error: itemsError } = await supabase
-    .from('sale_items')
-    .select('product_id, quantity')
-    .eq('sale_id', saleId);
-
-  if (itemsError) throw itemsError;
-
-  // 2. Estornar estoque de cada produto
-  for (const item of saleItems || []) {
-    const { error: stockError } = await supabase.rpc('increment_stock', {
-      p_product_id: item.product_id,
-      p_quantity: item.quantity,
-    });
-    if (stockError) throw new Error(`Erro ao estornar estoque: ${stockError.message}`);
-  }
-
-  // 3. Atualizar status da venda
-  const { error: updateError } = await supabase
-    .from('sales')
-    .update({ status: 'cancelada' })
-    .eq('id', saleId);
-
-  if (updateError) throw updateError;
-
-  return true;
-}
-
 const statusVariant: { [key: string]: 'default' | 'secondary' | 'destructive' | 'outline' } = {
   concluida: 'default',
   pendente: 'secondary',
@@ -94,24 +65,23 @@ const statusVariant: { [key: string]: 'default' | 'secondary' | 'destructive' | 
 export function SalesHistoryList() {
   const [saleToCancel, setSaleToCancel] = useState<number | null>(null);
   const queryClient = useQueryClient();
+  const cancelSaleMutation = useCancelSale();
 
   const { data: sales, isLoading, isError, error } = useQuery<Sale[], Error>({
     queryKey: ['salesHistory'],
     queryFn: fetchSalesHistory,
   });
 
-  const cancelSaleMutation = useMutation({
-    mutationFn: cancelSale,
-    onSuccess: () => {
-      toast({ title: 'Sucesso!', description: 'Venda cancelada e estoque estornado.' });
-      queryClient.invalidateQueries({ queryKey: ['salesHistory'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+  // Success handler for the mutation within this component's context if needed
+  // or just rely on the hook's toast. I'll add a close modal here.
+  const handleCancel = async (id: number) => {
+    try {
+      await cancelSaleMutation.mutateAsync({ saleId: id, reason: 'Solicitado via Histórico de Vendas' });
       setSaleToCancel(null);
-    },
-    onError: (error: Error) => {
-      toast({ title: 'Erro!', description: error.message, variant: 'destructive' });
-    },
-  });
+    } catch (err) {
+      // toast is already handled in hook
+    }
+  };
 
   if (isLoading) {
     return (
@@ -166,7 +136,7 @@ export function SalesHistoryList() {
                         <Eye className="w-4 h-4 mr-2" />
                         Ver Detalhes
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         className="text-red-500"
                         onClick={() => setSaleToCancel(sale.id)}
                         disabled={sale.status === 'cancelada'}
@@ -182,7 +152,7 @@ export function SalesHistoryList() {
           </TableBody>
         </Table>
       </div>
-      
+
       <AlertDialog open={saleToCancel !== null} onOpenChange={() => setSaleToCancel(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -194,7 +164,7 @@ export function SalesHistoryList() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => saleToCancel && cancelSaleMutation.mutate(saleToCancel)}
+              onClick={() => saleToCancel && handleCancel(saleToCancel)}
               disabled={cancelSaleMutation.isPending}
             >
               {cancelSaleMutation.isPending ? 'Cancelando...' : 'Sim, cancelar venda'}

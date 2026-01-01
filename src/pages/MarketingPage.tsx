@@ -5,14 +5,21 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { MainLayout } from '@/components/layout/MainLayout';
-
-const campaigns = [
-    { id: '1', name: 'Promoção Verão 2024', type: 'E-mail Marketing', status: 'Ativa', reaches: '1.2k', conversion: '4.5%' },
-    { id: '2', name: 'Cupom Primeira Compra', type: 'WhatsApp Business', status: 'Pausada', reaches: '850', conversion: '12.2%' },
-    { id: '3', name: 'Aniversário da Loja', type: 'SMS', status: 'Agendada', reaches: '3.0k', conversion: '0%' },
-];
+import { useQuery } from '@tanstack/react-query';
+import { marketingService } from '@/lib/modules/marketing-service';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MarketingPage() {
+    const { data: campaigns, isLoading } = useQuery({
+        queryKey: ['marketing-campaigns'],
+        queryFn: marketingService.getCampaigns
+    });
+
+    const { data: stats } = useQuery({
+        queryKey: ['marketing-stats'],
+        queryFn: marketingService.getStats
+    });
+
     return (
         <MainLayout>
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -35,10 +42,10 @@ export default function MarketingPage() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {[
-                        { label: 'Campanhas Ativas', value: '05', icon: Megaphone, color: 'blue' },
-                        { label: 'Clientes Alcançados', value: '15.4k', icon: Send, color: 'green' },
-                        { label: 'Conversão Média', value: '8.2%', icon: Target, color: 'pink' },
-                        { label: 'Custo por Lead', value: 'R$ 2,45', icon: BarChart, color: 'amber' },
+                        { label: 'Campanhas Ativas', value: stats?.active || 0, icon: Megaphone, color: 'blue' },
+                        { label: 'Clientes Alcançados', value: '-', icon: Send, color: 'green' },
+                        { label: 'Conversão Média', value: '-', icon: Target, color: 'pink' },
+                        { label: 'Investimento Total', value: '-', icon: BarChart, color: 'amber' },
                     ].map((stat, i) => (
                         <motion.div
                             key={stat.label}
@@ -82,24 +89,42 @@ export default function MarketingPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                                {campaigns.map((c) => (
-                                    <tr key={c.id} className="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <span className="font-bold text-neutral-900 dark:text-neutral-50">{c.name}</span>
-                                        </td>
-                                        <td className="px-6 py-4 lowercase text-sm font-medium">{c.type}</td>
-                                        <td className="px-6 py-4">
-                                            <Badge className={cn("rounded-full", c.status === 'Ativa' ? "bg-green-500 hover:bg-green-600 text-white border-transparent" : c.status === 'Agendada' ? "bg-blue-500 hover:bg-blue-600 text-white border-transparent" : "bg-neutral-500 hover:bg-neutral-600 text-white border-transparent")}>
-                                                {c.status}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm font-bold">{c.reaches}</td>
-                                        <td className="px-6 py-4 text-sm font-bold text-green-600">{c.conversion}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Button variant="ghost" size="sm" className="rounded-lg">Analytics</Button>
+                                {isLoading ? (
+                                    Array.from({ length: 3 }).map((_, i) => (
+                                        <tr key={i}>
+                                            <td className="px-6 py-4"><Skeleton className="h-4 w-48" /></td>
+                                            <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+                                            <td className="px-6 py-4"><Skeleton className="h-6 w-24" /></td>
+                                            <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                                            <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                                            <td className="px-6 py-4"><Skeleton className="h-8 w-16 ml-auto" /></td>
+                                        </tr>
+                                    ))
+                                ) : campaigns?.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">
+                                            Nenhuma campanha encontrada.
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    campaigns?.map((c) => (
+                                        <tr key={c.id} className="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <span className="font-bold text-neutral-900 dark:text-neutral-50">{c.name}</span>
+                                            </td>
+                                            <td className="px-6 py-4 lowercase text-sm font-medium">{c.channel}</td>
+                                            <td className="px-6 py-4">
+                                                <Badge className={cn("rounded-full", c.status === 'active' ? "bg-green-500 hover:bg-green-600 text-white border-transparent" : c.status === 'paused' ? "bg-amber-500 hover:bg-amber-600 text-white border-transparent" : "bg-neutral-500 hover:bg-neutral-600 text-white border-transparent")}>
+                                                    {c.status === 'active' ? 'Ativa' : c.status === 'paused' ? 'Pausada' : 'Rascunho'}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm font-bold">{c.reaches || '-'}</td>
+                                            <td className="px-6 py-4 text-sm font-bold text-green-600">{c.conversion ? `${c.conversion}%` : '-'}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <Button variant="ghost" size="sm" className="rounded-lg">Analytics</Button>
+                                            </td>
+                                        </tr>
+                                    )))}
                             </tbody>
                         </table>
                     </div>

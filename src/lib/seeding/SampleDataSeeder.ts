@@ -138,7 +138,6 @@ export class SampleDataSeeder {
           ...p,
           price: p.sale_price, // Map to DB column name
           sale_price: undefined, // Remove frontend-name
-          user_id: userId // Association might be needed depending on RLS
         }));
         
         // Remove undefined keys
@@ -157,7 +156,6 @@ export class SampleDataSeeder {
       if (template.clients && template.clients.length > 0) {
         const clientPayloads = template.clients.map(c => ({
           ...c,
-          user_id: userId // Association might be needed
         }));
 
         const { error: cError } = await supabase

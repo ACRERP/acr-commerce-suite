@@ -42,7 +42,7 @@ export default function LicenseActivation() {
         setLoading(true);
         setResult(null);
 
-        const validation = await LicenseService.validateLicense(formatted);
+        const validation = await LicenseService.validateLicenseWithKey(formatted);
 
         setLoading(false);
         setResult({
@@ -193,7 +193,7 @@ export default function LicenseActivation() {
                         </p>
 
                         <p className="text-xs text-center text-gray-400 mt-3">
-                            Problemas? Entre em contato: <strong>suporte@acrerp.com</strong>
+                            Problemas? Entre em contato: <strong>acrerptech@gmail.com</strong>
                         </p>
                     </div>
                 </div>
