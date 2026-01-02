@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tantml:parameter>
-<parameter name="Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -111,11 +111,11 @@ export function FiscalConfig() {
     return (
       <Card>
         <CardContent className="p-8">
-    < div className = "flex items-center justify-center" >
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div >
-        </CardContent >
-      </Card >
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
