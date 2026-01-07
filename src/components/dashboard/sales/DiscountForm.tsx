@@ -63,21 +63,21 @@ export function DiscountForm({
       name: discount?.name || '',
       description: discount?.description || '',
       type: discount?.type || 'percentage',
-      value: discount?.value?.toString() || '',
-      min_purchase_amount: discount?.min_purchase_amount?.toString() || '0',
-      max_discount_amount: discount?.max_discount_amount?.toString() || '',
+      value: String(discount?.value || ''),
+      min_purchase_amount: String(discount?.min_purchase_amount || '0'),
+      max_discount_amount: String(discount?.max_discount_amount || ''),
       applicable_to: discount?.applicable_to || 'all',
       is_active: discount?.is_active ?? true,
       start_date: discount?.start_date ? new Date(discount.start_date).toISOString().split('T')[0] : '',
       end_date: discount?.end_date ? new Date(discount.end_date).toISOString().split('T')[0] : '',
-      usage_limit: discount?.usage_limit?.toString() || '',
+      usage_limit: String(discount?.usage_limit || ''),
     },
   });
 
   const discountType = form.watch('type');
-  const discountValue = parseFloat(form.watch('value') || '0');
-  const minPurchaseAmount = parseFloat(form.watch('min_purchase_amount') || '0');
-  const maxDiscountAmount = parseFloat(form.watch('max_discount_amount') || '0');
+  const discountValue = parseFloat(String(form.watch('value') || '0'));
+  const minPurchaseAmount = parseFloat(String(form.watch('min_purchase_amount') || '0'));
+  const maxDiscountAmount = parseFloat(String(form.watch('max_discount_amount') || '0'));
 
   // Calculate preview amount
   useEffect(() => {

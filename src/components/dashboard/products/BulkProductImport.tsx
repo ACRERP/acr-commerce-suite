@@ -19,7 +19,13 @@ import {
   Clock
 } from 'lucide-react';
 import { useBulkProductImport } from '@/hooks/useBulkProductImport';
-import { ImportColumnMapping, ImportValidationResult, ParsedImportData } from '@/lib/productImportValidator';
+import { ImportColumnMapping, ImportValidationResult } from '@/lib/productImportValidator';
+
+interface ParsedImportData {
+  headers: string[];
+  rows: string[][];
+  totalRows: number;
+}
 
 interface BulkProductImportProps {
   isOpen: boolean;

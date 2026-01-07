@@ -58,7 +58,12 @@ export function QuoteBuilder({ onCancel, onSuccess, initialData }: QuoteBuilderP
                 setClient({
                     id: initialData.client_id,
                     name: initialData.client_name || 'Carregando...',
-                    cpf_cnpj: '', email: '', phone: ''
+                    cpf_cnpj: '', 
+                    email: '', 
+                    phone: '',
+                    address: '',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
                 } as Client);
             }
             setValidUntil(initialData.valid_until ? initialData.valid_until.split('T')[0] : '');
@@ -162,7 +167,7 @@ export function QuoteBuilder({ onCancel, onSuccess, initialData }: QuoteBuilderP
                         notes: notes,
                         labor_cost: settings.showLabor ? laborCost : 0,
                     },
-                    items
+                    items: items as any
                 });
             } else {
                 await createQuote.mutateAsync({

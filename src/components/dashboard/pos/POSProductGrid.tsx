@@ -68,9 +68,9 @@ export function POSProductGrid({ onProductSelect }: POSProductGridProps) {
                                 className="group relative flex flex-col items-start p-4 bg-white dark:bg-neutral-900 border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-primary/50 transition-all rounded-xl text-left bg-gradient-to-br from-white to-gray-50 dark:from-neutral-900 dark:to-neutral-900 overflow-hidden"
                             >
                                 {/* Stock Badge */}
-                                <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${(product.stock_quantity || 0) > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                     }`}>
-                                    {product.stock} un
+                                    {product.stock_quantity || 0} un
                                 </div>
 
                                 {/* Icon/Image Placeholder */}
@@ -87,7 +87,7 @@ export function POSProductGrid({ onProductSelect }: POSProductGridProps) {
                                             {product.code || '-'}
                                         </p>
                                         <p className="font-bold text-lg text-primary">
-                                            R$ {product.price.toFixed(2)}
+                                            R$ {(product.sale_price || 0).toFixed(2)}
                                         </p>
                                     </div>
                                 </div>

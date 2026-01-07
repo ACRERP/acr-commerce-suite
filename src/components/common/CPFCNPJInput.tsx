@@ -41,7 +41,7 @@ export const CPFCNPJInput = forwardRef<HTMLInputElement, CPFCNPJInputProps>(
     // Determine which value to use (controlled or uncontrolled)
     const currentValue = value !== undefined ? value : internalValue;
 
-    const documentType = getDocumentType(currentValue);
+    const documentType = getDocumentType(String(currentValue));
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const maskedValue = maskCPFCNPJ(e.target.value);
@@ -75,7 +75,7 @@ export const CPFCNPJInput = forwardRef<HTMLInputElement, CPFCNPJInputProps>(
 
       // Validate on blur
       if (currentValue) {
-        const validationResult = validateCPFCNPJ(currentValue);
+        const validationResult = validateCPFCNPJ(String(currentValue));
         setValidation(validationResult);
         onValidationChange?.(validationResult);
       }

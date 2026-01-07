@@ -32,9 +32,10 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useProducts } from '@/hooks/useProducts';
-import { useProductManagement } from '@/hooks/useProductManagement';
+import { useProductCategories, useBulkPriceUpdate, useBulkCategoryUpdate, useBulkStockUpdate, useExportProducts, useCreateCategory } from '@/hooks/useProductManagement';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/lib/products';
+import { cn } from '@/lib/utils';
 
 export function EnhancedProductManagement() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,7 +46,7 @@ export function EnhancedProductManagement() {
   const [newCategory, setNewCategory] = useState({ name: '', description: '', icon: 'Package', color: 'blue' });
   
   const { data: products = [] } = useProducts();
-  const { data: categories = [] } = useProductManagement();
+  const { data: categories = [] } = useProductCategories();
   const bulkPriceUpdate = useBulkPriceUpdate();
   const bulkCategoryUpdate = useBulkCategoryUpdate();
   const bulkStockUpdate = useBulkStockUpdate();

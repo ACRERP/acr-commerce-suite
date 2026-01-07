@@ -2,6 +2,24 @@ import { supabase } from './supabaseClient';
 
 export type UserRole = 'admin' | 'vendas' | 'financeiro' | 'estoque';
 
+export type Module = string;
+export type Action = 'view' | 'create' | 'edit' | 'delete';
+
+export interface Role {
+  id: number;
+  name: string;
+  description?: string;
+  permissions: Record<string, Record<string, boolean>>;
+  is_system?: boolean;
+}
+
+export const MODULES = [
+  'dashboard', 'products', 'clients', 'sales', 'finance', 
+  'reports', 'settings', 'users', 'inventory', 'crm'
+];
+
+export const ACTIONS: Action[] = ['view', 'create', 'edit', 'delete'];
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -131,3 +149,67 @@ export const rbacService = {
 export const getUsers = rbacService.listUsers;
 export const updateUserRole = rbacService.updateUserRole;
 export const updateUserStatus = rbacService.updateUserStatus;
+
+// Role Management Functions
+export async function getRoles(): Promise<Role[]> {
+  const { data, error } = await supabase
+    .from('roles')
+    .select('*')
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching roles:', error);
+    // Return default roles if table doesn't exist
+    return [
+      { id: 1, name: 'admin', description: 'Administrador', permissions: {}, is_system: true },
+      { id: 2, name: 'vendas', description: 'Vendedor', permissions: {}, is_system: true },
+      { id: 3, name: 'financeiro', description: 'Financeiro', permissions: {}, is_system: true },
+      { id: 4, name: 'estoque', description: 'Estoquista', permissions: {}, is_system: true },
+    ];
+  }
+
+  return data as Role[];
+}
+
+export async function createRole(roleData: { name: string; description: string; permissions: Record<string, any> }): Promise<Role> {
+  const { data, error } = await supabase
+    .from('roles')
+    .insert(roleData)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating role:', error);
+    throw error;
+  }
+
+  return data as Role;
+}
+
+export async function updateRole(id: number, updates: Partial<Role>): Promise<Role> {
+  const { data, error } = await supabase
+    .from('roles')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating role:', error);
+    throw error;
+  }
+
+  return data as Role;
+}
+
+export async function deleteRole(id: number): Promise<void> {
+  const { error } = await supabase
+    .from('roles')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting role:', error);
+    throw error;
+  }
+}

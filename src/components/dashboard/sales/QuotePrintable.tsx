@@ -185,8 +185,9 @@ export function QuotePrintable() {
                     <button
                         onClick={() => {
                             // @ts-ignore
-                            import('html2pdf.js').then(html2pdf => {
-                                const element = document.querySelector('.max-w-4xl'); // Select the content container
+                            import('html2pdf.js').then((html2pdf: any) => {
+                                const element = document.querySelector('.max-w-4xl') as HTMLElement;
+                                if (!element) return;
                                 const opt = {
                                     margin: 10,
                                     filename: `Orcamento-${quote.id}.pdf`,

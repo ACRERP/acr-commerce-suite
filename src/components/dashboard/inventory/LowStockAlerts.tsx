@@ -101,9 +101,9 @@ export function LowStockAlerts() {
                     <p className="text-sm text-muted-foreground">
                       Código: {product.code} | Estoque mínimo: {product.minimum_stock_level}
                     </p>
-                    {product.price && (
+                    {product.sale_price && (
                       <p className="text-sm text-muted-foreground">
-                        Preço: {formatCurrency(product.price)}
+                        Preço: {formatCurrency(product.sale_price)}
                       </p>
                     )}
                   </div>
@@ -147,9 +147,9 @@ export function LowStockAlerts() {
                     <p className="text-sm text-muted-foreground">
                       Código: {product.code} | Estoque atual: {product.stock_quantity} | Mínimo: {product.minimum_stock_level}
                     </p>
-                    {product.price && (
+                    {product.sale_price && (
                       <p className="text-sm text-muted-foreground">
-                        Preço: {formatCurrency(product.price)}
+                        Preço: {formatCurrency(product.sale_price)}
                       </p>
                     )}
                   </div>
