@@ -66,7 +66,7 @@ export function UserManagement() {
     // Mutation: Update Role
     const updateRoleMutation = useMutation({
         mutationFn: ({ userId, role }: { userId: string; role: string }) =>
-            updateUserRole(userId, role),
+            updateUserRole(userId, role as any),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             toast({ title: 'Sucesso!', description: 'Permissão atualizada.' });
@@ -80,7 +80,7 @@ export function UserManagement() {
     // Mutation: Toggle Active Status
     const toggleStatusMutation = useMutation({
         mutationFn: ({ userId, isActive }: { userId: string; isActive: boolean }) =>
-            updateUserStatus(userId, isActive),
+            updateUserStatus(userId, isActive ? 'active' : 'inactive'),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             toast({ title: 'Sucesso!', description: 'Status do usuário atualizado.' });

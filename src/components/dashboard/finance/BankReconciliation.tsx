@@ -41,7 +41,8 @@ export function BankReconciliation() {
   const { transactions, updateTransaction } = useBankStatementTransactions(selectedStatement || undefined);
   const { rules } = useReconciliationRules();
   const { summary } = useReconciliationSummary();
-  const { reconcileStatement, isPending: isReconciling } = useAutoReconciliation();
+  const autoReconciliation = useAutoReconciliation();
+  const isReconciling = autoReconciliation.reconcileStatement?.isPending || false;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -71,11 +72,11 @@ export function BankReconciliation() {
   };
 
   const handleAutoReconcile = async (statementId: string) => {
-    await reconcileStatement(statementId);
+    await autoReconciliation.reconcileStatement?.mutateAsync(statementId);
   };
 
   const handleManualMatch = async (transactionId: string, financialTransactionId: string) => {
-    await updateTransaction({
+    await updateTransaction?.mutateAsync({
       id: transactionId,
       matched_transaction_id: financialTransactionId,
       reconciliation_status: 'manual',
@@ -84,7 +85,7 @@ export function BankReconciliation() {
   };
 
   const handleIgnoreTransaction = async (transactionId: string) => {
-    await updateTransaction({
+    await updateTransaction?.mutateAsync({
       id: transactionId,
       reconciliation_status: 'ignored',
       matched_transaction_id: null
@@ -92,7 +93,7 @@ export function BankReconciliation() {
   };
 
   const handleUnmatchTransaction = async (transactionId: string) => {
-    await updateTransaction({
+    await updateTransaction?.mutateAsync({
       id: transactionId,
       reconciliation_status: 'unmatched',
       matched_transaction_id: null,
@@ -150,7 +151,7 @@ export function BankReconciliation() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Transações Matched</p>
-                  <p className="text-2xl font-bold text-green-600">{summary.stats.matched || 0}</p>
+                  <p className="text-2xl font-bold text-green-600">{(summary.stats as any)?.matched || 0}</p>
                 </div>
                 <div className="p-2 bg-green-100 rounded-full">
                   <CheckCircle2 className="w-6 h-6 text-green-600" />
@@ -164,7 +165,7 @@ export function BankReconciliation() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Pendentes</p>
-                  <p className="text-2xl font-bold text-yellow-600">{summary.stats.unmatched || 0}</p>
+                  <p className="text-2xl font-bold text-yellow-600">{(summary.stats as any)?.unmatched || 0}</p>
                 </div>
                 <div className="p-2 bg-yellow-100 rounded-full">
                   <AlertCircle className="w-6 h-6 text-yellow-600" />

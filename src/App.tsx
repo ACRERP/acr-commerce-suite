@@ -125,10 +125,10 @@ const AppRoutes = () => {
 
           {/* Cadastros */}
           <Route path="/produtos" element={<ModuleGuard module="inventory"><ProductsPage /></ModuleGuard>} />
-          <Route path="/produtos/novo" element={<ModuleGuard module="inventory"><ProductsPage openForm /></ModuleGuard>} />
-          <Route path="/produtos/categorias" element={<ModuleGuard module="inventory"><ProductsPage defaultTab="categories" /></ModuleGuard>} />
+          <Route path="/produtos/novo" element={<ModuleGuard module="inventory"><ProductsPage /></ModuleGuard>} />
+          <Route path="/produtos/categorias" element={<ModuleGuard module="inventory"><ProductsPage /></ModuleGuard>} />
           <Route path="/clientes" element={<ModuleGuard module="clients"><ClientsPage /></ModuleGuard>} />
-          <Route path="/clientes/novo" element={<ModuleGuard module="clients"><ClientsPage openForm /></ModuleGuard>} />
+          <Route path="/clientes/novo" element={<ModuleGuard module="clients"><ClientsPage /></ModuleGuard>} />
 
           {/* Gestão */}
           <Route path="/estoque" element={<ModuleGuard module="inventory"><Estoque /></ModuleGuard>} />

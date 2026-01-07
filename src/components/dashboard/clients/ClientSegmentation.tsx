@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { 
   ClientSegment,
-  ClientSegmentation,
+  ClientSegmentation as ClientSegmentationType,
   SegmentationAnalytics,
   SegmentationSuggestion,
   createDefaultSegments,
@@ -53,9 +53,9 @@ interface ClientSegmentationProps {
   className?: string;
 }
 
-export function ClientSegmentation({ client, className }: ClientSegmentationProps) {
+export function ClientSegmentationView({ client, className }: ClientSegmentationProps) {
   const [segments, setSegments] = useState<ClientSegment[]>([]);
-  const [clientSegmentations, setClientSegmentations] = useState<ClientSegmentation[]>([]);
+  const [clientSegmentations, setClientSegmentations] = useState<ClientSegmentationType[]>([]);
   const [analytics, setAnalytics] = useState<SegmentationAnalytics | null>(null);
   const [suggestions, setSuggestions] = useState<SegmentationSuggestion[]>([]);
   const [loading, setLoading] = useState(true);

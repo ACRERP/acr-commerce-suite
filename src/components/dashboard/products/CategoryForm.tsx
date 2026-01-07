@@ -27,7 +27,7 @@ const categorySchema = z.object({
   parent_id: z.string().optional(),
   icon: z.string().optional(),
   color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Cor deve estar no formato #RRGGBB'),
-  sort_order: z.string().transform(Number).pipe(z.number().int().min(0)),
+  sort_order: z.union([z.string(), z.number()]).transform(Number).pipe(z.number().int().min(0)),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;

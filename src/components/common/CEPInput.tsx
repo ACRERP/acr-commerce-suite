@@ -99,9 +99,9 @@ export const CEPInput = forwardRef<HTMLInputElement, CEPInputProps>(
     };
 
     const handleLookup = async (cepValue?: string) => {
-      const cepToLookup = cepValue || currentValue;
+      const cepToLookup = cepValue || String(currentValue);
       
-      if (!cepToLookup || cepToLookup.replace(/\D/g, '').length !== 8) {
+      if (!cepToLookup || String(cepToLookup).replace(/\D/g, '').length !== 8) {
         return;
       }
 
@@ -109,7 +109,7 @@ export const CEPInput = forwardRef<HTMLInputElement, CEPInputProps>(
       onLookupStart?.();
 
       try {
-        const result = await lookupCEPWithCache(cepToLookup);
+        const result = await lookupCEPWithCache(String(cepToLookup));
         
         setValidation(result);
         onValidationChange?.(result);
@@ -135,7 +135,7 @@ export const CEPInput = forwardRef<HTMLInputElement, CEPInputProps>(
 
       // Validate on blur
       if (currentValue) {
-        const validationResult = validateCEP(currentValue);
+        const validationResult = validateCEP(String(currentValue));
         setValidation(validationResult);
         onValidationChange?.(validationResult);
       }
@@ -230,7 +230,7 @@ export const CEPInput = forwardRef<HTMLInputElement, CEPInputProps>(
               variant="outline"
               size="sm"
               onClick={handleManualLookup}
-              disabled={isLookingUp || currentValue.replace(/\D/g, '').length !== 8}
+              disabled={isLookingUp || String(currentValue).replace(/\D/g, '').length !== 8}
               className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 px-2 text-xs"
             >
               {isLookingUp ? (
