@@ -1,18 +1,25 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 export default function Index() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        navigate('/dashboard');
+      } else {
+        navigate('/login');
+      }
+    }
+  }, [user, loading, navigate]);
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-      <div className="text-center space-y-6">
-        <h1 className="text-4xl font-bold text-foreground">ACR Store</h1>
-        <p className="text-lg text-muted-foreground">
-          Sistema ERP completo para gestão empresarial
-        </p>
-        <Button asChild>
-          <Link to="/login">Entrar</Link>
-        </Button>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
 }
